@@ -68,7 +68,7 @@ import pandas as pd
 # La dernière partie du code est :
 ##########################################################################################
 #
-#   				Gestion des pages
+#                               Gestion des pages
 #
 ##########################################################################################
 
@@ -79,14 +79,15 @@ import pandas as pd
 
 
 #################### Creating App Object ############################
+
 # external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 # #ou bien https://intra.cnrm.meteo.fr/MeteopoleX/css.css
 external_stylesheets = ['https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css']
 # C'est la css qui va permettre la mise en page
 
-app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP], suppress_callback_exceptions=True, title='MeteopoleX',
-                requests_pathname_prefix='/MeteopoleX/',
-                routes_pathname_prefix='/')
+app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP], suppress_callback_exceptions=True, title='MeteopoleX')
+#                requests_pathname_prefix='/MeteopoleX/',
+#                routes_pathname_prefix='/')
 app.css.config.serve_locally = True
 app.scripts.config.serve_locally = True
 server = app.server
@@ -134,7 +135,6 @@ doy2 = datetime.datetime(int(end_day.year), int(end_day.month), int(end_day.day)
 #   Comparaison Obs/Modèles
 #
 ##############################
-
 
 ############### Données ###############
 # Lecture des données dans AIDA
@@ -328,7 +328,10 @@ def selection_donnees(start_day, end_day):
                         # Read AIDA : lit tous les paramètres alors que selection de données va
                         # lire uniquement un parametre specifique
                         (values, time, header) = read_aida.donnees(
-                            doy1, doy2, str(start_day.year), id_aida, model)
+                            doy1, doy2, str(start_day.year), str(end_day.year), id_aida, model)
+#                        (values, time, header) = read_aida.donnees(
+#                            doy1, doy2, str(start_day.year), id_aida, model)
+
                         data[param][model]['values'] = values
                         data[param][model]['time'] = time
 
@@ -338,7 +341,7 @@ def selection_donnees(start_day, end_day):
 
                         id_aida = dico_params[param]["index_model"] + "_" + reseau
                         (values, time, header) = read_aida.donnees(
-                            doy1, doy2, str(start_day.year), id_aida, model)
+                            doy1, doy2, str(start_day.year), str(end_day.year), id_aida, model)
                         data[param][model][reseau]['values'] = values
 
                         data[param][model][reseau]['time'] = time
@@ -475,7 +478,7 @@ id_user = html.Div([
 
 ############### Callbacks ###############
 
-# Les callbacks ont obligatoirement besoin d'une liste d'Output et d'une liste d'Input pour fonctionner.
+# Les callbacks ont obligatoirement besoin d'une liste d'Output et d'une liste d'Input pour fonctionner
 # Ils contiennent la/les fonction(s) qui vont actualiser l'/les Output(s)
 # à chaque fois qu'un/que des Input(s) est/sont modifié(s)
 
@@ -838,7 +841,6 @@ obs_modeles_layout = html.Div([
 
 # Ces dernières lignes sont la mise en forme finale de la page
 
-
 ###################
 #
 #   Notice
@@ -1065,7 +1067,7 @@ def calcul_biais(start_day, end_day):
 
             id_aida_obs = dico_params[param]["index_obs"]
             (values_obs, time_obs, header_obs) = read_aida.donnees(
-                doy1, doy2, str(start_day.year), id_aida_obs, "Tf")
+                doy1, doy2, str(start_day.year), str(end_day.year), id_aida_obs, "Tf")
 
             if model not in biais[param]:
                 biais[param][model] = {}
@@ -1078,7 +1080,7 @@ def calcul_biais(start_day, end_day):
 
                 id_aida_mod = dico_params[param]["index_model"] + "_" + reseau
                 (values_mod, time_mod, header_mod) = read_aida.donnees(
-                    doy1, doy2, str(start_day.year), id_aida_mod, model)
+                    doy1, doy2, str(start_day.year), str(end_day.year), id_aida_mod, model)
 
                 # Correction des données ARPEGE parfois datées à H-1:59 au lieu de H:00
                 if time_mod is not None:
@@ -1099,7 +1101,7 @@ def calcul_biais(start_day, end_day):
 
                 # Les flux pour AROME et ARPEGE OPER sont agrégés entre H et H+1 : On les
                 # replace à H:30 pour davantage de réalisme
-                if param == 'flx_mvt' or param == 'flx_chaleur_sens' or param == 'flx_chaleur_lat' or param == 'SWD' or param == 'LWU':
+                if param == 'flx_mvt' or param == 'flx_chaleur_sens' or param == 'flx_chaleur_lat' or param == 'SWD' or param == 'SWU' or param == 'LWD' or param == 'LWU':
                     if time_mod is not None:
                         i = 0
                         for ts in time_mod:
@@ -1152,7 +1154,7 @@ def calcul_biais(start_day, end_day):
 
                 id_aida_obs = dico_params[param]["index_obs"]
                 (values_obs, time_obs, header_obs) = read_aida.donnees(
-                    day_1, day_2, str(start_day.year), id_aida_obs, "Tf")
+                    day_1, day_2, str(start_day.year), str(end_day.year), id_aida_obs, "Tf")
 
                 dt_mnh = mdates.num2date(
                     mdates.drange(
@@ -1243,7 +1245,7 @@ def calcul_biais(start_day, end_day):
 
 
                id_aida_obs = dico_params[param]["index_obs"] 
-               (values_obs, time_obs, header_obs)=read_aida.donnees(day_1,day_2,str(start_day.year),id_aida_obs,"Tf") 
+               (values_obs, time_obs, header_obs)=read_aida.donnees(day_1,day_2,str(start_day.year),str(end_day.year),id_aida_obs,"Tf") 
 
 
 
@@ -2401,6 +2403,7 @@ def display_page(pathname):
 
 
 if __name__ == '__main__':
-    app.run_server(debug=True, host="0.0.0.0", port=8010)
+#    app.run_server(debug=True, host="0.0.0.0", port=8010)
+    app.run_server(debug=True,port=8086)
 
 # print(data)

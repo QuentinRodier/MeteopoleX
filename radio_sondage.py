@@ -158,17 +158,19 @@ def radio_sondage(day, models, params_rs, heures, heures_aroarp):
 
         # Extraction des données AMDAR sous AIDA
         (z_val, time, header) = read_aida.donnees(
-            doy, doy, str(today.year), 'alt_pre_amdar_cal_%60', model)
+            doy, doy, str(today.year), str(today.year), 'alt_pre_amdar_cal_%60', model)
+#        (z_val, time, header) = read_aida.donnees(
+#            doy, doy, str(today.year), 'alt_pre_amdar_cal_%60', model)
         (t_val, time, header) = read_aida.donnees(
-            doy, doy, str(today.year), 'tpr_air_amdar_cal_%60', model)
+            doy, doy, str(today.year), str(today.year), 'tpr_air_amdar_cal_%60', model)
         (ff_val, time, header) = read_aida.donnees(
-            doy, doy, str(today.year), 'ven_ffmoy_amdar_cal_%60', model)
+            doy, doy, str(today.year), str(today.year), 'ven_ffmoy_amdar_cal_%60', model)
 
         # Récupération des séries temporelles Météopôle-Flux pour avoir un point à Z=10m
-        (t10, time2, header2) = read_aida.donnees(doy, doy,
-                                                  str(today.year), "tpr_air_ht_c1_%60_Met_%1800", 'Tf')
+        (t10, time2, header2) = read_aida.donnees(doy, doy, str(today.year), str(today.year),
+                "tpr_air_ht_c1_%60_Met_%1800", 'Tf')
         (ff10, time2, header2) = read_aida.donnees(
-            doy, doy, str(today.year), "ven_ff_10mn_c1_UV_%1800", 'Tf')
+            doy, doy, str(today.year), str(today.year), "ven_ff_10mn_c1_UV_%1800", 'Tf')
 
         # Impossible de boucler sur des 'None' : on ne prend les profils seulement
         # lorsque les valeurs existent

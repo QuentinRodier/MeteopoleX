@@ -6,33 +6,21 @@ Created on Tue Feb  9 14:03:21 2021
 @author: avrillauds
 """
 
-
-
 import os
 import sys
 
-#AH = os.getenv('AIDA_HOME', '/d0/AIDA/aida')
 AH = os.getenv('AIDA_HOME', '/home/common/aida')
 PYTHON_X_Y = "python%d.%d" % (sys.version_info[0], sys.version_info[1])
 sys.path.append(os.path.join(AH, 'lib', PYTHON_X_Y))
-# definition acquid acquid=identifiant de la journee pou lecture donnée sous forme vecteur
 
 import AIDA
 
-def donnees(doy1, doy2, annee, parametre, plateforme):
+# Définition acquid acquid=identifiant de la journee pour lecture donnée sous forme vecteur
 
-    if len(doy2) == 3:
-        acqid_fin = annee[-2:] + '0' + doy2
-    elif len(doy2) == 2:
-        acqid_fin = annee[-2:] + '00' + doy2
-    else:
-        acqid_fin = annee[-2:] + '000' + doy2
-    if len(doy1) == 3:
-        acqid_debut = annee[-2:] + '0' + doy1
-    elif len(doy1) == 2:
-        acqid_debut = annee[-2:] + '00' + doy1
-    else:
-        acqid_debut = annee[-2:] + '000' + doy1
+def donnees(doy1, doy2, annee1, annee2, parametre, plateforme):
+
+    acqid_fin = annee2[-2:] + f"{int(doy2):04}"
+    acqid_debut = annee1[-2:] + f"{int(doy1):04}"
 
     # AIDA.read_datas fonction de lecture du module AIDA pour lire les données
 

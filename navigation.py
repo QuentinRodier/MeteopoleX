@@ -190,13 +190,25 @@ dico_params = {
     "SWD": {
         "index_obs": "ray_rgd_cnr1_c2_%60_Met_%1800",
         "index_model": "ray_rgd",
-        "title": "Rayonnement global descendant (SW)",
+        "title": "Rayonnement global descendant (SW down)",
+        "unit": "W/m²"
+    },
+    "SWU": {
+        "index_obs": "ray_rgm_cnr1_c2_%60_Met_%1800",
+        "index_model": "ray_rgm",
+        "title": "Rayonnement global montant (SW up)",
+        "unit": "W/m²"
+    },
+    "LWD": {
+        "index_obs": "ray_ird_cnr1_c2_%60_Met_%1800",
+        "index_model": "ray_ird",
+        "title": "Rayonnement IR descendant (LW down)",
         "unit": "W/m²"
     },
     "LWU": {
         "index_obs": "ray_irm_cnr1_c2_%60_Met_%1800",
         "index_model": "ray_irm",
-        "title": "Rayonnement IR montant (LW)",
+        "title": "Rayonnement IR montant (LW up)",
         "unit": "W/m²"
     },    
     "flx_chaleur_sol": {
@@ -272,6 +284,8 @@ params = [
     "flx_chaleur_sens",
     "flx_chaleur_lat",
     "SWD",
+    "SWU",
+    "LWD",
     "LWU",    
     "flx_chaleur_sol",
     "t_surface",
@@ -365,7 +379,7 @@ def selection_donnees(start_day, end_day):
 
                         # Les flux pour AROME et ARPEGE OPER sont agrégés entre H et H+1 : On les
                         # replace à H:30 pour davantage de réalisme (A faire aussi pour les flux simulations user MNH et SURFEX force par AROME/ARPEGE
-                        if param == 'flx_mvt' or param == 'flx_chaleur_sens' or param == 'flx_chaleur_lat' or param == 'SWD' or param == 'LWU':
+                        if param == 'flx_mvt' or param == 'flx_chaleur_sens' or param == 'flx_chaleur_lat' or param == 'SWD' or param == 'SWU' or param == 'LWD' or param == 'LWU':
                             if time is not None:
                                 i = 0
                                 for ts in time:
@@ -478,7 +492,7 @@ id_user = html.Div([
 
 ############### Callbacks ###############
 
-# Les callbacks ont obligatoirement besoin d'une liste d'Output et d'une liste d'Input pour fonctionner
+# Les callbacks ont obligatoirement besoin d'une liste d'Output et d'une liste d'Input pour fonctionner.
 # Ils contiennent la/les fonction(s) qui vont actualiser l'/les Output(s)
 # à chaque fois qu'un/que des Input(s) est/sont modifié(s)
 
@@ -600,7 +614,7 @@ def update_line(reseau1, reseau2, reseau3, reseau4, reseau5, start_day,
                 try:                    
                     if isinstance(data_surfex_user[today_str][param],
                                   (list, np.ndarray)):  # On vérifie qu'il y a des données
-                        if param == 'flx_mvt' or param == 'flx_chaleur_sens' or param == 'flx_chaleur_lat' or param == 'SWD' or param == 'LWU':
+                        if param == 'flx_mvt' or param == 'flx_chaleur_sens' or param == 'flx_chaleur_lat' or param == 'SWD' or param == 'SWU' or param == 'LWD' or param == 'LWU':
                             xTime = data_surfex_user[today_str]['timeFlux']
                         else :
                             xTime = data_surfex_user[today_str]['time']
@@ -840,6 +854,7 @@ obs_modeles_layout = html.Div([
 ], className="row", style={"text-align": "center", "justifyContent": "center"})
 
 # Ces dernières lignes sont la mise en forme finale de la page
+
 
 ###################
 #

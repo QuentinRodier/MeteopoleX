@@ -78,7 +78,6 @@ import lecture_surfex
 # Les programmes appelés par navigation.py
 import mesonh
 import radio_sondage
-import notice_gui
 
 # -----------------------------------------------------------------------------
 #   1. CREATION App Object 

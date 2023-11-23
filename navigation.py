@@ -2104,7 +2104,7 @@ surfex_layout = html.Div([
 @app.callback(dash.dependencies.Output('page-content', 'children'),
               [dash.dependencies.Input('url', 'pathname')])
 def display_page(pathname):
-    if pathname == '/MeteopoleX':
+    if pathname == '/MeteopoleX/':
         return obs_modeles_layout
     elif pathname == '/MeteopoleX/biais':
         return biais_layout

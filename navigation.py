@@ -3,9 +3,9 @@
 
 """
 Created on 
-Updated on 27/10/2022
+Updated on 02/02/2023
 @authors: rodierq, canut, roya, capoj
-version : 1.3
+version : 1.4
 """
 
 #-----------------------------------------------------------------------------------------
@@ -214,13 +214,13 @@ sidebar = html.Div(
         html.Hr(),
         html.P("", className="lead"),
         dbc.Nav(
-            [   dbc.NavLink("Séries temporelles", href="/MeteopoleX/series"),
+            [   dbc.NavLink("Séries temporelles", href="/MeteopoleX"),
                 dbc.NavLink("Biais", href="/MeteopoleX/biais"),
                 dbc.NavLink("Biais moyens", href="/MeteopoleX/biaisM"),
                 dbc.NavLink("Profils verticaux", href="/MeteopoleX/rs"),
                 dbc.NavLink('Rejeu MésoNH', href="/MeteopoleX/mesoNH"),
                 dbc.NavLink('Rejeu SURFEX', href="/MeteopoleX/surfex"),
-                dbc.NavLink('Notice', href="/MeteopoleX/")  ],
+                dbc.NavLink('Notice', href="/MeteopoleX/notice")  ],
             vertical=True,
             pills=True,
         ),
@@ -525,11 +525,12 @@ params = [
     "t_surface",
     "t-1",
     "hu_couche1",
-    "cumul_RR",
-    "altitude_CL"]
+    "cumul_RR"]
+#    "altitude_CL"]
 
 # Liste des modèles de dico_model 
-models = ["Gt", "Rt", "Tf"]
+models = ["Gt", "Rt"]
+#models = ["Gt", "Rt", "Tf"]
 
 # Liste des réseaux pour les modèles numériques
 reseaux = ["J-1:00_%3600", "J-1:12_%3600", "J0:00_%3600", "J0:12_%3600"]
@@ -561,48 +562,51 @@ def selection_donnees(start_day, end_day):
     for param in params:
         if param not in data:
             data[param] = {}
+
+        # Traitement des donnees d'obs
+        model='Tf'
+        data[param][model] = {}
+#        if dico_params[param]["index_obs"]!="":
+        id_aida = dico_params[param]["index_obs"]
+        # Read AIDA : lit tous les paramètres alors que selection de données va
+        # lire uniquement un parametre specifique
+        (values, time, header) = read_aida.donnees(doy1, doy2,
+            str(start_day.year), str(end_day.year), id_aida, model)
+        data[param][model]['values'] = values
+        data[param][model]['time'] = time
+
+        # Traitement des donnees Arome et Arpege
         for model in models:
             if model not in data[param]:
                 data[param][model] = {}
                 for reseau in reseaux:
                     if reseau not in data[param][model]:
                         data[param][model][reseau] = {}
+#                    if dico_params[param]["index_model"]!="":
+                    id_aida = dico_params[param]["index_model"] + "_" + reseau
+                    (values, time, header) = read_aida.donnees(
+                        doy1, doy2, str(start_day.year), str(end_day.year), id_aida, model)
+                    data[param][model][reseau]['values'] = values
+                    data[param][model][reseau]['time'] = time
 
-                    if model == "Tf":
-                        id_aida = dico_params[param]["index_obs"]
-                        # Read AIDA : lit tous les paramètres alors que selection de données va
-                        # lire uniquement un parametre specifique
-                        (values, time, header) = read_aida.donnees(doy1, doy2, 
-                                str(start_day.year), str(end_day.year), id_aida, model)
-                        data[param][model]['values'] = values
-                        data[param][model]['time'] = time
-                        break
+                    # Correction des données ARPEGE parfois datées à H-1:59 au lieu de H:00
+                    if time is not None:
+                        i = 0
+                        for ts in time:
+                            if ts.minute == 59.:
+                                time[i] = time[i] + datetime.timedelta(minutes=1)
+                                i = i + 1
+                            else:
+                                i = i + 1
 
-                    else:
-                        id_aida = dico_params[param]["index_model"] + "_" + reseau
-                        (values, time, header) = read_aida.donnees(
-                            doy1, doy2, str(start_day.year), str(end_day.year), id_aida, model)
-                        data[param][model][reseau]['values'] = values
-                        data[param][model][reseau]['time'] = time
-
-                        # Correction des données ARPEGE parfois datées à H-1:59 au lieu de H:00
+                    # Les flux pour AROME et ARPEGE OPER sont agrégés entre H et H+1 : On les
+                    # replace à H:30 pour davantage de réalisme (A faire aussi pour les flux simulations user MNH et SURFEX force par AROME/ARPEGE
+                    if param == 'flx_mvt' or param == 'flx_chaleur_sens' or param == 'flx_chaleur_lat' or param == 'SWD' or param == 'SWU' or param == 'LWD' or param == 'LWU':
                         if time is not None:
                             i = 0
                             for ts in time:
-                                if ts.minute == 59.:
-                                    time[i] = time[i] + datetime.timedelta(minutes=1)
-                                    i = i + 1
-                                else:
-                                    i = i + 1
-
-                        # Les flux pour AROME et ARPEGE OPER sont agrégés entre H et H+1 : On les
-                        # replace à H:30 pour davantage de réalisme (A faire aussi pour les flux simulations user MNH et SURFEX force par AROME/ARPEGE
-                        if param == 'flx_mvt' or param == 'flx_chaleur_sens' or param == 'flx_chaleur_lat' or param == 'SWD' or param == 'SWU' or param == 'LWD' or param == 'LWU':
-                            if time is not None:
-                                i = 0
-                                for ts in time:
-                                    time[i] = time[i] - datetime.timedelta(minutes=30)
-                                    i = i + 1
+                                time[i] = time[i] - datetime.timedelta(minutes=30)
+                                i = i + 1
 
         # Ces 2 dernières étapes sont essentielles : d'abord on effectue le tracé,
         # puis on le transforme en objet html pour pouvoir l'afficher
@@ -2100,7 +2104,7 @@ surfex_layout = html.Div([
 @app.callback(dash.dependencies.Output('page-content', 'children'),
               [dash.dependencies.Input('url', 'pathname')])
 def display_page(pathname):
-    if pathname == '/MeteopoleX/series':
+    if pathname == '/MeteopoleX':
         return obs_modeles_layout
     elif pathname == '/MeteopoleX/biais':
         return biais_layout
@@ -2112,14 +2116,14 @@ def display_page(pathname):
         return surfex_layout
     elif pathname == '/MeteopoleX/rs':
         return rs_layout
-    elif pathname == '/MeteopoleX/':
+    elif pathname == '/MeteopoleX/notice':
         return notice_layout
     else:
         return "Error 404 URL not found"
 
 if __name__ == '__main__':
-#    app.run_server(debug=True, host="0.0.0.0", port=8010)
-    app.run_server(debug=True,port=8086)
+    app.run_server(debug=True, host="0.0.0.0", port=8010)
+#    app.run_server(debug=True,port=8086)
 
 # print(data)
 

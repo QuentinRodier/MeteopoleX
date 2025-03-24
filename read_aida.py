@@ -21,9 +21,12 @@ def donnees(doy1, doy2, annee1, annee2, parametre, plateforme):
 
     acqid_fin = annee2[-2:] + f"{int(doy2):04}"
     acqid_debut = annee1[-2:] + f"{int(doy1):04}"
-
-    # AIDA.read_datas fonction de lecture du module AIDA pour lire les données
-
-    values, time, header = AIDA.read_datas(
-        plateforme + acqid_debut, parametre, plateforme + acqid_fin)
+    
+    # Affichage des logs dans fichier
+    with open('/home/manip/MeteopoleX/Site_web_dev/read_aida.log', 'w') as aida_log:
+        sys.stdout = aida_log
+        values, time, header = AIDA.read_datas(plateforme + acqid_debut, parametre, plateforme + acqid_fin)
+    
+    sys.stdout = sys.__stdout__
+    
     return [values, time, header]

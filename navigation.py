@@ -232,6 +232,7 @@ sidebar = html.Div(
                 dbc.NavLink("Profils verticaux", href="/MeteopoleX/rs"),
                 dbc.NavLink('Rejeu MésoNH', href="/MeteopoleX/mesoNH"),
                 dbc.NavLink('Rejeu SURFEX', href="/MeteopoleX/surfex"),
+                dbc.NavLink('Panneaux Photovoltaïques', href="/MeteopoleX/PV"),
                 dbc.NavLink('Notice', href="/MeteopoleX/notice")  ],
             vertical=True,
             pills=True,
@@ -528,6 +529,52 @@ dico_params = {
         "title": "Altitude de la couche limite",
         "unit": "m"
     },
+    "PV": {"index_obs_moy":"ray_power_pv_Eti_%900_Met_%3600",
+        "index_obs_1": "ray_power_pv_Eti_%900",
+        "index_obs_2": "ray_power_pv_LG_Eti_%1800",
+        "index_obs_3": "ray_power_pv_Voltec_Eti_%1800",
+        "index_cnr4":"",
+        "index_bf5":"",
+        "index_arome_J0": "ray_power_pv_estim_aromeJ0_00_%3600",
+        "index_arome_J-1": "ray_power_pv_estim_aromeJ_1_12_%3600",
+        "title": "Puissance émise par les panneaux solaires ",
+        "unit": "W/m²"
+    },
+    "RGD": {"index_obs_moy":"",
+        "index_obs_1": "",
+        "index_obs_2": "",
+        "index_obs_3": "",
+        "index_cnr4": "ray_rgd_cnr4_c7_Eti_%10",
+        "index_bf5": "ray_rgd_bf5_c7_Eti_%10",
+        "index_arome_J0": 'SWd',
+        "index_arome_J-1": 'SWd',
+        "title": "Rayonnement global descendant ",
+        "unit": "W/m²"
+        },
+
+    "RD": {"index_obs_moy":"",
+        "index_obs_1": "",
+        "index_obs_2": "",
+        "index_obs_3": "",
+        "index_cnr4": "",
+        "index_bf5": "ray_rdiff_bf5_c7_Eti_%10",
+        "index_arome_J0": "",
+        "index_arome_J-1": "",
+        "title": "Rayonnement diffus ",
+        "unit": "W/m²"
+        },
+     
+    "INSO": {"index_obs_moy":"",
+        "index_obs_1": "",
+        "index_obs_2": "",
+        "index_obs_3": "",
+        "index_cnr4": "",
+        "index_bf5": "ray_inso_bf5_c7_Eti_%10",
+        "index_arome_J0": "",
+        "index_arome_J-1": "",
+        "title": "Durée d'insolation ",
+        "unit": "h"
+        }
 }
 
 # DRIVER LECTURE DES SIMULATIONS MESONH ET SURFEX : AJOUT DE NOUVEAU RUN ICI
@@ -2322,7 +2369,190 @@ surfex_layout = html.Div([
 
 
 # -----------------------------------------------------------------------------
-#   9. GESTION DES PAGES
+#   9. Panneaux photovoltaïques
+# -----------------------------------------------------------------------------
+
+params_PV = ["PV", "RGD", "RD", "INSO"]
+models_PV = ["Obs_moy", "Obs_1", "Obs_2", "Obs_3", "Obs_cnr4", "Obs_bf5", "arome_J0", "arome_J-1"]
+
+def selection_donnees_PV(start_day, end_day):
+    
+    data_PV = {}
+    chart_PV = {}
+    graph_PV = {}
+    
+    doy1 = datetime.datetime(int(start_day.year), int(start_day.month), int(start_day.day)). strftime('%j')
+    doy2 = datetime.datetime(int(end_day.year), int(end_day.month), int(end_day.day)). strftime('%j')
+    
+    for param in params_PV:
+        if param not in data_PV:
+            data_PV[param] = {}
+        for model in models_PV:
+            if model not in data_PV[param]:
+                data_PV[param][model] = {}
+                
+                if model == "Obs_moy":
+                    id_aida = dico_params[param]["index_obs_moy"]
+                    # Read AIDA : lit tous les paramètres alors que selection de données va
+                    # lire uniquement un parametre specifique
+                    (values, time, header) = read_aida.donnees(doy1, doy2, str(start_day.year), str(end_day.year),id_aida, "Tf")
+                    data_PV[param][model]['values'] = values
+                    data_PV[param][model]['time'] = time
+                
+                elif model == "Obs_1":
+                    id_aida = dico_params[param]["index_obs_1"]
+                    # Read AIDA : lit tous les paramètres alors que selection de données va
+                    # lire uniquement un parametre specifique
+                    (values, time, header) = read_aida.donnees(doy1, doy2, str(start_day.year), str(end_day.year),id_aida, "Tf")
+                    data_PV[param][model]['values'] = values
+                    data_PV[param][model]['time'] = time
+                    
+                elif model == "Obs_2":
+                    id_aida = dico_params[param]["index_obs_2"]
+                    # Read AIDA : lit tous les paramètres alors que selection de données va
+                    # lire uniquement un parametre specifique
+                    (values, time, header) = read_aida.donnees(doy1, doy2, str(start_day.year), str(end_day.year),id_aida, "Tf")
+                    data_PV[param][model]['values'] = values
+                    data_PV[param][model]['time'] = time
+                    
+                elif model == "Obs_3":
+                    id_aida = dico_params[param]["index_obs_3"]
+                    # Read AIDA : lit tous les paramètres alors que selection de données va
+                    # lire uniquement un parametre specifique
+                    (values, time, header) = read_aida.donnees(doy1, doy2, str(start_day.year), str(end_day.year),id_aida, "Tf")
+                    data_PV[param][model]['values'] = values
+                    data_PV[param][model]['time'] = time
+                    
+                elif model == "Obs_cnr4":
+                    id_aida = dico_params[param]["index_cnr4"]
+                    # Read AIDA : lit tous les paramètres alors que selection de données va
+                    # lire uniquement un parametre specifique
+                    (values, time, header) = read_aida.donnees(doy1, doy2, str(start_day.year), str(end_day.year),id_aida, "Tf")
+                    data_PV[param][model]['values'] = values
+                    data_PV[param][model]['time'] = time
+                
+                elif model == "Obs_bf5":
+                    id_aida = dico_params[param]["index_bf5"]
+                    # Read AIDA : lit tous les paramètres alors que selection de données va
+                    # lire uniquement un parametre specifique
+                    (values, time, header) = read_aida.donnees(doy1, doy2, str(start_day.year), str(end_day.year),id_aida, "Tf")
+                    data_PV[param][model]['values'] = values
+                    data_PV[param][model]['time'] = time
+                
+                elif model == "arome_J0":
+#                        if param == "RGD":
+#                            param_arome = dico_params[param]['index_arome_J0']
+#                            donnee_arome = read_arome.donnees(start_day, end_day, 0, param_arome)
+#                            mean_arome= donnee_arome.groupby(donnee_arome.index).mean()[param_arome]
+#                            data_PV[param][model]['values'] = mean_arome[param_arome]
+#                            data_PV[param][model]['time'] = [datetime.strptime(ts_str, "%Y-%m-%d %H:%M:%S") for ts_str in mean_arome.index]
+#                        else:
+                    id_aida = dico_params[param]["index_arome_J0"] 
+                    (values, time, header) = read_aida.donnees(doy1, doy2, str(start_day.year), str(end_day.year), id_aida, "Tf")
+                    data_PV[param][model]['values'] = values
+                    data_PV[param][model]['time'] = time
+                        
+                elif model == "arome_J-1":
+#                            if param == "RGD":
+#                            param_arome = dico_params[param]['index_arome_J-1']
+#                            donnee_arome = read_arome.donnees(start_day, end_day, 12, param_arome)
+#                            mean_arome= donnee_arome.groupby(donnee_arome.index).mean()[param_arome]
+#                            data_PV[param][model]['values'] = mean_arome[param_arome]
+#                            data_PV[param][model]['time'] = [datetime.strptime(ts_str, "%Y-%m-%d %H:%M:%S") for ts_str in mean_arome.index]
+#                        else:
+                    id_aida = dico_params[param]["index_arome_J-1"] 
+                    (values, time, header) = read_aida.donnees(doy1, doy2, str(start_day.year), str(end_day.year), id_aida, "Tf")
+                    data_PV[param][model]['values'] = values
+                    data_PV[param][model]['time'] = time
+         
+        chart_PV[param] = go.Figure()
+        graph_PV[param] = dcc.Graph(id='graph_PV_'+param, figure=chart_PV[param])
+
+    return data_PV, chart_PV, graph_PV
+
+# Première extraction des données
+data_PV, chart_PV, graph_PV = selection_donnees_PV(start_day, end_day)
+
+# Callbacks
+output_PV = []
+
+for param in params_PV:
+    # Définition des Outputs c-à-d des graphs qui seront mis à jour
+    output_PV.append(Output('graph_PV_'+param, 'figure'))
+
+# Chaque Input prend en argument l'id d'une dcc.Input et la valeur qu'elle récupère
+@app.callback(output_PV, [Input('my-date-picker-range', 'start_date'),
+                          Input('my-date-picker-range', 'end_date') ])
+def update_linePV(start_day, end_day):
+    if start_day is not None:
+        start_day = date.fromisoformat(start_day)
+    if end_day is not None:
+        end_day = date.fromisoformat(end_day)
+
+    # UPDATE DES DATES APRES LE CALLBACK
+    data_PV, chart_PV, graph_PV = selection_donnees_PV(start_day, end_day)
+    
+    list_charts_PV = []
+    
+    for param in params_PV:
+        #chart = go.Figure()  # Créez un nouveau graphique pour chaque paramètre
+        chart_PV[param] = go.Figure()
+        
+        for model in models_PV:
+            if model == "Obs_moy":
+                line_param = dict(color='black')
+            elif model == "Obs_1":
+                line_param = dict(color='red')
+            elif model == "Obs_2":
+                line_param = dict(color='green')
+            elif model == "Obs_3":
+                line_param = dict(color='purple')
+            elif model == "Obs_cnr4":
+                line_param = dict(color='orange')
+            elif model == "Obs_bf5":
+                line_param = dict(color='brown')
+            elif model == "arome_J0":
+                line_param = dict(color='blue')
+            else:
+                line_param = dict(color='blue', dash='dot')
+                
+            # Ajouter une trace au graphique actuel pour chaque modèle
+            chart_PV[param].add_trace(go.Scatter(x=data_PV[param][model]['time'],
+                                                 y=data_PV[param][model]['values'], 
+                                                 line=line_param,
+                                                 name=model,
+                                                 showlegend=True)
+                                      )
+        
+        # Mettre à jour le layout du graphique avec les titres et les axes appropriés
+        chart_PV[param].update_layout(height=450, width=800,
+                                      xaxis_title="Date et heure",
+                                      yaxis_title=str(dico_params[param]['unit']),
+                                      title=dico_params[param]['title'])
+
+        list_charts_PV.append(chart_PV[param])  # Ajouter le graphique actuel à la liste
+
+    return list_charts_PV  # Retourner la liste de graphiques à la fin de la fonction
+
+# 9.3   LAYOUT
+# ---------------------------------------------------------------------------
+# Puisqu'on n'a pas la main sur la css (cf. external_stylesheets en haut), on joue sur les html.Div.
+# Ici par exemple, chaque graph est d'abord mis dans une Div dont on réduit la taille ("className="six columns"),
+# puis on met toutes ces Div dans une seule qui elle prend toute la page
+all_graphs_PV = []
+for param in params_PV:
+    all_graphs_PV.append(html.Div(graph_PV[param], className="six columns", style={'display': 'inline-block'}))
+#all_graphs_PV.append(html.Div(graph_PV_2,className="six columns",style={'display': 'inline-block'}))
+row = html.Div(children=all_graphs_PV, className="six columns")
+
+# Ces dernières lignes sont la mise en forme finale de la page
+PV_layout = html.Div([html.H1('Panneaux photovoltaïques'), row], 
+                     className="row",
+                     style={"text-align": "center", "justifyContent": "center"})
+
+
+# -----------------------------------------------------------------------------
+#   10. GESTION DES PAGES
 # -----------------------------------------------------------------------------
 
 # Update the index
@@ -2343,6 +2573,8 @@ def display_page(pathname):
         return rs_layout
     elif pathname == '/MeteopoleX/notice':
         return notice_layout
+    elif pathname=='/MeteopoleX/PV':
+        return PV_layout
     else:
         return "Error 404 URL not found"
 

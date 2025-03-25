@@ -4,8 +4,8 @@
 """
 Created on 
 Updated on 02/02/2023
-@authors: rodierq, canut, roya, capoj
-version : 1.4
+@authors: rodierq, canut, roya, capoj, nicolasc, topam
+version : 1.4.1
 """
 
 #-----------------------------------------------------------------------------------------
@@ -61,7 +61,7 @@ import shortuuid                                # generates short, pretty, unamb
 import numpy as np
 import pandas as pd                             # dataframes pour les calculs biais obs/modèle (grille temporelle différente)
 import plotly.graph_objects as go
-
+import json
 # Les packages pour faire du web 
 import flask                                    # web framework (faire du web facilement)
 import dash                                     # Python framework for building analytical web applications.
@@ -74,6 +74,8 @@ from dash.dependencies import Input, Output, State
 import read_aida
 import lecture_mesoNH
 import lecture_surfex
+# Enveloppe
+import read_arome
 
 # Les programmes appelés par navigation.py
 import mesonh
@@ -122,12 +124,12 @@ CONTENT_STYLE = {
 #   1.2 WIDGETS : Pour créer et initialiser la barre latérale gauche
 # -----------------------------------------------------------------------------
 
-# Période par défaut : hier et aujourd'hui
 today = datetime.date.today()
 tomorow = today + timedelta(days=1)
 yesterday = today - timedelta(days=1)
+# Période par défaut : hier et aujourd'hui
 end_day = today
-start_day = today - timedelta(days=1)
+start_day = yesterday
 
 # Définition de l'objet calendrier
 calendrier = html.Div([
@@ -171,6 +173,17 @@ multi_select_line_chart_ARO = dcc.Dropdown(
     value=["Aro_J0_00h", "Aro_J-1_12h"],
     multi=True,
     clearable=False
+    
+    
+)
+
+# Enveloppe (= AROME)
+multi_select_line_chart_AROME = dcc.Dropdown(
+    id="multi_select_line_chart_AROME",
+    options=[{"value": label, "label": label} for label in ["Arome_J-1_00h", "Arome_J0_00h"]],
+    value=["Arome_J0_00h"],
+    multi=True,
+    clearable=False
 )
 
 multi_select_line_chart_MNH = dcc.Dropdown(
@@ -209,13 +222,11 @@ sidebar = html.Div(
         html.H1("MeteopoleX", className="display-10"),
         html.Hr(),
         html.P("", className="lead"),
-
-
         html.H2("Menu", className="display-10"),
         html.Hr(),
         html.P("", className="lead"),
         dbc.Nav(
-            [   dbc.NavLink("Séries temporelles", href="/MeteopoleX"),
+            [   dbc.NavLink("Séries temporelles", href="/MeteopoleX/"),
                 dbc.NavLink("Biais", href="/MeteopoleX/biais"),
                 dbc.NavLink("Biais moyens", href="/MeteopoleX/biaisM"),
                 dbc.NavLink("Profils verticaux", href="/MeteopoleX/rs"),
@@ -225,17 +236,21 @@ sidebar = html.Div(
             vertical=True,
             pills=True,
         ),
-        html.P("", className="lead")
-        ,
+        html.P("", className="lead"),
         html.H2("Données", className="display-10"),
         html.Hr(),
         html.P("", className="lead" ),
         calendrier,
-        html.Div([multi_select_line_chart_obs, multi_select_line_chart_ARP, multi_select_line_chart_ARO,
-              multi_select_line_chart_MNH, multi_select_line_chart_SURFEX], className="six columns", style={"text-align": "center", "justifyContent": "center"}),
-    id_user 
+        html.Div([multi_select_line_chart_obs, 
+                  multi_select_line_chart_ARP, 
+                  multi_select_line_chart_ARO,
+                  multi_select_line_chart_AROME,
+                  multi_select_line_chart_MNH, 
+                  multi_select_line_chart_SURFEX], 
+                  className="six columns", style={"text-align": "center", "justifyContent": "center"}), 
+        id_user
     ],
-    style=SIDEBAR_STYLE,
+        style=SIDEBAR_STYLE,
 )
 
 content = html.Div(id="page-content", style=CONTENT_STYLE)
@@ -282,6 +297,16 @@ content = html.Div([
     html.Div([html.Img(src='data:image/png;base64,{}'.format(test_base64), style={'height': '50%',
        'width': '50%'})], className="twelve columns", style={"text-align": "center"}),
     html.Br(),
+    html.Br(),
+    html.Br(),
+    
+    html.H3('Visualisation des données d\'AROME'),
+    html.Span('Le modèle AROME tourne deux fois par jour, à midi et minuit, pour un ensemble de 16 points autour de la Météopole. Chacun de ces points est caractérisé par une surface spécifique (champs, forêt etc). Par exemple:'),
+    html.Span(' Arome_J0_00H Point 50% urbain 50% champs ', style={"font-weight": "bold"}),
+    html.Span('correspond à une surface représentative d\'une zone urbaine sur une moitié mais aussi de terrains de type champs sur l\'autre moitié.',
+             className="twelve columns",
+             style={"text-align": "center", "justifyContent": "center"}),
+    html.Span('Sont également représentés, en plus de quelques points associés à des surfaces caractéristiques,  la courbe correspondant à la moyenne de ces 16 points, ainsi que les étendues min-max et écart type.'),
     html.Br(),
     html.Br(),
 
@@ -380,108 +405,126 @@ dico_params = {
     "tmp_2m": {
         "index_obs": "tpr_air_bs_c1_%60_Met_%1800",
         "index_model": "tpr_air2m",
+        "index_model_arome" : "t2m", 
         "title": "Température à 2m",
         "unit": "°C"
     },
     "tmp_10m": {
         "index_obs": "tpr_air_ht_c1_%60_Met_%1800",
         "index_model": "tpr_air10m",
+        "index_model_arome": None,
         "title": "Température à 10m",
         "unit": "°C"
     },
     "hum_rel": {
         "index_obs": "hum_relcapa_bs_c1_%60_Met_%1800",
         "index_model": "hum_rel",
+        "index_model_arome": "hu2m",
         "title": "Humidité relative",
         "unit": "%"
     },
     "vent_ff10m": {
         "index_obs": "ven_ff_10mn_c1_UV_%1800",
         "index_model": "ven_ff10m",
+        "index_model_arome": "Vamp10m",
         "title": "Vent moyen à 10m",
         "unit": "m/s"
     },
     "flx_mvt": {
         "index_obs": "flx_mvt_Chb_%1800",
         "index_model": "flx_mvt",
+        "index_model_arome": None,
         "title": "Vitesse de friction",
         "unit": "m/s"
     },
     "tke": {
         "index_obs": "trb_ect_gill_tke_%1800",
         "index_model": "",
+        "index_model_arome": "tke",
         "title": "Energie cinétique turbulente",
         "unit": "m²/s²"
         },
     "flx_chaleur_sens": {
         "index_obs": "flx_hs_tson_Chb_%1800",
         "index_model": "flx_hs",
+        "index_model_arome": "sfc_sens_flx",
         "title": "Flux de chaleur sensible",
         "unit": "W/m²"
     },
     "flx_chaleur_lat": {
         "index_obs": "flx_le_Chb_%1800",
         "index_model": "flx_le",
+        "index_model_arome": "sfc_lat_flx",
         "title": "Flux de chaleur latente",
         "unit": "W/m²"
     },    
     "SWD": {
         "index_obs": "ray_rgd_cnr1_c2_%60_Met_%1800",
         "index_model": "ray_rgd",
+        "index_model_arome" : "SWd",
         "title": "Rayonnement global descendant (SW down)",
         "unit": "W/m²"
     },
     "SWU": {
         "index_obs": "ray_rgm_cnr1_c2_%60_Met_%1800",
         "index_model": "ray_rgm",
+        "index_model_arome" : "SWu",
         "title": "Rayonnement global montant (SW up)",
         "unit": "W/m²"
     },
     "LWD": {
         "index_obs": "ray_ird_cnr1_c2_%60_Met_%1800",
         "index_model": "ray_ird",
+        "index_model_arome" : "LWd",
         "title": "Rayonnement IR descendant (LW down)",
         "unit": "W/m²"
     },
     "LWU": {
         "index_obs": "ray_irm_cnr1_c2_%60_Met_%1800",
         "index_model": "ray_irm",
+        "index_model_arome": "LWu",
         "title": "Rayonnement IR montant (LW up)",
         "unit": "W/m²"
     },    
     "flx_chaleur_sol": {
         "index_obs": "flx_phi0_moy_c2_%60",
         "index_model": "",
+        "index_model_arome": None,
         "title": "Flux de conduction dans le sol",
         "unit": "W/m²"
     },
     "t_surface": {
         "index_obs": "tpr_solIR_c1_%60",
         "index_model": "",
+        "index_model_arome": None,
         "title": "Température de surface",
         "unit": "°C"
     },
     "t-1": {
         "index_obs": "tpr_sol1cm_c4_%900_Met_%1800",
         "index_model": "",
+        "index_model_arome": None,
         "title": "Température du sol à -1 cm",
         "unit": "°C"
     },
     "hu_couche1": {
         "index_obs": "hum_sol1cm_ec5_c3_%900_Met_%1800",
         "index_model": "",
+        "index_model_arome": None,
         "title": "Humidité de la première couche",
         "unit": "kg/kg"
     },
     "cumul_RR": {
         "index_obs": "prp_rr_min_c2_%60_Som_%1800",
         "index_model": "",
+        "index_model_arome": None,
         "title": "Cumuls de pluie (Obs: 30mn, ARO-ARP: 1h, MNH: 15mn)",
         "unit": "mm"
     },
     "altitude_CL": {
         "index_obs": "",
         "index_model": "",
+        "index_model_arome": "pblh",
         "title": "Altitude de la couche limite",
         "unit": "m"
     },
@@ -530,7 +573,7 @@ params = [
 #    "altitude_CL"]
 
 # Liste des modèles de dico_model 
-models = ["Gt", "Rt"]
+models = ["Gt", "Rt", "Arome"]
 #models = ["Gt", "Rt", "Tf"]
 
 # Liste des réseaux pour les modèles numériques
@@ -553,8 +596,7 @@ def selection_donnees(start_day, end_day):
     #               }
     #          }
 
-    doy1 = datetime.datetime(int(start_day.year), int(
-        start_day.month), int(start_day.day)).strftime('%j')
+    doy1 = datetime.datetime(int(start_day.year), int(start_day.month), int(start_day.day)).strftime('%j')
     doy2 = datetime.datetime(int(end_day.year), int(end_day.month), int(end_day.day)).strftime('%j')
     data = {}
     chart = {}
@@ -565,54 +607,109 @@ def selection_donnees(start_day, end_day):
             data[param] = {}
 
         # Traitement des donnees d'obs
-        model='Tf'
+        model = 'Tf'
         data[param][model] = {}
 #        if dico_params[param]["index_obs"]!="":
         id_aida = dico_params[param]["index_obs"]
         # Read AIDA : lit tous les paramètres alors que selection de données va
         # lire uniquement un parametre specifique
-        (values, time, header) = read_aida.donnees(doy1, doy2,
-            str(start_day.year), str(end_day.year), id_aida, model)
+        (values, time, header) = read_aida.donnees(doy1, doy2, str(start_day.year), str(end_day.year), id_aida, model)
+        # Liste des valeurs
         data[param][model]['values'] = values
+        # Liste des dates
         data[param][model]['time'] = time
 
         # Traitement des donnees Arome et Arpege
         for model in models:
+            
             if model not in data[param]:
                 data[param][model] = {}
+                
                 for reseau in reseaux:
+                    
                     if reseau not in data[param][model]:
                         data[param][model][reseau] = {}
-#                    if dico_params[param]["index_model"]!="":
-                    id_aida = dico_params[param]["index_model"] + "_" + reseau
-                    (values, time, header) = read_aida.donnees(
-                        doy1, doy2, str(start_day.year), str(end_day.year), id_aida, model)
-                    data[param][model][reseau]['values'] = values
-                    data[param][model][reseau]['time'] = time
+                        
+                    # Enveloppe ARO
+                    if model == "Arome":
+                        data[param][model][reseau]['values_mean'] = {}
+                        data[param][model][reseau]['values_mean_plus_std'] = {}
+                        data[param][model][reseau]['values_mean_moins_std'] = {}
+                        data[param][model][reseau]['values_max'] = {}
+                        data[param][model][reseau]['values_min'] = {}
+                        data[param][model][reseau]['values_P1'] = {}
+                        data[param][model][reseau]['values_P2'] = {}
+                        data[param][model][reseau]['values_P3'] = {}
+                        data[param][model][reseau]['values_P4'] = {}
+                        data[param][model][reseau]['time'] = {}
+                        if dico_params[param]['index_model_arome'] is not None : 
+                            param_arome = dico_params[param]['index_model_arome']
+                            donnee_arome = read_arome.donnees(start_day, end_day, reseau, param_arome)
+                            if not donnee_arome.empty:
+                                #stocke les valeurs moyennes, max, min, les points d'intérêt et le temps
+                                time_index = donnee_arome.index
+                                data[param][model][reseau]['values_mean'] =\
+                                    donnee_arome.groupby(time_index).mean()[param_arome]
+                                data[param][model][reseau]['values_mean_plus_std'] =\
+                                    donnee_arome.groupby(time_index).mean()[param_arome] + \
+                                    donnee_arome.groupby(time_index).std()[param_arome]
+                                data[param][model][reseau]['values_mean_moins_std'] =\
+                                    donnee_arome.groupby(time_index).mean()[param_arome]-\
+                                    donnee_arome.groupby(time_index).std()[param_arome]
+                                data[param][model][reseau]['values_max'] =\
+                                    donnee_arome.groupby(time_index).max()[param_arome]
+                                data[param][model][reseau]['values_min'] =\
+                                    donnee_arome.groupby(time_index).min()[param_arome]
+                                data[param][model][reseau]['values_P1'] = \
+                                    donnee_arome.loc[donnee_arome['Point']==11, param_arome]
+                                data[param][model][reseau]['values_P2'] =\
+                                    donnee_arome.loc[donnee_arome['Point']==15, param_arome]
+                                data[param][model][reseau]['values_P3'] =\
+                                    donnee_arome.loc[donnee_arome['Point']==6, param_arome]
+                                data[param][model][reseau]['values_P4'] =\
+                                    donnee_arome.loc[donnee_arome['Point']==1, param_arome]
+                                # Pour le traçage des graphes on prend l'index temporel d'un seul point
+                                data[param][model][reseau]['time'] =\
+                                    donnee_arome.loc[donnee_arome['Point']==1, param_arome].index
+                                
+                    #if param == 'flx_mvt' or param == 'flx_chaleur_sens' or param == 'flx_chaleur_lat'\
+                    # or param == 'SWD' or param == 'SWU' or param == 'LWD' or param == 'LWU':
+                        #if data[param][model][reseau]['time'] is not None:
+                            #for ts in data[param][model][reseau]['time']:
+                                #ts = ts - datetime.timedelta(minutes=30) 
 
-                    # Correction des données ARPEGE parfois datées à H-1:59 au lieu de H:00
-                    if time is not None:
-                        i = 0
-                        for ts in time:
-                            if ts.minute == 59.:
-                                time[i] = time[i] + datetime.timedelta(minutes=1)
-                                i = i + 1
-                            else:
-                                i = i + 1
+                    else:
+                        
+                        # Gt / Rt
+                        id_aida = dico_params[param]["index_model"] + "_" + reseau
+                        (values, time, header) = read_aida.donnees(doy1, doy2, str(start_day.year), str(end_day.year), 
+                                                                   id_aida, model)
+                        data[param][model][reseau]['values'] = values
+                        data[param][model][reseau]['time'] = time
 
-                    # Les flux pour AROME et ARPEGE OPER sont agrégés entre H et H+1 : On les
-                    # replace à H:30 pour davantage de réalisme (A faire aussi pour les flux simulations user MNH et SURFEX force par AROME/ARPEGE
-                    if param == 'flx_mvt' or param == 'flx_chaleur_sens' or param == 'flx_chaleur_lat' or param == 'SWD' or param == 'SWU' or param == 'LWD' or param == 'LWU':
+                        # Correction des données ARPEGE parfois datées à H-1:59 au lieu de H:00
                         if time is not None:
                             i = 0
                             for ts in time:
-                                time[i] = time[i] - datetime.timedelta(minutes=30)
+                                if ts.minute == 59.:
+                                    time[i] = time[i] + datetime.timedelta(minutes=1)
                                 i = i + 1
-
+                                
+                        # Les flux pour AROME et ARPEGE OPER sont agrégés entre H et H+1 : On les
+                        # replace à H:30 pour davantage de réalisme
+                        # faire aussi pour les flux simulations user MNH et SURFEX force par AROME/ARPEGE
+                        if param == 'flx_mvt' or param == 'flx_chaleur_sens' or param == 'flx_chaleur_lat'\
+                        or param == 'SWD' or param == 'SWU' or param == 'LWD' or param == 'LWU':
+                            if time is not None:
+                                i = 0
+                                for ts in time:
+                                    time[i] = time[i] - datetime.timedelta(minutes=30)
+                                    i = i + 1
+                 
         # Ces 2 dernières étapes sont essentielles : d'abord on effectue le tracé,
+        chart[param] = go.Figure()
         # puis on le transforme en objet html pour pouvoir l'afficher
-        chart[param] = go.Figure()  # tracé
-        graph[param] = dcc.Graph(id='graph_' + param, figure=chart[param])  # objet html
+        graph[param] = dcc.Graph(id='graph_' + param, figure=chart[param])
 
     return data, chart, graph
 
@@ -637,6 +734,7 @@ for param in params:
               [Input('multi_select_line_chart_obs', 'value'),
                Input('multi_select_line_chart_ARP', 'value'),
                Input('multi_select_line_chart_ARO', 'value'),
+               Input('multi_select_line_chart_AROME', 'value'),
                Input('multi_select_line_chart_MNH', 'value'),
                Input('multi_select_line_chart_SURFEX', 'value'),
                Input('my-date-picker-range', 'start_date'),
@@ -645,7 +743,7 @@ for param in params:
                Input('id_user3', 'value'), Input('id_user4', 'value'), Input('id_user5', 'value')
                ])
 
-def update_line(reseau1, reseau2, reseau3, reseau4, reseau5, start_day,
+def update_line(reseau1, reseau2, reseau3, reseau4, reseau5, reseau6, start_day,
                 end_day, id_user1, id_user2, id_user3, id_user4, id_user5):
     # On donne ici le nom que l'on veut aux arguments, seul l'ordre (et le
     # nombre) est important et correspond à l'ordre (et au nombre) d'Inputs du
@@ -770,15 +868,19 @@ def update_line(reseau1, reseau2, reseau3, reseau4, reseau5, start_day,
         if selection == "Arp_J-1_00h":
             reseau = reseaux[0]
             line_param = dict(color='navy', dash='dot')
+            visible_settings = True
         if selection == "Arp_J-1_12h":
             reseau = reseaux[1]
             line_param = dict(color='mediumslateblue', dash='dot')
+            visible_settings = 'legendonly'
         if selection == "Arp_J0_00h":
             reseau = reseaux[2]
             line_param = dict(color='navy')
+            visible_settings = True
         if selection == "Arp_J0_12h":
             reseau = reseaux[3]
             line_param = dict(color='mediumslateblue')
+            visible_settings = True
 
         for param in params:
             if isinstance(data[param]['Gt'][reseau]['values'], (list, np.ndarray)):
@@ -787,9 +889,10 @@ def update_line(reseau1, reseau2, reseau3, reseau4, reseau5, start_day,
                         x=data[param]['Gt'][reseau]['time'],
                         y=data[param]['Gt'][reseau]['values'].data,
                         line=line_param,
+                        visible = visible_settings,
                         name=selection))
 
-    # Pour les différents réseaux d'Arome :
+    # Arome classique
     for selection in reseau3:
         if selection == "Aro_J-1_00h":
             reseau = reseaux[0]
@@ -812,12 +915,120 @@ def update_line(reseau1, reseau2, reseau3, reseau4, reseau5, start_day,
                         y=data[param]['Rt'][reseau]['values'].data,
                         line=line_param,
                         name=selection))
+                        
+    # Arome enveloppe
+    for selection in reseau4:
+        if selection == "Arome_J-1_00h":
+            reseau = reseaux[0]
+            line_param = dict(color='blue', dash='dot')
+            color_etendue = 'rgba(0,15,226,0.2)'
+            color_etendue_2= 'rgba(0,15,226,0.5)'
+            visible_settings = True
+        if selection == "Arome_J-1_12h":
+            reseau = reseaux[1]
+            line_param = dict(color='black', dash='dot')
+            visible_settings = 'legendonly'
+            color_etendue = 'rgba(0,15,226,0.2)'
+            color_etendue_2 = 'rgba(0,15,226,0.5)'
+        if selection == "Arome_J0_00h":
+            reseau = reseaux[2]
+            line_param = dict(color='blue')
+            color_etendue = 'rgba(0,176,246,0.2)'
+            color_etendue_2= 'rgba(0,176,246,0.5)'
+            visible_settings = True
+        if selection == "Arome_J0_12h":
+            reseau = reseaux[3]
+            line_param = dict(color='black')
+            color_etendue = 'rgba(0,176,246,0.2)'
+            color_etendue_2 = 'rgba(0,176,246,0.5)'
+            visible_settings = True
+
+        for param in params:
+            if isinstance(data[param]['Arome'][reseau]['values_mean'], (pd.Series)): #courbe moyenne
+                chart[param].add_trace(
+                    go.Scatter(
+                        x=data[param]['Arome'][reseau]['time'],
+                        y=data[param]['Arome'][reseau]['values_mean'],
+                        line=line_param, visible=visible_settings,
+                        name=f"{selection}"+" moyenne"))
+                
+            if isinstance(data[param]['Arome'][reseau]['values_P1'], (pd.Series)): #courbe point plus proche
+                chart[param].add_trace(
+                    go.Scatter(
+                        x=data[param]['Arome'][reseau]['time'],
+                        y=data[param]['Arome'][reseau]['values_P1'],
+                        line=dict(color='pink'), visible = visible_settings,
+                        name=f"{selection}"+" Point le plus proche"))
+                #print('traçage times', data[param]['Arome'][reseau]['time'])
+                #print('traçage P1 values', data[param]['Arome'][reseau]['values_P1'])
+                
+            if isinstance(data[param]['Arome'][reseau]['values_P2'], (pd.Series)): #courbe point 100% urbain
+                chart[param].add_trace(
+                    go.Scatter(
+                        x=data[param]['Arome'][reseau]['time'],
+                        y=data[param]['Arome'][reseau]['values_P2'],
+                        line=dict(color='Grey'), visible = visible_settings,
+                        name=f"{selection}"+" Point 100% urbain"))
+                
+            if isinstance(data[param]['Arome'][reseau]['values_P3'], (pd.Series)): #courbe point 100% champs
+                chart[param].add_trace(
+                    go.Scatter(
+                        x=data[param]['Arome'][reseau]['time'],
+                        y=data[param]['Arome'][reseau]['values_P3'],
+                        line=dict(color='gold'), visible = visible_settings,
+                        name=f"{selection}"+" Point 100% champs"))    
+                
+            if isinstance(data[param]['Arome'][reseau]['values_P4'], (pd.Series)): #courbe point 50% urbain 50% champs
+                chart[param].add_trace(
+                    go.Scatter(
+                        x=data[param]['Arome'][reseau]['time'],
+                        y=data[param]['Arome'][reseau]['values_P4'],
+                        line=dict(color='Brown'), visible = visible_settings,
+                        name=f"{selection}"+" Point 50% urbain 50% champs"))   
+                        
+            if isinstance(data[param]['Arome'][reseau]['values_mean_plus_std'], (pd.Series)): #étendue moyenne +écart-type
+                chart[param].add_trace(
+                    go.Scatter(
+                        x=data[param]['Arome'][reseau]['time'],
+                        y=data[param]['Arome'][reseau]['values_mean_plus_std'],
+                        line=dict(color='rgba(0,0,0,0)'),
+                        showlegend=False, 
+                        visible = visible_settings,
+                        name=f"{selection}"+" +écart-type"))
+                chart[param].add_trace(
+                    go.Scatter(
+                        x=data[param]['Arome'][reseau]['time'],
+                        y=data[param]['Arome'][reseau]['values_mean_moins_std'], 
+                        line = dict(color='rgba(0,0,0,0)'),
+                        fill='tonexty', 
+                        fillcolor=color_etendue_2, visible = visible_settings,
+                        name=f"{selection}"+" enveloppe ecart-type "))
+              #ATTENTION problème affichage étendue J-1 
+                        
+            if isinstance(data[param]['Arome'][reseau]['values_max'], (pd.Series)): #étendue min/max
+                chart[param].add_trace(
+                    go.Scatter(
+                        x=data[param]['Arome'][reseau]['time'],
+                        y=data[param]['Arome'][reseau]['values_max'],
+                        line=dict(color='rgba(0,0,0,0)'),
+                        showlegend=False, 
+                        visible = visible_settings,
+                        name=f"{selection}"+" max"))
+                chart[param].add_trace(
+                    go.Scatter(
+                        x=data[param]['Arome'][reseau]['time'],
+                        y=data[param]['Arome'][reseau]['values_min'], 
+                        line = dict(color='rgba(0,0,0,0)'),
+                        fill='tonexty', 
+                        fillcolor=color_etendue, visible = visible_settings,
+                        name=f"{selection}"+" min et max"))
+                #ATTENTION problème affichage étendue J-1 
 
     # Pour les courbes de MésoNH :
     # A la différence des 3 réseaux précédents où l'on récupère les données sur la période choisie à chaque nouvelle période grâce à AIDA, MésoNH et SURFEX sont stockés par dossier nommé à la date de run.
     # Il faut donc parcourir tous les jours entre le start_day et le end_day et stocker les informations lues.
     courbe_affichee = []
-    for selection in reseau4:
+    for selection in reseau5:
         nb_jour = (end_day - start_day).days
         for i in range(nb_jour + 1):
             day = start_day + timedelta(days=i)
@@ -853,7 +1064,7 @@ def update_line(reseau1, reseau2, reseau3, reseau4, reseau5, start_day,
 
     # Pour les courbes de Surfex :
     courbe_affichee_surfex = []
-    for selection in reseau5:
+    for selection in reseau6:
         nb_jour = (end_day - start_day).days
         for i in range(nb_jour + 1):
             day = start_day + timedelta(days=i)
@@ -916,6 +1127,8 @@ obs_modeles_layout = html.Div(
 # -----------------------------------------------------------------------------
 
 def calcul_biais(start_day, end_day):
+    
+    models=['Tf', 'Rt', 'Gt']
 
     doy1 = datetime.datetime(int(start_day.year), int(
         start_day.month), int(start_day.day)).strftime('%j')
@@ -1440,12 +1653,17 @@ biais_layout = html.Div([
 #print(biais['tmp_2m']['Rt']['J0:00_%3600'])
 
 def biais_moyen(start_day, end_day):
+    
+    models=['Tf', 'Rt', 'Gt']
    
     biais, chartB, graphB = calcul_biais(start_day, end_day)
     # Initialisation du DataFrame final vide
     DF = []
     # Axe des temps: on prend la résolution des obs
-    DF = pd.DataFrame(DF, index=list(data['tmp_2m']['Tf']['time']))
+    try:
+        DF = pd.DataFrame(DF, index=list(data['tmp_2m']['Tf']['time']))
+    except TypeError:
+        pass
 
     for param in params:
         for model in models:
@@ -1494,12 +1712,18 @@ def biais_moyen(start_day, end_day):
                        pass
 
             # Concatenation des biais moyen mesonh au DF avec les autres modèles
-            DF = pd.concat([DF, df_mnh], axis=1)
+            try:
+                DF = pd.concat([DF, df_mnh], axis=1)
+            except TypeError:
+                pass
 
    # Conversion colonnes type 'object' en type 'numeric'
    # Sinon le 'groupby' enlève les colonnes 'object'
-    cols = DF.columns[DF.dtypes.eq('object')]
-    DF[cols] = DF[cols].astype('float')
+    try:
+        cols = DF.columns[DF.dtypes.eq('object')]
+        DF[cols] = DF[cols].astype('float')
+    except AttributeError:
+        pass
 
     # Dataframe regroupé par heures
     try: #If missing data at first call 

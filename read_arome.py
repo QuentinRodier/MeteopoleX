@@ -21,10 +21,11 @@ def donnees(start_day, end_day, reseau, param):
     end_day = dt.datetime(end_day.year, end_day.month, end_day.day)
     
     foldername = '/cnrm/ktrm/manip/METEOPOLEX/AROME/Toulouse/'
-    #foldername = '/home/manip/data/'
+    #foldername = '/home/manip/data/aro_toulouse/'
 
-    # Pas de réseau 12
-    reseau = '00'
+    #reseau = '00'
+    reseau_hr = reseau[-8:-6] # 00 ou 12
+    reseau_j = reseau[0:2]    # J- ou J0
     
     # Dataset qui contiendra les données du paramètre d'entrée
     data_var_alldomain = pd.DataFrame([])
@@ -36,16 +37,29 @@ def donnees(start_day, end_day, reseau, param):
     
     for date in dates_list:
         
+        # Si réseau J-1 on prend la veille
+        if reseau_j == 'J-':
+            date -= dt.timedelta(days=1)
+            # Heures à afficher
+            if reseau_hr == '00':
+                hour_delay = 24
+            else:
+                hour_delay = 12
+        else:
+            hour_delay = 0
+        
         # AAAAMM
         anneemois = str(date.year)+f"{int(date.month):02}"
         
+        # Nombre d'heures à afficher : 36 pour le dernier jour
         if day == days_nr:
             hours = 36
         else:
             hours = 24
-            
+
         # 16 premiers points = Météopole
-        files_list = np.sort(glob.glob(foldername+anneemois+'/miniAROME-L90_point_*_'+date.strftime('%Y%m%d')+'00.nc'))[:16]
+        files_list = np.sort(glob.glob(foldername + anneemois + '/miniAROME-L90_point_*_' +
+                             date.strftime('%Y%m%d') + reseau_hr +'.nc'))[:16]
 
         for j,fichier in enumerate(files_list):
             
@@ -85,7 +99,7 @@ def donnees(start_day, end_day, reseau, param):
 
             #print(list_date, fichier, temp_var_allhours[param])
             # On garde 24 heures, sauf pour le dernier jour de la période (36 heures)
-            var_allhours[param] = temp_var_allhours[param][:hours]
+            var_allhours[param] = temp_var_allhours[param][hour_delay:hours+hour_delay]
             var_allhours['Point'] = point
             # Toutes les données dans un seul dataframe
             data_var_alldomain = pd.concat([data_var_alldomain, var_allhours])

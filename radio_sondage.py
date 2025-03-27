@@ -73,43 +73,43 @@ def radio_sondage(day, models, params_rs, heures, heures_aroarp):
 
     for model in ['ARP', 'ARO']:
         
-            if model == 'ARP':
-                try:
-                    f = nc.Dataset('/cnrm/proc/bazile/NetCdf/Toulouse/' + yyyymm +
-                               '/Arpege-oper-L105_Toulouse_' + today_str + '00.nc')
-                except:
-                    print("Fichier NC ARP manquant ou incorrect")
-                    continue 
+        if model == 'ARP':
+            try:
+                f = nc.Dataset('/cnrm/proc/bazile/NetCdf/Toulouse/' + yyyymm +
+                           '/Arpege-oper-L105_Toulouse_' + today_str + '00.nc')
+            except:
+                print("Fichier NC ARP manquant ou incorrect")
+                continue 
 
-            elif model == 'ARO':
+        elif model == 'ARO':
+            
+            try:
+                f = nc.Dataset('/cnrm/ktrm/manip/METEOPOLEX/AROME/Toulouse/' +
+                           yyyymm + '/netcdf_tlse.tar.arome_' + today_str + '.netcdf')
+            except:
+                print("Fichier NC ARO manquant ou incorrect")
+                continue 
+
+        if model not in data_rs:
+            data_rs[model] = {}
+
+        if 'level' not in data_rs[model]:
+            data_rs[model]['level'] = f['height_h'][1, ::-1]
+            
+            for heure in heures_aroarp:
                 
-                try:
-                    f = nc.Dataset('/cnrm/ktrm/manip/METEOPOLEX/AROME/Toulouse/' +
-                               yyyymm + '/netcdf_tlse.tar.arome_' + today_str + '.netcdf')
-                except:
-                    print("Fichier NC ARO manquant ou incorrect")
-                    continue 
-
-            if model not in data_rs:
-                data_rs[model] = {}
-
-            if 'level' not in data_rs[model]:
-                    data_rs[model]['level'] = f['height_h'][1, ::-1]
+                if heure not in data_rs[model]:
+                    data_rs[model][heure] = {}
                 
-                for heure in heures_aroarp:
-                    
-                    if heure not in data_rs[model]:
-                        data_rs[model][heure] = {}
-                    
-                    for param in params_rs:
-                        if param not in data_rs[model][heure]:
-                            data_rs[model][heure][param] = {}
-                        if param == "Température":
-                            data_rs[model][heure][param] = (f['t'][heures_aroarp[heure]['num_val'], ::-1] - 273.15)
-                        if param == "Humidité relative":
-                            data_rs[model][heure][param] = (f['hr'][heures_aroarp[heure]['num_val'], ::-1] * 100)
-                        if param == "Vent":
-                            data_rs[model][heure][param] = f['Vamp'][heures_aroarp[heure]['num_val'], ::-1]
+                for param in params_rs:
+                    if param not in data_rs[model][heure]:
+                        data_rs[model][heure][param] = {}
+                    if param == "Température":
+                        data_rs[model][heure][param] = (f['t'][heures_aroarp[heure]['num_val'], ::-1] - 273.15)
+                    if param == "Humidité relative":
+                        data_rs[model][heure][param] = (f['hr'][heures_aroarp[heure]['num_val'], ::-1] * 100)
+                    if param == "Vent":
+                        data_rs[model][heure][param] = f['Vamp'][heures_aroarp[heure]['num_val'], ::-1]
 
 
 # Observations AMDAR

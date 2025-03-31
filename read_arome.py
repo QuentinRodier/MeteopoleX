@@ -32,8 +32,9 @@ def donnees(start_day, end_day, reseau, param):
             hour_delay = 24
         else:
             hour_delay = 12
-     else:
+    else:
         hour_delay = 0
+        day_delay = 0
         
     # Si réseau de 12UTC, on se place dans le bon repertoire
     if reseau_hr == '12':

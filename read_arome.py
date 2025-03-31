@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 """
 Created on Mon Oct  9 17:05:41 2023
-
 @author: nicolasc
 """
 import matplotlib.dates as mdates
@@ -12,8 +11,6 @@ import glob
 import numpy as np
 import xarray as xr
 
-
-###Lecture des données
 
 def donnees(start_day, end_day, reseau, param):
     
@@ -27,10 +24,29 @@ def donnees(start_day, end_day, reseau, param):
     reseau_hr = reseau[-8:-6] # 00 ou 12
     reseau_j = reseau[0:2]    # J- ou J0
     
+    # Si réseau J-1 on prend le modèle de la veille
+    if reseau_j == 'J-':
+        day_delay = 1
+        # Heures à afficher
+        if reseau_hr == '00':
+            hour_delay = 24
+        else:
+            hour_delay = 12
+     else:
+        hour_delay = 0
+        
+    # Si réseau de 12UTC, on se place dans le bon repertoire
+    if reseau_hr == '12':
+        srep = '/12'
+    else:
+        srep = '/'
+       
     # Dataset qui contiendra les données du paramètre d'entrée
     data_var_alldomain = pd.DataFrame([])
     
+    # Ensemble des jours de lé période
     dates_list = mdates.num2date(mdates.drange(start_day,end_day,dt.timedelta(days=1)), tz=None)
+    # Nombre de jours
     days_nr = len(dates_list)
     #print(dates_list)
     day = 1
@@ -38,16 +54,8 @@ def donnees(start_day, end_day, reseau, param):
     for date in dates_list:
         
         # Si réseau J-1 on prend la veille
-        if reseau_j == 'J-':
-            date -= dt.timedelta(days=1)
-            # Heures à afficher
-            if reseau_hr == '00':
-                hour_delay = 24
-            else:
-                hour_delay = 12
-        else:
-            hour_delay = 0
-        
+        date -= dt.timedelta(days=day_delay)
+           
         # AAAAMM
         anneemois = str(date.year)+f"{int(date.month):02}"
         
@@ -56,7 +64,7 @@ def donnees(start_day, end_day, reseau, param):
             hours = 36
         else:
             hours = 24
-
+        
         # 16 premiers points = Météopole
         files_list = np.sort(glob.glob(foldername + anneemois + '/miniAROME-L90_point_*_' +
                              date.strftime('%Y%m%d') + reseau_hr +'.nc'))[:16]

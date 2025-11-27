@@ -29,9 +29,12 @@ import shortuuid
 
 import glob
 
-path = '/home/manip/MeteopoleX/models/MNH-V5-5-0/MY_RUN/OPER/'
-path_user = '/home/manip/MeteopoleX/models/MNH-V5-5-0/MY_RUN/USER/'
-path_output = '/home/manip/MeteopoleX/models/runs/OUTPUT/MESONH/'
+#path = '/home/manip/MeteopoleX/models/MNH-V5-5-0/MY_RUN/OPER/'
+path = '/cnrm/gmei/data/METEOPOLEX/models/MNH-V5-5-0/MY_RUN/OPER/'
+#path_user = '/home/manip/MeteopoleX/models/MNH-V5-5-0/MY_RUN/USER/'
+path_user = '/cnrm/gmei/data/METEOPOLEX/models/MNH-V5-5-0/MY_RUN/USER/'
+#path_output = '/home/manip/MeteopoleX/models/runs/OUTPUT/MESONH/'
+path_output = '/cnrm/gmei/data/METEOPOLEX/models/runs/OUTPUT/MESONH/'
 
 
 class MesoNH:

@@ -30,7 +30,8 @@ def surfex(start_day, end_day, models, params):
             data_surfex[today_str] = {}
             for model in models:
                 try:
-                    f = nc.Dataset('/home/manip/MeteopoleX/models/runs/OUTPUT/SURFEX/' + today_str + '/SURFEX_' + today_str + '_' + model + '.nc')
+                    #f = nc.Dataset('/home/manip/MeteopoleX/models/runs/OUTPUT/SURFEX/' + today_str + '/SURFEX_' + today_str + '_' + model + '.nc')
+                    f = nc.Dataset('/cnrm/gmei/data/METEOPOLEX/models/runs/OUTPUT/SURFEX/' + today_str + '/SURFEX_' + today_str + '_' + model + '.nc')
                 # ou bien /home/manip/METEOPOLEX/OUTPUT/SURFEX
                     if 'time' not in data_surfex[today_str]:
                         data_surfex[today_str]['time'] = {}
@@ -104,7 +105,8 @@ def surfex_user(start_day, end_day, id_user, params):
             try:
                 
                 # SFX-ARO only ??
-                f = nc.Dataset('/home/manip/MeteopoleX/models/runs/OUTPUT/SURFEX/' + str(today_str) + '/SURFEX_'+ str(id_user) +"_"+ str(today_str) + '_Rt.nc')
+                #f = nc.Dataset('/home/manip/MeteopoleX/models/runs/OUTPUT/SURFEX/' + str(today_str) + '/SURFEX_'+ str(id_user) +"_"+ str(today_str) + '_Rt.nc')
+                f = nc.Dataset('/cnrm/gmei/data/METEOPOLEX/models/runs/OUTPUT/SURFEX/' + str(today_str) + '/SURFEX_'+ str(id_user) +"_"+ str(today_str) + '_Rt.nc')
           
             
                 #print("LECTURE OK")
@@ -161,7 +163,8 @@ def surfex_user(start_day, end_day, id_user, params):
             try:
                 
                 # SFX-OBS only ??
-                f = nc.Dataset('/home/manip/MeteopoleX/models/runs/OUTPUT/SURFEX/' + str(today_str) + '/SURFEX_'+ str(id_user) +"_"+ str(today_str) + '_Tf.nc')
+                #f = nc.Dataset('/home/manip/MeteopoleX/models/runs/OUTPUT/SURFEX/' + str(today_str) + '/SURFEX_'+ str(id_user) +"_"+ str(today_str) + '_Tf.nc')
+                f = nc.Dataset('/cnrm/gmei/data/METEOPOLEX/models/runs/OUTPUT/SURFEX/' + str(today_str) + '/SURFEX_'+ str(id_user) +"_"+ str(today_str) + '_Tf.nc')
           
             
                 #print("LECTURE OK")

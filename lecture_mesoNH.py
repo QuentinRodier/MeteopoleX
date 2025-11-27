@@ -29,7 +29,8 @@ def mesoNH(start_day, end_day, models, params):
             for model in models:
                 try:
                     f = nc.Dataset(
-                        '/home/manip/MeteopoleX/models/runs/OUTPUT/MESONH/OPER/' +
+                        #'/home/manip/MeteopoleX/models/runs/OUTPUT/MESONH/OPER/' +
+                        '/cnrm/gmei/data/METEOPOLEX/models/runs/OUTPUT/MESONH/OPER/' +
                         today_str +
                         '00/MESONH_' +
                         model +
@@ -37,7 +38,8 @@ def mesoNH(start_day, end_day, models, params):
                         today_str +
                         '00.000.nc')
                     f2 = nc.Dataset(
-                        '/home/manip/MeteopoleX/models/runs/OUTPUT/MESONH/OPER/' +
+                        #'/home/manip/MeteopoleX/models/runs/OUTPUT/MESONH/OPER/' +
+                        '/cnrm/gmei/data/METEOPOLEX/models/runs/OUTPUT/MESONH/OPER/' +
                         today_str +
                         '00/MESONH_' +
                         model +
@@ -148,7 +150,8 @@ def mesoNH_user(start_day, end_day, id_user, params):
             data_user[today_str] = {}
             try:
                 f = nc.Dataset(
-                    '/home/manip/MeteopoleX/models/runs/OUTPUT/MESONH/USER/' +
+                    #'/home/manip/MeteopoleX/models/runs/OUTPUT/MESONH/USER/' +
+                    '/cnrm/gmei/data/METEOPOLEX/models/runs/OUTPUT/MESONH/USER/' +
                     today_str +
                     '00/MESONH_Rt_' +
                     today_str +
@@ -156,7 +159,8 @@ def mesoNH_user(start_day, end_day, id_user, params):
                     id_user +
                     '.000.nc')
                 f2 = nc.Dataset(
-                    '/home/manip/MeteopoleX/models/runs/OUTPUT/MESONH/USER/' +
+                    #'/home/manip/MeteopoleX/models/runs/OUTPUT/MESONH/USER/' +
+                    '/cnrm/gmei/data/METEOPOLEX/models/runs/OUTPUT/MESONH/USER/' +
                     today_str +
                     '00/MESONH_Rt_' +
                     today_str +

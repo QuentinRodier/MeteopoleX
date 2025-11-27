@@ -93,13 +93,13 @@ import radio_sondage
 # external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 # ou bien https://intra.cnrm.meteo.fr/MeteopoleX/css.css
 #external_stylesheets = ['https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css']
-#external_stylesheets = ['/assets/bootstrap.min.css']
+external_stylesheets = ['assets/bootstrap.min.css']
 
-#app = dash.Dash(__name__, external_stylesheets=external_stylesheets, suppress_callback_exceptions=True, title='MeteopoleX',
-app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP], suppress_callback_exceptions=True, title='MeteopoleX',
+app = dash.Dash(__name__, external_stylesheets=external_stylesheets, suppress_callback_exceptions=True, title='MeteopoleX',
+#app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP], suppress_callback_exceptions=True, title='MeteopoleX',
                 requests_pathname_prefix='/MeteopoleX/',
                 routes_pathname_prefix='/')
-#app.css.config.serve_locally = True
+app.css.config.serve_locally = True
 app.scripts.config.serve_locally = True
 server = app.server
 
@@ -1785,7 +1785,10 @@ def biais_moyen(start_day, end_day):
     try: #If missing data at first call 
        DF_CyDi = DF.groupby(DF.index.hour).mean()
     except:
-       DF_CyDi = pd.DataFrame(DF, index=DF.index)
+        try:
+           DF_CyDi = pd.DataFrame(DF, index=DF.index)
+        except:
+            DF_CyDi = pd.DataFrame()
 
     # Création du dictionnaire associé aux biais moyens + graphes html
     chartM = {}

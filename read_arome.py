@@ -38,15 +38,16 @@ def donnees(start_day, end_day, reseau, param):
         
     # Si réseau de 12UTC, on se place dans le bon repertoire
     if reseau_hr == '12':
-        srep = '/12'
+        srep = '/12/'
     else:
         srep = '/'
        
     # Dataset qui contiendra les données du paramètre d'entrée
     data_var_alldomain = pd.DataFrame([])
     
-    # Ensemble des jours de lé période
+    # Ensemble des jours de la période
     dates_list = mdates.num2date(mdates.drange(start_day,end_day,dt.timedelta(days=1)), tz=None)
+    #dates_list = mdates.num2date(mdates.drange(start_day,end_day+dt.timedelta(1),dt.timedelta(days=1)), tz=None)
     # Nombre de jours
     days_nr = len(dates_list)
     #print(dates_list)
@@ -67,7 +68,7 @@ def donnees(start_day, end_day, reseau, param):
             hours = 24
         
         # 16 premiers points = Météopole
-        files_list = np.sort(glob.glob(foldername + anneemois + '/miniAROME-L90_point_*_' +
+        files_list = np.sort(glob.glob(foldername + anneemois + srep + 'miniAROME-L90_point_*_' +
                              date.strftime('%Y%m%d') + reseau_hr +'.nc'))[:16]
 
         for j,fichier in enumerate(files_list):
@@ -130,6 +131,6 @@ def donnees(start_day, end_day, reseau, param):
    # renvoie un dataframe pandas
     return data_var_alldomain
 
-#datatest = donnees(dt.datetime(2024, 9, 3),dt.datetime(2024, 9, 5), '00', 't2m')
+#datatest = donnees(dt.datetime(2026, 1, 6),dt.datetime(2026, 1, 7), 'J0:12_%3600', 't2m')
 #print(datatest)
 #print(datatest.loc[datatest['Point']==15])

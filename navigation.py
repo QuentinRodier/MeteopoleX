@@ -84,29 +84,31 @@ import mesonh
 import radio_sondage
 
 # -----------------------------------------------------------------------------
-#   1. CREATION App Object 
+#   1. CREATION App Object
 # -----------------------------------------------------------------------------
 
-#   1.1 CREATION CSS : ce qui va permettre la mise en page
+# 1.1 CREATION CSS
 # -----------------------------------------------------------------------------
 
-# external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
-# ou bien https://intra.cnrm.meteo.fr/MeteopoleX/css.css
-#external_stylesheets = ['https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css']
 external_stylesheets = ['assets/bootstrap.min.css']
 
-app = dash.Dash(__name__, external_stylesheets=external_stylesheets, suppress_callback_exceptions=True, title='MeteopoleX',
-#app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP], suppress_callback_exceptions=True, title='MeteopoleX',
-                requests_pathname_prefix='/MeteopoleX/',
-                routes_pathname_prefix='/')
+app = dash.Dash(
+    __name__,
+    external_stylesheets=external_stylesheets,
+    suppress_callback_exceptions=True,
+    title='MeteopoleX',
+    requests_pathname_prefix='/MeteopoleX/',
+    routes_pathname_prefix='/'
+)
+
 app.css.config.serve_locally = True
 app.scripts.config.serve_locally = True
 server = app.server
 
-# app.config.update({
-#                'requests_pathname_prefix': '/MeteopoleX/',
-#                'routes_pathname_prefix': '/'
-#                })
+
+# -----------------------------------------------------------------------------
+#   Styles globaux
+# -----------------------------------------------------------------------------
 
 SIDEBAR_STYLE = {
     "position": "fixed",
@@ -125,148 +127,160 @@ CONTENT_STYLE = {
     "padding": "2rem 1rem",
 }
 
-#   1.2 WIDGETS : Pour créer et initialiser la barre latérale gauche
+
+# -----------------------------------------------------------------------------
+#   1.2 WIDGETS
 # -----------------------------------------------------------------------------
 
 today = datetime.date.today()
-tomorow = today + timedelta(days=1)
+tomorrow = today + timedelta(days=1)
 yesterday = today - timedelta(days=1)
 
-# Période par défaut : hier et aujourd'hui
-end_day = today
+# Période par défaut
 start_day = yesterday
-#!# Ajout enveloppe
-#doy1 = datetime.datetime(int(start_day.year), int(start_day.month), int(start_day.day)).strftime('%j')
-#doy2 = datetime.datetime(int(end_day.year), int(end_day.month), int(end_day.day)).strftime('%j')
+end_day = today
 
 
-# Définition de l'objet calendrier
-calendrier = html.Div([
+# --- Calendrier ---------------------------------------------------------------
+
+date_picker = html.Div([
     dcc.DatePickerRange(
         id='my-date-picker-range',
         first_day_of_week=1,
         min_date_allowed=date(2015, 1, 1),
-        # Il faut mettre demain pour que la date max soit aujourd'hui
-        max_date_allowed=date(tomorow.year, tomorow.month, tomorow.day),
+        max_date_allowed=date(tomorrow.year, tomorrow.month, tomorrow.day),
         display_format="DD/MM/YYYY",
         initial_visible_month=date(today.year, today.month, today.day),
         start_date=yesterday,
         end_date=today,
-        minimum_nights=0  # Durée minimum sélectionnable: si =0, durée min=1j c-à-d start_date=end_date
-    ), html.Div(id='output-container-date-picker-range')])
+        minimum_nights=0
+    ),
+    html.Div(id='output-container-date-picker-range')
+])
 
-# Le dcc.Dropdown est un objet dash qui permet l'affichage des options
-# sélectionnables quand on clique dessus, puis la sélection d'une ou plusieurs options.
-multi_select_line_chart_obs = dcc.Dropdown(
+
+# --- Dropdowns ----------------------------------------------------------------
+
+dropdown_obs = dcc.Dropdown(
     id="multi_select_line_chart_obs",
-    options=[{"value": label, "label": label} for label in ["Obs"]],
-    # Valeur qui s'affiche par défaut (si pas dans la liste des options alors rien n'est affiché)
+    options=[{"value": "Obs", "label": "Obs"}],
     value=["Obs"],
-    multi=True,  # Possibilité d'en choisir plusieurs
+    multi=True,
     clearable=False
 )
 
-multi_select_line_chart_ARP = dcc.Dropdown(
+dropdown_arp = dcc.Dropdown(
     id="multi_select_line_chart_ARP",
-    options=[{"value": label, "label": label}
-             for label in ["Arp_J-1_00h", "Arp_J-1_12h", "Arp_J0_00h", "Arp_J0_12h", ]],
+    options=[{"value": label, "label": label} for label in
+             ["Arp_J-1_00h", "Arp_J-1_12h", "Arp_J0_00h", "Arp_J0_12h"]],
     value=["Arp_J0_00h", "Arp_J-1_12h"],
     multi=True,
     clearable=False
 )
 
-multi_select_line_chart_ARO = dcc.Dropdown(
+dropdown_aro = dcc.Dropdown(
     id="multi_select_line_chart_ARO",
-    options=[{"value": label, "label": label}
-             for label in ["Aro_J-1_00h", "Aro_J-1_12h", "Aro_J0_00h", "Aro_J0_12h"]],
+    options=[{"value": label, "label": label} for label in
+             ["Aro_J-1_00h", "Aro_J-1_12h", "Aro_J0_00h", "Aro_J0_12h"]],
     value=["Aro_J0_00h", "Aro_J-1_12h"],
     multi=True,
     clearable=False
 )
 
-# Enveloppe ARO
-multi_select_line_chart_AROME = dcc.Dropdown(
+dropdown_arome = dcc.Dropdown(
     id="multi_select_line_chart_AROME",
-    options=[{"value": label, "label": label} 
-             for label in ["Arome_J-1_00h", "Arome_J-1_12h", "Arome_J0_00h", "Arome_J0_12h"]],
-    value=["Arome_J0_00h","Arome_J-1_12h"],
+    options=[{"value": label, "label": label} for label in
+             ["Arome_J-1_00h", "Arome_J-1_12h", "Arome_J0_00h", "Arome_J0_12h"]],
+    value=["Arome_J0_00h", "Arome_J-1_12h"],
     multi=True,
     clearable=False
 )
 
-multi_select_line_chart_MNH = dcc.Dropdown(
+dropdown_mnh = dcc.Dropdown(
     id="multi_select_line_chart_MNH",
-    options=[{"value": label, "label": label}
-             for label in ["MésoNH_Arp", "MésoNH_Aro", "MésoNH_Obs"]],
+    options=[{"value": label, "label": label} for label in
+             ["MésoNH_Arp", "MésoNH_Aro", "MésoNH_Obs"]],
     value=["MésoNH_Arp", "MésoNH_Aro"],
     multi=True,
     clearable=False
 )
 
-multi_select_line_chart_SURFEX = dcc.Dropdown(
+dropdown_surfex = dcc.Dropdown(
     id="multi_select_line_chart_SURFEX",
-    options=[{"value": label, "label": label}
-             for label in ["SURFEX_Arp", "SURFEX_Aro", "SURFEX_Obs"]],
+    options=[{"value": label, "label": label} for label in
+             ["SURFEX_Arp", "SURFEX_Aro", "SURFEX_Obs"]],
     value=["SURFEX_Arp"],
     multi=True,
     clearable=False
 )
 
-# Les dcc.Input sont des carrés où l'utilisateur peut rentrer des info :
-# ici type = 'text' donc du texte
-# Attention : dcc.Input != Input (voir plus bas)
-id_user = html.Div([
-    dcc.Input(id='id_user1', type='text', placeholder='Rejeu ID',style={'width':'50%'}),
-    dcc.Input(id='id_user2', type='text', placeholder='Rejeu ID',style={'width':'50%'}),
-    dcc.Input(id='id_user3', type='text', placeholder='Rejeu ID',style={'width':'50%'}),
-    dcc.Input(id='id_user4', type='text', placeholder='Rejeu ID',style={'width':'50%'}),
-    dcc.Input(id='id_user5', type='text', placeholder='Rejeu ID',style={'width':'50%'})])
 
-#   1.3 LAYOUT : Pour mettre en forme la page avec les widgets et les styles définis plus haut
+# --- Inputs utilisateur (rejeu) -----------------------------------------------
+
+user_id_inputs = html.Div([
+    dcc.Input(id=f'id_user{i}', type='text', placeholder='Rejeu ID',
+              style={'width': '50%'})
+    for i in range(1, 6)
+])
+
+
+# -----------------------------------------------------------------------------
+#   1.3 LAYOUT
 # -----------------------------------------------------------------------------
 
 sidebar = html.Div(
     [
         html.H1("MeteopoleX", className="display-10"),
         html.Hr(),
-        html.P("", className="lead"),
-
 
         html.H2("Menu", className="display-10"),
         html.Hr(),
-        html.P("", className="lead"),
+
         dbc.Nav(
-            [   dbc.NavLink("Séries temporelles", href="/MeteopoleX/"),
+            [
+                dbc.NavLink("Séries temporelles", href="/MeteopoleX/"),
                 dbc.NavLink("Biais", href="/MeteopoleX/biais"),
                 dbc.NavLink("Biais moyens", href="/MeteopoleX/biaisM"),
                 dbc.NavLink("Profils verticaux", href="/MeteopoleX/rs"),
-                dbc.NavLink('Rejeu MésoNH', href="/MeteopoleX/mesoNH"),
-                dbc.NavLink('Rejeu SURFEX', href="/MeteopoleX/surfex"),
-                dbc.NavLink('Panneaux Photovoltaïques', href="/MeteopoleX/PV"),
-                dbc.NavLink('Notice', href="/MeteopoleX/notice")  ],
+                dbc.NavLink("Rejeu MésoNH", href="/MeteopoleX/mesoNH"),
+                dbc.NavLink("Rejeu SURFEX", href="/MeteopoleX/surfex"),
+                dbc.NavLink("Panneaux Photovoltaïques", href="/MeteopoleX/PV"),
+                dbc.NavLink("Notice", href="/MeteopoleX/notice"),
+            ],
             vertical=True,
             pills=True,
         ),
-        html.P("", className="lead")
-        ,
+
+        html.Hr(),
         html.H2("Données", className="display-10"),
         html.Hr(),
-        html.P("", className="lead" ),
-        calendrier,
-        html.Div([multi_select_line_chart_obs, multi_select_line_chart_ARP,
-                  multi_select_line_chart_ARO,
-                  multi_select_line_chart_AROME,	#!#Ajout enveloppe
-                  multi_select_line_chart_MNH, multi_select_line_chart_SURFEX],
-                 className="six columns", style={"text-align": "center", "justifyContent": "center"}),
-    id_user 
+
+        date_picker,
+
+        html.Div(
+            [
+                dropdown_obs,
+                dropdown_arp,
+                dropdown_aro,
+                dropdown_arome,
+                dropdown_mnh,
+                dropdown_surfex,
+            ],
+            className="six columns",
+            style={"text-align": "center", "justifyContent": "center"},
+        ),
+
+        user_id_inputs,
     ],
     style=SIDEBAR_STYLE,
 )
 
 content = html.Div(id="page-content", style=CONTENT_STYLE)
+
 app.layout = html.Div([
     dcc.Location(id='url', refresh=False),
-    sidebar,content
+    sidebar,
+    content
 ])
 
 
@@ -274,134 +288,239 @@ app.layout = html.Div([
 #   2. NOTICE
 # -----------------------------------------------------------------------------
 
-# Ces 2 lignes mettent en forme l'image 'fig1.png'
-test_png = 'fig1.png'
-test_base64 = base64.b64encode(open(test_png, 'rb').read()).decode('ascii')
+# Chargement de l'image explicative
+notice_image_path = 'fig1.png'
+notice_image_base64 = base64.b64encode(
+    open(notice_image_path, 'rb').read()
+).decode('ascii')
 
-content = html.Div([
 
-    html.H3('Abréviations pour les tracés'),
-    html.Br(),
+notice_content = html.Div(
+    [
 
-    html.Span('Les différentes courbes de la page "Séries temporelles" sont nommées de la manière suivante :'),
-    html.Div([html.Span('"Nom-du-modèle_date-de-run"', style={"font-weight": "bold"})],
-        className="twelve columns", style={"text-align": "center","justifyContent": "center"}),
-    html.Br(),
-    html.Span('Par exemple, on se place le 15 avril : la courbe affichée ce jour là nommée "Aro_J-1_12h" est le run d\'Arome qui a tourné le 14 avril, la veille (J-1), à 12h.'),
-    html.Span([ html.Span(' Quant aux 2 dernières cases de sélection, leur nomenclature est pensée sous la forme '),
-    html.Span('"Modèle_Forçages"', style={"font-weight": "bold"}),
-    html.Span('. Ainsi, "MésoNH_Arp" désigne le tracé de MésoNH forcé par Arpège (voir les rubriques "Visualisation des runs automatiques de MesoNH" et "Visualisation des runs automatiques de SURFEX" pour plus de précisions).') ]),
-    html.Br(),
-    html.Br(),
-    html.Br(),
+        html.H3('Abréviations pour les tracés'),
+        html.Br(),
 
-    html.H3('Pourquoi y-a-t-il des tracés en pointillés et pas en trait plein à la date d\'aujourd\'hui ?'),
-    html.Br(),
-    html.Span('Chaque run considéré donne des valeurs à au moins 48h d\'échéance. Ainsi, à une date donnée, les tracés à J0 sont les 24 premières heures des runs du jour, et ceux à J-1 vont de la 25ème à la 48ème heure des runs du jour d\'avant. C\'est pour ça que les traits pleins et en pointillés se superposent : les pontillés représentent le paramètre tel qu\'il était prévu la veille à 00h et 12h, et les traits pleins tel qu\'il est prévu le jour J à 00h et 12h.'),
-    html.Br(),
-    html.Br(),
-    html.Span(' Pour la date actuelle (aujourd\'hui), c\'est légèrement différent : Puisque le rapatriement des données vers AIDA (entité que l\'on utilise pour lire les données d\'Arome, Arpège et des Obs) ne se fait qu\'à 6h du matin chaque jour, les données les plus récentes que nous avons sont celles produites par les runs d\'hier. Ne sont donc disponible pour la date d\'aujourd\'hui que les valeurs prédites 1 jour avant par les modèles, soient les runs de J-1, tracés en pointillés.'),
-    html.Br(),
+        html.Span(
+            'Les différentes courbes de la page "Séries temporelles" sont nommées de la manière suivante :'
+        ),
 
-    # La balise html.Img permet d'afficher l'image 'fig1.png'
-    html.Div([html.Img(src='data:image/png;base64,{}'.format(test_base64), style={'height': '50%',
-       'width': '50%'})], className="twelve columns", style={"text-align": "center"}),
-    html.Br(),
-    html.Br(),
-    html.Br(),
+        html.Div(
+            [
+                html.Span(
+                    '"Nom-du-modèle_date-de-run"',
+                    style={"font-weight": "bold"}
+                )
+            ],
+            className="twelve columns",
+            style={"text-align": "center", "justifyContent": "center"},
+        ),
 
-    html.H3('Visualisation des données d\'AROME'),
-    html.Span('Le modèle AROME tourne deux fois par jour, à midi et minuit, pour un ensemble de 16 points autour de la Météopole. Chacun de ces points est caractérisé par une surface spécifique (champs, forêt etc). Par exemple:'),
-    html.Span(' Arome_J0_00H Point 50% urbain 50% champs ',
-                        style={"font-weight": "bold"}),
-    html.Span('correspond à une surface représentative d\'une zone urbaine sur une moitié mais aussi de terrains de type champs sur l\'autre moitié.',
-             className="twelve columns",
-             style={"text-align": "center",
-                    "justifyContent": "center"}),
-    html.Span('Sont également représentés, en plus de quelques points associés à des surfaces caractéristiques,  la courbe correspondant à la moyenne de ces 16 points, ainsi que les étendues min-max et écart type.'),
-    html.Br(),
-    html.Br(),
-    
-    html.H3('Visualisation des runs automatiques de MesoNH'),
-    html.Span('Chaque jour vers 10h, 3 runs de MesoNH sont lancés :'),
-    html.Div([  html.Span('MesoNH-Aro', style={"font-weight": "bold"}),
-        html.Span(' est forcé par Arome 0h du jour.')   ],
-        className="twelve columns", style={"text-align": "center", "justifyContent": "center"}),
-    html.Div([  html.Span('MesoNH-Arp', style={"font-weight": "bold"}),
-        html.Span(' est forcé par Arpège 0h du jour.')  ],
-        className="twelve columns", style={"text-align": "center", "justifyContent": "center"}),
-    html.Div([  html.Span('MesoNH-Obs', style={"font-weight": "bold"}),
-        html.Span(' est forcé par Arome 0h de l’avant-veille en altitude + les observations du site MeteopoleX au sol, sur les 2 journées précédentes.')    ],
-        className="twelve columns", style={"text-align": "center", "justifyContent": "center"}),
-    html.Div([  html.Span('Ces 3 runs proposent des prévisions à 36h. Ainsi, si nous sommes le 7 avril après 10h, en supposant que les simulations du jour soient terminées, les données les plus récentes dont nous disposons sont :')   ]),
-    html.Div([html.Span('MesoNH-Aro pour la période du 7 avril à 00h au 8 avril à 12h')],
-             className="twelve columns", style={"text-align": "center", "justifyContent": "center"}),
-    html.Div([html.Span('MesoNH-Arp pour la période du 7 avril à 00h au 8 avril à 12h')],
-             className="twelve columns", style={"text-align": "center", "justifyContent": "center"}),
-    html.Div([html.Span('MesoNH-Obs pour la période du 5 avril à 00h au 6 avril à 12h.')],
-             className="twelve columns", style={"text-align": "center", "justifyContent": "center"}),
-    html.Span('En revanche, le jour le plus récent qui peut être affiché est J0 (et pas J+1), les 12 dernières heures sont donc inutilisées. Cependant, la disponibilité des données n’est pas toujours garantie : les runs d’Arome et d’Arpege utilisés pour le forçage de MesoNH ne sont souvent pas disponibles à temps. La simulation sera alors durant dans les jours qui suivent. Dans tous les cas, si des données issues de MesoNH sont visibles, elles sont nécessairement issues du run de minuit précédant la date affichée.'),
-    html.Br(),
-    html.Br(),
-    html.Br(),
-    html.Br(),
-    html.Br(),
+        html.Br(),
 
-    html.H3('Visualisation des runs automatiques de SURFEX'),
-    html.Span('Les 3 runs de SURFEX s’exécutent quotidiennement à 10h :'),
-    html.Div([  html.Span('SURFEX_Aro', style={"font-weight": "bold"}),
-             html.Span(' est forcé par Arome 00h du jour.') ],
-             className="twelve columns", style={"text-align": "center", "justifyContent": "center"}),
-    html.Div([  html.Span('SURFEX_Arp', style={"font-weight": "bold"}),
-              html.Span(' est forcé par Arpège 00h du jour.')   ],
-             className="twelve columns", style={"text-align": "center", "justifyContent": "center"}),
-    html.Div([  html.Span('SURFEX_Obs', style={"font-weight": "bold"}),
-              html.Span(' est forcé par les Observations de Météopole Flux.')   ],
-             className="twelve columns", style={"text-align": "center", "justifyContent": "center"}),
-    html.Span('Pour les 2 premiers, l’initialisation des paramètres de surface se fait avec les données de SURFEX issues des fichiers en extension .fa des runs d\'Arome et d\'Arpège. Pour les runs de SURFEX forcés par les obeservations, on utilise pour l’instant les mêmes fichiers en .fa, en attendant un couplage fonctionnel avec les Obs de Météopole Flux.'),
-    html.Br(),
-    html.Span('Les runs se déroulent sur 60h de j-1 à j+1 : Les 24h premières heures sont celles de j-1 et elles ne servent qu’au calage, ainsi, seules les 36 dernières heures qui vont de j à j+1 à 12h sont pertinentes.'),
-    html.Br(),
-    html.Span('Par exemple, considerons que nous sommes le 10 Mars après 10h. Si les simulations du jour ont bien tournés, les sorties les plus récentes dont nous disposons sont :'),
-    html.Div([html.Span('SURFEX_Aro pour la période du 10 Mars à 00h au 11 Mars à 12h,')],
-             className="twelve columns", style={"text-align": "center", "justifyContent": "center"}),
-    html.Div([html.Span('SURFEX_Arp pour la période du 10 Mars à 00h au 11 Mars à 12h.')],
-             className="twelve columns", style={"text-align": "center", "justifyContent": "center"}),
-    html.Span('Par contre, comme pour les précédents tracés, le jour le plus récent qui peut être affiché reste toujours J0 (soit ici le 10 Mars).'),
-    html.Br(),
-    html.Br(),
-    html.Br(),
+        html.Span(
+            'Par exemple, on se place le 15 avril : la courbe affichée ce jour-là '
+            'nommée "Aro_J-1_12h" est le run d’Arome qui a tourné le 14 avril '
+            '(J-1) à 12h.'
+        ),
 
-    html.H3('Rejeu de MésoNH'),
-    html.Span('Il est possible pour un utilisateur de lancer un run de MesoNH avec les paramètres qu’il souhaite. Ce run sera nécessairement forcé par Arome (choix Arome/Arpege sans doute dans une prochaine version du site). Sur la page web, un certain nombre de paramètres sont disponibles.'),
-    html.Br(),
-    html.Br(),
-    html.Span('L’utilisateur commence par choisir une date de run. Le run sera initialisé à minuit de la date choisie.'),
-    html.Br(),
-    html.Span('Ex: l’utilisateur a choisi la date du 15 août 2019. La run sera donc initialisé avec les données du run du 15 août 2019 0Z d’Arome. Ce run de MesoNH a une échéance maximale de 36h, des données seront donc disponibles entre le 15 août 0h et le 16 août 12h.i L’utilisateur dispose de listes déroulantes pour choisir les schémas physiques qui l’intéressent.'),
-    html.Br(),
-    html.Span('Sans sélection de la part de l’utilisateur, un paramètre prendra sa valeur par défaut (cf. '),
-        html.A("la documentation utilisateur de MésoNH", href='http://mesonh.aero.obs-mip.fr/mesonh54/BooksAndGuides?action=AttachFile&do=get&target=users_guide_m544.pdf#subsection.9.2.44)'),
-        html.Span(').'),
-    html.Br(),
-    html.Span('Pour l’instant, seuls les paramètres CTURB, CRAD et CCLOUD sont modifiables, sans doute bien plus à l’avenir. Après avoir choisi une date de rejeu et les paramètres qu’il souhaite, l’utilisateur est invité à cliquer sur le bouton en bas de page pour lancer la simulation.'),
-    html.Br(),
-    html.Span('Un identifiant est délivré pour chaque simulation. C’est cet identifiant qui permettra ensuite d’afficher la simulation parmi les autres sur la plateforme de visualisation du site web. L’utilisateur peut choisir de patienter pour savoir exactement quand la simulation est terminé, ou de fermer la page web : la simulation continuera sur le serveur et, quelques minutes plus tard, sera disponible à la visualisation.'),
-    html.Br(),
-    html.Span('Dans tous les cas, il est important de bien conserver l’identifiant pour pouvoir afficher la simulation personnalisée.')
+        html.Span(
+            [
+                html.Span(
+                    ' Quant aux 2 dernières cases de sélection, leur nomenclature est pensée sous la forme '
+                ),
+                html.Span(
+                    '"Modèle_Forçages"',
+                    style={"font-weight": "bold"}
+                ),
+                html.Span(
+                    '. Ainsi, "MésoNH_Arp" désigne le tracé de MésoNH forcé par Arpège '
+                    '(voir les rubriques "Visualisation des runs automatiques de MesoNH" '
+                    'et "Visualisation des runs automatiques de SURFEX" pour plus de précisions).'
+                ),
+            ]
+        ),
 
-    ], className="twelve columns", style={"text-align": "left", "justifyContent": "center"})
+        html.Br(),
+        html.Br(),
+        html.Br(),
 
-# Mise en page finale
-notice_layout = html.Div([
-    html.Br(),
-    html.H1('Précisions relatives aux abrévations et aux modèles utilisés'),
-    html.Br(),
-    html.Br(),
-    html.Br(),
-    html.Br(),
-    content,
-], className="twelve columns", style={"text-align": "center", "justifyContent": "center"})
+        html.H3(
+            'Pourquoi y a-t-il des tracés en pointillés et pas en trait plein '
+            'à la date d’aujourd’hui ?'
+        ),
+
+        html.Br(),
+
+        html.Span(
+            'Chaque run considéré donne des valeurs à au moins 48h d’échéance. '
+            'Ainsi, à une date donnée, les tracés à J0 sont les 24 premières heures '
+            'des runs du jour, et ceux à J-1 vont de la 25ème à la 48ème heure des '
+            'runs du jour d’avant.'
+        ),
+
+        html.Br(),
+        html.Br(),
+
+        html.Span(
+            'Pour la date actuelle (aujourd’hui), c’est légèrement différent : '
+            'le rapatriement des données vers AIDA ne se fait qu’à 6h du matin. '
+            'Les données les plus récentes disponibles sont donc celles des runs '
+            'de la veille, tracées en pointillés.'
+        ),
+
+        html.Br(),
+
+        html.Div(
+            [
+                html.Img(
+                    src=f'data:image/png;base64,{notice_image_base64}',
+                    style={'height': '50%', 'width': '50%'}
+                )
+            ],
+            className="twelve columns",
+            style={"text-align": "center"},
+        ),
+
+        html.Br(),
+        html.Br(),
+        html.Br(),
+
+        html.H3('Visualisation des données d’AROME'),
+
+        html.Span(
+            'Le modèle AROME tourne deux fois par jour, à midi et minuit, '
+            'pour un ensemble de 16 points autour de la Météopole.'
+        ),
+
+        html.Br(),
+
+        html.Span(
+            'Exemple : ',
+            style={"font-weight": "bold"}
+        ),
+
+        html.Span(
+            'Arome_J0_00H Point 50% urbain 50% champs',
+            style={"font-weight": "bold"}
+        ),
+
+        html.Br(),
+        html.Br(),
+
+        html.Span(
+            'Sont également représentés : la moyenne des 16 points, '
+            'les étendues min-max et l’écart-type.'
+        ),
+
+        html.Br(),
+        html.Br(),
+
+        html.H3('Visualisation des runs automatiques de MésoNH'),
+
+        html.Span(
+            'Chaque jour vers 10h, 3 runs de MésoNH sont lancés :'
+        ),
+
+        html.Div(
+            [
+                html.Span('MesoNH-Aro', style={"font-weight": "bold"}),
+                html.Span(' : forcé par Arome 0h du jour.')
+            ],
+            className="twelve columns",
+            style={"text-align": "center"},
+        ),
+
+        html.Div(
+            [
+                html.Span('MesoNH-Arp', style={"font-weight": "bold"}),
+                html.Span(' : forcé par Arpège 0h du jour.')
+            ],
+            className="twelve columns",
+            style={"text-align": "center"},
+        ),
+
+        html.Div(
+            [
+                html.Span('MesoNH-Obs', style={"font-weight": "bold"}),
+                html.Span(
+                    ' : forcé par Arome 0h de l’avant-veille en altitude '
+                    '+ observations au sol.'
+                )
+            ],
+            className="twelve columns",
+            style={"text-align": "center"},
+        ),
+
+        html.Br(),
+        html.Br(),
+
+        html.H3('Visualisation des runs automatiques de SURFEX'),
+
+        html.Span(
+            'Les runs SURFEX s’exécutent quotidiennement à 10h :'
+        ),
+
+        html.Div(
+            [
+                html.Span('SURFEX_Aro', style={"font-weight": "bold"}),
+                html.Span(' : forcé par Arome 00h du jour.')
+            ],
+            className="twelve columns",
+            style={"text-align": "center"},
+        ),
+
+        html.Div(
+            [
+                html.Span('SURFEX_Arp', style={"font-weight": "bold"}),
+                html.Span(' : forcé par Arpège 00h du jour.')
+            ],
+            className="twelve columns",
+            style={"text-align": "center"},
+        ),
+
+        html.Div(
+            [
+                html.Span('SURFEX_Obs', style={"font-weight": "bold"}),
+                html.Span(' : forcé par les observations de Météopole Flux.')
+            ],
+            className="twelve columns",
+            style={"text-align": "center"},
+        ),
+
+        html.Br(),
+        html.Br(),
+
+        html.H3('Rejeu de MésoNH'),
+
+        html.Span(
+            'Un utilisateur peut lancer un run de MésoNH personnalisé, '
+            'forcé par AROME.'
+        ),
+
+        html.Br(),
+        html.Br(),
+
+        html.Span(
+            'Un identifiant unique est fourni pour chaque simulation. '
+            'Il permet ensuite de visualiser le run sur la plateforme.'
+        ),
+    ],
+    className="twelve columns",
+    style={"text-align": "left", "justifyContent": "center"},
+)
+
+
+notice_layout = html.Div(
+    [
+        html.Br(),
+        html.H1('Précisions relatives aux abréviations et aux modèles utilisés'),
+        html.Br(),
+        notice_content,
+    ],
+    className="twelve columns",
+    style={"text-align": "center", "justifyContent": "center"},
+)
 
 
 # -----------------------------------------------------------------------------
@@ -1163,20 +1282,39 @@ def update_line(reseau1, reseau2, reseau3, reseau4, reseau5, reseau6, start_day,
 
     return list_charts  # Le callback attend des Outputs qui sont contenus dans chart[param]
 
-# 3.3   LAYOUT
-# ---------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
+#   3.3 LAYOUT
+# -----------------------------------------------------------------------------
 
-# Puisqu'on n'a pas la main sur la css (cf. external_stylesheets en haut), on joue sur les html.Div.
-# Ici par exemple, chaque graph est d'abord mis dans une Div dont on réduit la taille ("className="six columns"),
-# puis on met toutes ces Div dans une seule qui elle prend toute la page
-all_graphs = []
+# Chaque graphique est placé dans une Div individuelle afin de contrôler
+# l'affichage (2 graphiques par ligne environ via "six columns")
+
+graphs_layout = []
+
 for param in params:
-    all_graphs.append(html.Div(graph[param],className="six columns",style={'display': 'inline-block'}))
-row = html.Div(children=all_graphs, className="six columns")
-# Ces dernières lignes sont la mise en forme finale de la page
-obs_modeles_layout = html.Div([html.H1('Séries temporelles'), row], 
-                              className="row",
-                              style={"text-align": "center", "justifyContent": "center"})
+    graphs_layout.append(
+        html.Div(
+            graph[param],
+            className="six columns",
+            style={'display': 'inline-block'}
+        )
+    )
+
+graphs_row = html.Div(
+    children=graphs_layout,
+    className="six columns"
+)
+
+# Mise en page finale de la page "Séries temporelles"
+obs_modeles_layout = html.Div(
+    [
+        html.H1('Séries temporelles'),
+        graphs_row
+    ],
+    className="row",
+    style={"text-align": "center", "justifyContent": "center"}
+)
+
 
 
 # -----------------------------------------------------------------------------

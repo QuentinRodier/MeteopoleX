@@ -755,139 +755,175 @@ params = [
 models = ["Gt", "Rt", "Arome"]
 #models = ["Gt", "Rt", "Tf"]
 
-# Liste des réseaux pour les modèles numériques
-reseaux = ["J-1:00_%3600", "J-1:12_%3600", "J0:00_%3600", "J0:12_%3600"]
-
 def selection_donnees(start_day, end_day):
-    # Cette fonction permet de récupérer les données disponibles sur AIDA, c'est à dire les données des Obs de Météopole Flux, d'Arome et d'Arpège.
-    # Structure du dictionnaire data qui stocke toutes les données :
-    #   data={'param '(une valeur de params):
-    #               {'Tf':
-    #                       {'values':valeurs numériques prises par le paramètre (param) des obs pendant la période (end_day-start_day),
-    #                        'time':datetime.date de tous les temps où il y a eu une mesure},
-    #               'Rt' (ou 'Gt', même structure):
-    #                       {'reseau' (une valeur de reseaux):
-    #                           {'value': les valeurs du modèle (Rt ou Gt) pour le paramètre (param) correspondant et un réseau (reseau),
-    #                            'time': datetime.date de tous les temps où il y a une valeur}
-    #                       }
-    #               }
-    #          }
+    """
+    Récupère les données disponibles sur AIDA :
+    - Observations Météopole Flux
+    - Modèles Arpège, Arome (ancienne et nouvelle version)
+    """
 
-    doy1 = datetime.datetime(int(start_day.year), int(start_day.month), int(start_day.day)).strftime('%j')
-    doy2 = datetime.datetime(int(end_day.year), int(end_day.month), int(end_day.day)).strftime('%j')
-    
+    # Conversion des dates en jour de l'année
+    start_doy = datetime.datetime(
+        start_day.year, start_day.month, start_day.day
+    ).strftime('%j')
+
+    end_doy = datetime.datetime(
+        end_day.year, end_day.month, end_day.day
+    ).strftime('%j')
+
     data = {}
-    chart = {}
-    graph = {}
+    charts = {}
+    graphs = {}
 
+    # -------------------------------------------------------------------------
+    # Boucle principale sur les paramètres
+    # -------------------------------------------------------------------------
     for param in params:
-        if param not in data:
-            data[param] = {}
 
-        # Traitement des donnees d'obs
-        model = 'Tf'
-        data[param][model] = {}
-        # if dico_params[param]["index_obs"]!="":
-        id_aida = dico_params[param]["index_obs"]
-        # Read AIDA : lit tous les paramètres alors que selection de données va
-        # lire uniquement un parametre specifique
-        (values, time, header) = read_aida.donnees(doy1, doy2, str(start_day.year), str(end_day.year), id_aida, model)
-        # liste des valeurs
-        data[param][model]['values'] = values
-        # liste des dates
-        data[param][model]['time'] = time
+        data.setdefault(param, {})
 
-        # Traitement des donnees Arome et Arpege
+        # ---------------------------------------------------------------------
+        # Observations
+        # ---------------------------------------------------------------------
+        obs_model = 'Tf'
+        data[param][obs_model] = {}
+
+        obs_index = dico_params[param]["index_obs"]
+
+        values_obs, time_obs, _ = read_aida.donnees(
+            start_doy,
+            end_doy,
+            str(start_day.year),
+            str(end_day.year),
+            obs_index,
+            obs_model
+        )
+
+        data[param][obs_model]['values'] = values_obs
+        data[param][obs_model]['time'] = time_obs
+
+        # ---------------------------------------------------------------------
+        # Modèles numériques
+        # ---------------------------------------------------------------------
         for model in models:
-            if model not in data[param]:
-                data[param][model] = {}
-                
-                for reseau in reseaux:
-                    if reseau not in data[param][model]:
-                        data[param][model][reseau] = {}
 
-                    # Enveloppe ARO
-                    if model == "Arome":
-                        data[param][model][reseau]['values_mean'] = {}
-                        data[param][model][reseau]['values_mean_plus_std'] = {}
-                        data[param][model][reseau]['values_mean_moins_std'] = {}
-                        data[param][model][reseau]['values_max'] = {}
-                        data[param][model][reseau]['values_min'] = {}
-                        data[param][model][reseau]['values_P1'] = {}
-                        data[param][model][reseau]['values_P2'] = {}
-                        data[param][model][reseau]['values_P3'] = {}
-                        data[param][model][reseau]['values_P4'] = {}
-                        data[param][model][reseau]['time'] = {}
-                        if dico_params[param]['index_model_arome'] is not None : 
-                            param_arome = dico_params[param]['index_model_arome']
-                            donnee_arome = read_arome.donnees(start_day, end_day, reseau, param_arome)
-                            if not donnee_arome.empty:
-                                #stocke les valeurs moyennes, max, min, les points d'intérêt et le temps
-                                time_index = donnee_arome.index
-                                data[param][model][reseau]['values_mean'] =\
-                                    donnee_arome.groupby(time_index).mean()[param_arome]
-                                data[param][model][reseau]['values_mean_plus_std'] =\
-                                    donnee_arome.groupby(time_index).mean()[param_arome] +\
-                                    donnee_arome.groupby(time_index).std()[param_arome]
-                                data[param][model][reseau]['values_mean_moins_std'] =\
-                                    donnee_arome.groupby(time_index).mean()[param_arome] -\
-                                    donnee_arome.groupby(time_index).std()[param_arome]
-                                data[param][model][reseau]['values_max'] =\
-                                    donnee_arome.groupby(time_index).max()[param_arome]
-                                data[param][model][reseau]['values_min'] =\
-                                    donnee_arome.groupby(time_index).min()[param_arome]
-                                data[param][model][reseau]['values_P1'] =\
-                                    donnee_arome.loc[donnee_arome['Point']==11, param_arome]
-                                data[param][model][reseau]['values_P2'] =\
-                                    donnee_arome.loc[donnee_arome['Point']==15, param_arome]
-                                data[param][model][reseau]['values_P3'] =\
-                                    donnee_arome.loc[donnee_arome['Point']==6, param_arome]
-                                data[param][model][reseau]['values_P4'] =\
-                                    donnee_arome.loc[donnee_arome['Point']==1, param_arome]
-                                # Pour le traçage des graphes on prend l'index temporel d'un seul point
-                                data[param][model][reseau]['time'] =\
-                                    donnee_arome.loc[donnee_arome['Point']==1, param_arome].index
-                                
-                            
-#                        if param == 'flx_mvt' or param == 'flx_chaleur_sens' or param == 'flx_chaleur_lat' or param == 'SWD' or param == 'SWU' or param == 'LWD' or param == 'LWU':
-#                            if data[param][model][reseau]['time'] is not None:
-#                                for ts in data[param][model][reseau]['time']:
-#                                    ts = ts - datetime.timedelta(minutes=30)
-                                
-                    else:
-                        
-                        # Gt/Rt = ARO/ARP
-                        id_aida = dico_params[param]["index_model"] + "_" + reseau
-                        (values, time, header) = read_aida.donnees(doy1, doy2, str(start_day.year), str(end_day.year),
-                                                                   id_aida, model)
-                        data[param][model][reseau]['values'] = values
-                        data[param][model][reseau]['time'] = time
+            data[param].setdefault(model, {})
 
-                        # Correction des données ARPEGE parfois datées à H-1:59 au lieu de H:00
-                        if time is not None:
-                            i = 0
-                            for ts in time:
-                                if ts.minute == 59.:
-                                    time[i] = time[i] + datetime.timedelta(minutes=1)
-                                i = i + 1
-                                
-                        # Les flux pour AROME et ARPEGE OPER sont agrégés entre H et H+1 : On les
-                        # replace à H:30 pour davantage de réalisme
-                        # (A faire aussi pour les flux simulations user MNH et SURFEX force par AROME/ARPEGE
-                        if param == 'flx_mvt' or param == 'flx_chaleur_sens' or param == 'flx_chaleur_lat'\
-                        or param == 'SWD' or param == 'SWU' or param == 'LWD' or param == 'LWU':
-                            if time is not None:
-                                i = 0
-                                for ts in time:
-                                    time[i] = time[i] - datetime.timedelta(minutes=30)
-                                    i = i + 1
+            for reseau in reseaux:
 
-        # Ces 2 dernières étapes sont essentielles : d'abord on effectue le tracé,
-        chart[param] = go.Figure()
-        # puis on le transforme en objet html pour pouvoir l'afficher
-        graph[param] = dcc.Graph(id='graph_'+param, figure=chart[param]) 
+                data[param][model].setdefault(reseau, {})
 
-    return data, chart, graph
+                # -------------------------------------------------------------
+                # AROME nouvelle version (enveloppes)
+                # -------------------------------------------------------------
+                if model == "Arome":
+
+                    model_data = data[param][model][reseau]
+
+                    model_data.update({
+                        'values_mean': {},
+                        'values_mean_plus_std': {},
+                        'values_mean_moins_std': {},
+                        'values_max': {},
+                        'values_min': {},
+                        'values_P1': {},
+                        'values_P2': {},
+                        'values_P3': {},
+                        'values_P4': {},
+                        'time': {}
+                    })
+
+                    param_arome = dico_params[param]['index_model_arome']
+
+                    if param_arome is not None:
+
+                        arome_data = read_arome.donnees(
+                            start_day, end_day, reseau, param_arome
+                        )
+
+                        if not arome_data.empty:
+
+                            time_index = arome_data.index
+
+                            model_data['values_mean'] = (
+                                arome_data.groupby(time_index).mean()[param_arome]
+                            )
+
+                            std = arome_data.groupby(time_index).std()[param_arome]
+
+                            model_data['values_mean_plus_std'] = (
+                                model_data['values_mean'] + std
+                            )
+                            model_data['values_mean_moins_std'] = (
+                                model_data['values_mean'] - std
+                            )
+
+                            model_data['values_max'] = (
+                                arome_data.groupby(time_index).max()[param_arome]
+                            )
+                            model_data['values_min'] = (
+                                arome_data.groupby(time_index).min()[param_arome]
+                            )
+
+                            model_data['values_P1'] = arome_data.loc[
+                                arome_data['Point'] == 11, param_arome
+                            ]
+                            model_data['values_P2'] = arome_data.loc[
+                                arome_data['Point'] == 15, param_arome
+                            ]
+                            model_data['values_P3'] = arome_data.loc[
+                                arome_data['Point'] == 6, param_arome
+                            ]
+                            model_data['values_P4'] = arome_data.loc[
+                                arome_data['Point'] == 1, param_arome
+                            ]
+
+                            model_data['time'] = model_data['values_P4'].index
+
+                # -------------------------------------------------------------
+                # AROME / ARPEGE ancienne version (AIDA)
+                # -------------------------------------------------------------
+                else:
+
+                    model_index = f"{dico_params[param]['index_model']}_{reseau}"
+
+                    values_mod, time_mod, _ = read_aida.donnees(
+                        start_doy,
+                        end_doy,
+                        str(start_day.year),
+                        str(end_day.year),
+                        model_index,
+                        model
+                    )
+
+                    data[param][model][reseau]['values'] = values_mod
+                    data[param][model][reseau]['time'] = time_mod
+
+                    # Correction ARPEGE : H-1:59 → H:00
+                    if time_mod is not None:
+                        for i, ts in enumerate(time_mod):
+                            if ts.minute == 59:
+                                time_mod[i] = ts + datetime.timedelta(minutes=1)
+
+                    # Décalage des flux à H:30
+                    if param in [
+                        'flx_mvt', 'flx_chaleur_sens', 'flx_chaleur_lat',
+                        'SWD', 'SWU', 'LWD', 'LWU'
+                    ]:
+                        if time_mod is not None:
+                            for i, ts in enumerate(time_mod):
+                                time_mod[i] = ts - datetime.timedelta(minutes=30)
+
+        # ---------------------------------------------------------------------
+        # Création des figures
+        # ---------------------------------------------------------------------
+        charts[param] = go.Figure()
+        graphs[param] = dcc.Graph(
+            id=f'graph_{param}',
+            figure=charts[param]
+        )
+
+    return data, charts, graphs
 
 # Première extraction des données
 data, chart, graph = selection_donnees(start_day, end_day)

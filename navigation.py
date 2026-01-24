@@ -755,6 +755,9 @@ params = [
 models = ["Gt", "Rt", "Arome"]
 #models = ["Gt", "Rt", "Tf"]
 
+# Liste des réseaux pour les modèles numériques
+reseaux = ["J-1:00_%3600", "J-1:12_%3600", "J0:00_%3600", "J0:12_%3600"]
+
 def selection_donnees(start_day, end_day):
     """
     Récupère les données disponibles sur AIDA :
@@ -936,189 +939,243 @@ data, chart, graph = selection_donnees(start_day, end_day)
 data_mnh = lecture_mesoNH.mesoNH(start_day, end_day, models, params)
 data_surfex = lecture_surfex.surfex(start_day, end_day, models, params)
 
-# 3.2   CALLBACKS
 # -----------------------------------------------------------------------------
-# Contient fonctions qui vont actualiser les Outputs à chaque fois qu'un Input est modifié
+#   3.2 CALLBACKS
+# -----------------------------------------------------------------------------
+# Contient les fonctions qui actualisent les Outputs lorsque les Inputs changent
 
 output_graphs = []
 
 for param in params:
-    # Définition des Outputs c-à-d des graphs qui seront mis à jour
-    output_graphs.append(Output('graph_'+param, 'figure'))
+    output_graphs.append(Output(f'graph_{param}', 'figure'))
 
-# Chaque Input prend en argument l'id d'une dcc.Input et la valeur qu'elle récupère
-@app.callback(output_graphs, [Input('multi_select_line_chart_obs', 'value'),
-                              Input('multi_select_line_chart_ARP', 'value'),
-                              Input('multi_select_line_chart_ARO', 'value'),
-                              Input('multi_select_line_chart_AROME', 'value'),               
-                              Input('multi_select_line_chart_MNH', 'value'),
-                              Input('multi_select_line_chart_SURFEX', 'value'),
-                              Input('my-date-picker-range', 'start_date'),
-                              Input('my-date-picker-range', 'end_date'),
-                              Input('id_user1', 'value'), Input('id_user2', 'value'), 
-                              Input('id_user3', 'value'), Input('id_user4', 'value'), Input('id_user5', 'value')]
-              )
-def update_line(reseau1, reseau2, reseau3, reseau4, reseau5, reseau6, start_day, end_day, id_user1, id_user2, id_user3, id_user4, id_user5):	
-    # On donne ici le nom que l'on veut aux arguments, seul l'ordre (et le
-    # nombre) est important et correspond à l'ordre (et au nombre) d'Inputs du
-    # callback.
 
+@app.callback(
+    output_graphs,
+    [
+        Input('multi_select_line_chart_obs', 'value'),
+        Input('multi_select_line_chart_ARP', 'value'),
+        Input('multi_select_line_chart_ARO', 'value'),
+        Input('multi_select_line_chart_AROME', 'value'),
+        Input('multi_select_line_chart_MNH', 'value'),
+        Input('multi_select_line_chart_SURFEX', 'value'),
+        Input('my-date-picker-range', 'start_date'),
+        Input('my-date-picker-range', 'end_date'),
+        Input('id_user1', 'value'),
+        Input('id_user2', 'value'),
+        Input('id_user3', 'value'),
+        Input('id_user4', 'value'),
+        Input('id_user5', 'value'),
+    ],
+)
+def update_line(
+    reseau_obs,
+    reseau_arp,
+    reseau_aro,
+    reseau_arome,
+    reseau_mnh,
+    reseau_surfex,
+    start_day,
+    end_day,
+    id_user1,
+    id_user2,
+    id_user3,
+    id_user4,
+    id_user5,
+):
+    """
+    Callback principal mettant à jour l'ensemble des graphiques.
+    L'ordre des arguments correspond strictement à celui des Inputs.
+    """
+
+    # -------------------------------------------------------------------------
+    # Conversion des dates
+    # -------------------------------------------------------------------------
     if start_day is not None:
         start_day = date.fromisoformat(start_day)
+
     if end_day is not None:
         end_day = date.fromisoformat(end_day)
-    # transformation des dates de type str que l'on récupère du "calendrier" en datetime.date
-    #print('start_day', start_day)
-    #print('end_day', end_day)
-    # UPDATE DES DATES APRES LE CALLBACK
+
+
+    # -------------------------------------------------------------------------
+    # Chargement des données
+    # -------------------------------------------------------------------------
     data, chart, graph = selection_donnees(start_day, end_day)
-    #print('start_day', start_day)
-    #print('end_day', end_day)
-    #print("T2m P1 après callback", data['tmp_2m']['Arome']['J0:00_%3600']['values_P1'])
-    
+
     data_mnh = lecture_mesoNH.mesoNH(start_day, end_day, models, params)
     data_surfex = lecture_surfex.surfex(start_day, end_day, models, params)
-    # Extraction des données correspondants à la période choisie
 
-    # Puis, mise à jour des graphes :
+
+    # -------------------------------------------------------------------------
+    # Initialisation des figures
+    # -------------------------------------------------------------------------
     for param in params:
         chart[param] = go.Figure()
-        # Création des objets plotly
 
-    # Pour les 5 rejeux possibles de MésoNH, correspondants aux différents id_user :
-    # différentes valeurs pour l'attribut "dash" du paramètre "line" qui
-    # donnent le type de tracé (trait plein/pointillés/tirets/longs
-    # tirets/alternance tirets-points)
-    types = ['solid', 'dot', 'dash', 'longdash', 'dashdot']
-    for j, id_user in enumerate([id_user1, id_user2, id_user3, id_user4, id_user5]):
-        data_user = lecture_mesoNH.mesoNH_user(start_day, end_day, id_user, params)
-        nb_jour = (end_day - start_day).days
-        
-        courbe_affichee=[]
-        for i in range(nb_jour + 1):
+
+    # -------------------------------------------------------------------------
+    # Rejeux MésoNH (par id utilisateur)
+    # -------------------------------------------------------------------------
+    line_styles = ['solid', 'dot', 'dash', 'longdash', 'dashdot']
+
+    for idx, user_id in enumerate([id_user1, id_user2, id_user3, id_user4, id_user5]):
+
+        data_user = lecture_mesoNH.mesoNH_user(start_day, end_day, user_id, params)
+        nb_days = (end_day - start_day).days
+
+        displayed_curves = []
+
+        for i in range(nb_days + 1):
             date_run = start_day + datetime.timedelta(days=i)
-            today_str = date_run.strftime('%Y%m%d')
-            
-            # TODO Ce bidouillage pour afficher qu'une légende empêche de cacher/afficher les courbes
-            # sur la période affichée 
-            if id_user not in courbe_affichee and 'tmp_2m' in data_user[today_str]: 
-            #and isinstance(data_user[today_str]['tmp_2m'], (list, np.ndarray)):
-               courbe_affichee.append(id_user)
-               afficher_legende = True
+            day_str = date_run.strftime('%Y%m%d')
+
+            if (
+                user_id not in displayed_curves
+                and 'tmp_2m' in data_user.get(day_str, {})
+            ):
+                displayed_curves.append(user_id)
+                show_legend = True
             else:
-               afficher_legende = False
-                
+                show_legend = False
+
             for param in params:
-                # Ici try/except permet de rien afficher lorsque les données ne sont pas disponibles
                 try:
-                    if isinstance(data_user[today_str][param],
-                                  (list, np.ndarray)):  # On vérifie qu'il y a des données
+                    if isinstance(data_user[day_str][param], (list, np.ndarray)):
                         chart[param].add_trace(
                             go.Scatter(
-                                x=data_user[today_str]['time'],
-                                y=data_user[today_str][param],
-                                line=dict(
-                                    color='black',
-                                    dash=types[j]),
-                                name='MésoNH modifié (id : ' + str(id_user) + ' )',showlegend=afficher_legende))
-                        # print(data_user)
+                                x=data_user[day_str]['time'],
+                                y=data_user[day_str][param],
+                                line=dict(color='black', dash=line_styles[idx]),
+                                name=f'MésoNH modifié (id : {user_id})',
+                                showlegend=show_legend,
+                            )
+                        )
                 except KeyError:
                     pass
 
-    # Pour les 5 rejeux possibles de SURFEX, correspondants aux différents id_user :
-    # différentes valeurs pour l'attribut "dash" du paramètre "line" qui
-    # donnent le type de tracé (trait plein/pointillés/tirets/longs
-    # tirets/alternance tirets-points)
-    types = ['solid', 'dot', 'dash', 'longdash', 'dashdot']
-    for j, id_user in enumerate([id_user1, id_user2, id_user3, id_user4, id_user5]):
-        data_surfex_user = lecture_surfex.surfex_user(start_day, end_day, id_user, params)
-        nb_jour = (end_day - start_day).days
 
-        courbe_affichee_surfex=[]
-        for i in range(nb_jour + 1):
+    # -------------------------------------------------------------------------
+    # Rejeux SURFEX (par id utilisateur)
+    # -------------------------------------------------------------------------
+    for idx, user_id in enumerate([id_user1, id_user2, id_user3, id_user4, id_user5]):
+
+        data_user = lecture_surfex.surfex_user(start_day, end_day, user_id, params)
+        nb_days = (end_day - start_day).days
+
+        displayed_curves = []
+
+        for i in range(nb_days + 1):
             date_run = start_day + datetime.timedelta(days=i)
-            today_str = date_run.strftime('%Y%m%d')
+            day_str = date_run.strftime('%Y%m%d')
 
-            if id_user not in courbe_affichee_surfex and 'tmp_2m' in data_surfex_user[today_str]: 
-            #and isinstance(data_user[today_str]['tmp_2m'], (list, np.ndarray)):
-                courbe_affichee_surfex.append(id_user)
-                afficher_legende = True
+            if (
+                user_id not in displayed_curves
+                and 'tmp_2m' in data_user.get(day_str, {})
+            ):
+                displayed_curves.append(user_id)
+                show_legend = True
             else:
-                afficher_legende = False
+                show_legend = False
 
             for param in params:
-                # Ici try/except permet de rien afficher lorsque les données ne sont pas disponibles
-                try:      
-                    if isinstance(data_surfex_user[today_str][param],
-                                  (list, np.ndarray)):  # On vérifie qu'il y a des données
-                        if param == 'flx_mvt' or param == 'flx_chaleur_sens' or param == 'flx_chaleur_lat' or param == 'SWD' or param == 'SWU' or param == 'LWD' or param == 'LWU':
-                            xTime = data_surfex_user[today_str]['timeFlux']
-                        else :
-                            xTime = data_surfex_user[today_str]['time']
+                try:
+                    if isinstance(data_user[day_str][param], (list, np.ndarray)):
+
+                        if param in [
+                            'flx_mvt', 'flx_chaleur_sens', 'flx_chaleur_lat',
+                            'SWD', 'SWU', 'LWD', 'LWU'
+                        ]:
+                            x_time = data_user[day_str]['timeFlux']
+                        else:
+                            x_time = data_user[day_str]['time']
+
                         chart[param].add_trace(
                             go.Scatter(
-                                x=xTime,
-                                y=data_surfex_user[today_str][param],
-                                line=dict(
-                                    color='black',
-                                    dash=types[j]),
-                                name='SURFEX modifié (id : ' + str(id_user) + ' )',showlegend=afficher_legende))
-                        # print(data_user)
+                                x=x_time,
+                                y=data_user[day_str][param],
+                                line=dict(color='black', dash=line_styles[idx]),
+                                name=f'SURFEX modifié (id : {user_id})',
+                                showlegend=show_legend,
+                            )
+                        )
                 except KeyError:
                     pass
 
-    # Pour les Obs de Météopole Flux, affichées par défaut car une seule option dans le widget :
-    # Ici plus besoin de try/except, c'est AIDA qui s'en charge
-    for selection in reseau1:
+
+    # -------------------------------------------------------------------------
+    # Observations Météopole Flux
+    # -------------------------------------------------------------------------
+    for selection in reseau_obs:
         if selection == "Obs":
             for param in params:
                 if isinstance(data[param]['Tf']['values'], (list, np.ndarray)):
-                    chart[param].add_trace(go.Scatter(x=data[param]['Tf']['time'],
-                                                      y=data[param]['Tf']['values'].data,
-                                                      marker={"color": "red"},
-                                                      mode="lines",
-                                                      name=selection)
-                                           )
+                    chart[param].add_trace(
+                        go.Scatter(
+                            x=data[param]['Tf']['time'],
+                            y=data[param]['Tf']['values'].data,
+                            marker={"color": "red"},
+                            mode="lines",
+                            name=selection,
+                        )
+                    )
 
-    # Pour les différents réseaux d'Arpège :
-    for selection in reseau2:
+
+    # -------------------------------------------------------------------------
+    # Arpège
+    # -------------------------------------------------------------------------
+    for selection in reseau_arp:
+
         if selection == "Arp_J-1_00h":
             reseau = reseaux[0]
             line_param = dict(color='navy', dash='dot')
-            visible_settings = True            
+            visible_settings = True
+
         if selection == "Arp_J-1_12h":
             reseau = reseaux[1]
             line_param = dict(color='mediumslateblue', dash='dot')
-            visible_settings = 'legendonly'	 
+            visible_settings = 'legendonly'
+
         if selection == "Arp_J0_00h":
             reseau = reseaux[2]
             line_param = dict(color='navy')
-            visible_settings = True             
+            visible_settings = True
+
         if selection == "Arp_J0_12h":
             reseau = reseaux[3]
             line_param = dict(color='mediumslateblue')
             visible_settings = True
-            
+
         for param in params:
             if isinstance(data[param]['Gt'][reseau]['values'], (list, np.ndarray)):
-                chart[param].add_trace(go.Scatter(x=data[param]['Gt'][reseau]['time'],
-                                                  y=data[param]['Gt'][reseau]['values'].data,
-                                                  line=line_param,
-                                                  visible = visible_settings, 
-                                                  name=selection)
-                                       )
+                chart[param].add_trace(
+                    go.Scatter(
+                        x=data[param]['Gt'][reseau]['time'],
+                        y=data[param]['Gt'][reseau]['values'].data,
+                        line=line_param,
+                        visible=visible_settings,
+                        name=selection,
+                    )
+                )
 
-    # Arome classique
-    for selection in reseau3:
+
+    # -------------------------------------------------------------------------
+    # AROME ancienne version
+    # -------------------------------------------------------------------------
+    for selection in reseau_aro:
+
         if selection == "Aro_J-1_00h":
             reseau = reseaux[0]
             line_param = dict(color='green', dash='dot')
+
         if selection == "Aro_J-1_12h":
             reseau = reseaux[1]
             line_param = dict(color='olive', dash='dot')
+
         if selection == "Aro_J0_00h":
             reseau = reseaux[2]
             line_param = dict(color='green')
+
         if selection == "Aro_J0_12h":
             reseau = reseaux[3]
             line_param = dict(color='olive')
@@ -1130,193 +1187,27 @@ def update_line(reseau1, reseau2, reseau3, reseau4, reseau5, reseau6, start_day,
                         x=data[param]['Rt'][reseau]['time'],
                         y=data[param]['Rt'][reseau]['values'].data,
                         line=line_param,
-                        name=selection))
+                        name=selection,
+                    )
+                )
 
-    #!# Ajout enveloppe
-    # Pour les différents réseaux d'Arome (nouvelle version):
-    for selection in reseau4:
-        if selection == "Arome_J-1_00h":
-            reseau = reseaux[0]
-            line_param = dict(color='blue', dash='dot')
-            color_etendue = 'rgba(0,15,226,0.2)'
-            color_etendue_2= 'rgba(0,15,226,0.5)'
-            visible_settings = True
-        if selection == "Arome_J-1_12h":
-            reseau = reseaux[1]
-            line_param = dict(color='black', dash='dot')
-            visible_settings = 'legendonly'
-            color_etendue = 'rgba(0,15,226,0.2)'
-            color_etendue_2 = 'rgba(0,15,226,0.5)'
-        if selection == "Arome_J0_00h":
-            reseau = reseaux[2]
-            line_param = dict(color='blue')
-            color_etendue = 'rgba(0,176,246,0.2)'
-            color_etendue_2= 'rgba(0,176,246,0.5)'
-            visible_settings = True
-        if selection == "Arome_J0_12h":
-            reseau = reseaux[3]
-            line_param = dict(color='black')
-            color_etendue = 'rgba(0,176,246,0.2)'
-            color_etendue_2 = 'rgba(0,176,246,0.5)'
-            visible_settings = True
 
-        for param in params:
-            if isinstance(data[param]['Arome'][reseau]['values_mean'], (pd.Series)): #courbe moyenne
-                chart[param].add_trace(
-                    go.Scatter(
-                        x=data[param]['Arome'][reseau]['time'],
-                        y=data[param]['Arome'][reseau]['values_mean'],
-                        line=line_param, visible=visible_settings,
-                        name=f"{selection}"+" moyenne"))
-                
-            if isinstance(data[param]['Arome'][reseau]['values_P1'], (pd.Series)): #courbe point plus proche
-                chart[param].add_trace(
-                    go.Scatter(
-                        x=data[param]['Arome'][reseau]['time'],
-                        y=data[param]['Arome'][reseau]['values_P1'],
-                        line=dict(color='pink'), visible = visible_settings,
-                        name=f"{selection}"+" Point le plus proche"))
-                #print('traçage times', data[param]['Arome'][reseau]['time'])
-                #print('traçage P1 values', data[param]['Arome'][reseau]['values_P1'])
-                
-            if isinstance(data[param]['Arome'][reseau]['values_P2'], (pd.Series)): #courbe point 100% urbain
-                chart[param].add_trace(
-                    go.Scatter(
-                        x=data[param]['Arome'][reseau]['time'],
-                        y=data[param]['Arome'][reseau]['values_P2'],
-                        line=dict(color='Grey'), visible = visible_settings,
-                        name=f"{selection}"+" Point 100% urbain"))
-                
-            if isinstance(data[param]['Arome'][reseau]['values_P3'], (pd.Series)): #courbe point 100% champs
-                chart[param].add_trace(
-                    go.Scatter(
-                        x=data[param]['Arome'][reseau]['time'],
-                        y=data[param]['Arome'][reseau]['values_P3'],
-                        line=dict(color='gold'), visible = visible_settings,
-                        name=f"{selection}"+" Point 100% champs"))    
-                
-            if isinstance(data[param]['Arome'][reseau]['values_P4'], (pd.Series)): #courbe point 50% urbain 50% champs
-                chart[param].add_trace(
-                    go.Scatter(
-                        x=data[param]['Arome'][reseau]['time'],
-                        y=data[param]['Arome'][reseau]['values_P4'],
-                        line=dict(color='Brown'), visible = visible_settings,
-                        name=f"{selection}"+" Point 50% urbain 50% champs"))   
-                        
-            if isinstance(data[param]['Arome'][reseau]['values_mean_plus_std'], (pd.Series)): #étendue moyenne +écart-type
-                chart[param].add_trace(
-                    go.Scatter(
-                        x=data[param]['Arome'][reseau]['time'],
-                        y=data[param]['Arome'][reseau]['values_mean_plus_std'],
-                        line=dict(color='rgba(0,0,0,0)'),
-                        showlegend=False, 
-                        visible = visible_settings,
-                        name=f"{selection}"+" +écart-type"))
-                chart[param].add_trace(
-                    go.Scatter(
-                        x=data[param]['Arome'][reseau]['time'],
-                        y=data[param]['Arome'][reseau]['values_mean_moins_std'], 
-                        line = dict(color='rgba(0,0,0,0)'),
-                        fill='tonexty', 
-                        fillcolor=color_etendue_2, visible = visible_settings,
-                        name=f"{selection}"+" enveloppe ecart-type "))
-              #ATTENTION problème affichage étendue J-1 
-                        
-            if isinstance(data[param]['Arome'][reseau]['values_max'], (pd.Series)): #étendue min/max
-                chart[param].add_trace(
-                    go.Scatter(
-                        x=data[param]['Arome'][reseau]['time'],
-                        y=data[param]['Arome'][reseau]['values_max'],
-                        line=dict(color='rgba(0,0,0,0)'),
-                        showlegend=False, 
-                        visible = visible_settings,
-                        name=f"{selection}"+" max"))
-                chart[param].add_trace(
-                    go.Scatter(
-                        x=data[param]['Arome'][reseau]['time'],
-                        y=data[param]['Arome'][reseau]['values_min'], 
-                        line = dict(color='rgba(0,0,0,0)'),
-                        fill='tonexty', 
-                        fillcolor=color_etendue, visible = visible_settings,
-                        name=f"{selection}"+" min et max"))
-                #ATTENTION problème affichage étendue J-1 
-        
-    # Pour les courbes de MésoNH :
-    # A la différence des 3 réseaux précédents où l'on récupère les données sur la période choisie à chaque nouvelle période grâce à AIDA, MésoNH et SURFEX sont stockés par dossier nommé à la date de run.
-    # Il faut donc parcourir tous les jours entre le start_day et le end_day et stocker les informations lues.
-    courbe_affichee = []
-    for selection in reseau5:#!# Ajout enveloppe
-        nb_jour = (end_day - start_day).days
-        for i in range(nb_jour + 1):
-            day = start_day + timedelta(days=i)
-            today_str = day.strftime('%Y%m%d')
+    # -------------------------------------------------------------------------
+    # Mise à jour finale des figures
+    # -------------------------------------------------------------------------
+    updated_charts = []
 
-            # Gestion du nombre de légende affichée : La légende est affichée si elle
-            # absente avant cad si courbe_affichee est vide (courbe affichee est
-            # remplie au 1er jour affiche)
-            if selection not in courbe_affichee and dico_model[selection]['name'] in data_mnh[today_str] and isinstance(data_mnh[today_str][dico_model[selection]['name']]['tmp_2m'], (list, np.ndarray)):
-                courbe_affichee.append(selection)
-                afficher_legende = True
-            else:
-                afficher_legende = False
-                # Ce montage un peu douteux de if/else permet de n'afficher qu'une seule fois la légende de la courbe MésoNH choisie. Sans ça, le programme affichait autant de fois la légende
-                # qu'il y avait de jours entre le start_day et le end_day.
-            for param in params:
-                # Le retour du try/except pour éviter que le script ne se bloque.
-                try:
-                    if isinstance(data_mnh[today_str][dico_model[selection]
-                                  ['name']][param], (list, np.ndarray)):
-                        chart[param].add_trace(go.Scatter(x=data_mnh[today_str]['time'],
-                                                          y=data_mnh[today_str][dico_model[selection]
-                                                                                ['name']][param],
-                                                          marker={
-                            "color": dico_model[selection]['color']},
-                            mode="lines",
-                            name=selection,
-                            showlegend=afficher_legende))
-                except KeyError:
-                    pass
-
-#    print("!!!!!!!   PRINT MNH  !!!!!!!! ", data_mnh[today_str]['Rt']['tmp_2m'])
-
-    # Pour les courbes de Surfex :
-    courbe_affichee_surfex = []
-    for selection in reseau6:
-        nb_jour = (end_day - start_day).days
-        for i in range(nb_jour + 1):
-            day = start_day + timedelta(days=i)
-            today_str = day.strftime('%Y%m%d')
-
-            if selection not in courbe_affichee_surfex and dico_model[selection]['name'] in data_surfex[today_str] and isinstance(
-                    data_surfex[today_str][dico_model[selection]['name']]['tmp_2m'], (list, np.ndarray)):
-                courbe_affichee_surfex.append(selection)
-                afficher_legende_surfex = True
-            else:
-                afficher_legende_surfex = False
-            for param in params:
-                try:
-                    if isinstance(data_surfex[today_str][dico_model[selection]
-                                  ['name']][param], (list, np.ndarray)):
-                        chart[param].add_trace(go.Scatter(x=data_surfex[today_str]['time'],
-                                                          y=data_surfex[today_str][dico_model[selection]
-                                                                                   ['name']][param],
-                                                          line=dict(color=dico_model[selection]['color'],
-                                                                    dash='dashdot'),
-                                                          name=selection,
-                                                          showlegend=afficher_legende_surfex))
-                except KeyError:
-                    pass
-
-    # Mise à jour des graphiques après tous les changements
-    list_charts = []
     for param in params:
-        chart[param].update_layout(height=450, width=800,
-                                   xaxis_title="Date et heure",
-                                   yaxis_title=str(dico_params[param]['unit']),
-                                   title=dico_params[param]['title'])
-        list_charts.append(chart[param])
+        chart[param].update_layout(
+            height=450,
+            width=800,
+            xaxis_title="Date et heure",
+            yaxis_title=str(dico_params[param]['unit']),
+            title=dico_params[param]['title'],
+        )
+        updated_charts.append(chart[param])
 
-    return list_charts  # Le callback attend des Outputs qui sont contenus dans chart[param]
+    return updated_charts
 
 # -----------------------------------------------------------------------------
 #   3.3 LAYOUT

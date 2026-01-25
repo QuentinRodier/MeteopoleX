@@ -1,6 +1,5 @@
 from dash import html
 from dash import dcc
-from dash import Input, Output
 import plotly.graph_objects as go
 
 import datetime

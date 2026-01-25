@@ -1,1 +1,1 @@
-from . import paneaux_solaires
+from . import panneaux_solaires

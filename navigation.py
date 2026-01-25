@@ -39,6 +39,10 @@
 ##########################################################################################
 #-----------------------------------------------------------------------------------------
 
+from app import app
+# Callbacks
+#import callbacks # force le chargement des callbacks
+
 import os
 import time
 import datetime
@@ -69,8 +73,6 @@ from layouts.paneaux_solaire import layout_pv
 from config.variables import VARIABLES_PLOT, VARIABLES, VARIABLES_PV_PLOT, VARIABLES_RS_PLOT, VARIABLES_RS
 from config.models import MODELS_PLOT, MODELS_PLOT_RS, MODELS, MODELS_BIAIS, MODELS_PV, RESEAUX, LEGENDE_HEURES_PROFILS, LEGENDE_HEURES_PROFILS_AROARP
 
-# Callbacks
-import callbacks # force le chargement des callbacks
 
 # Data extraction
 import read_aida
@@ -90,20 +92,20 @@ import radio_sondage
 # 1.1 CREATION CSS
 # -----------------------------------------------------------------------------
 
-external_stylesheets = ['assets/bootstrap.min.css']
+#external_stylesheets = ['assets/bootstrap.min.css']
 
-app = dash.Dash(
-    __name__,
-    external_stylesheets=external_stylesheets,
-    suppress_callback_exceptions=True,
-    title='MeteopoleX',
-    requests_pathname_prefix='/MeteopoleX/',
-    routes_pathname_prefix='/'
-)
+#app = dash.Dash(
+#    __name__,
+#    external_stylesheets=external_stylesheets,
+#    suppress_callback_exceptions=True,
+#    title='MeteopoleX'
+#    requests_pathname_prefix='/MeteopoleX/',
+#    routes_pathname_prefix='/'
+#)
 
-app.css.config.serve_locally = True
-app.scripts.config.serve_locally = True
-server = app.server
+#app.css.config.serve_locally = True
+#app.scripts.config.serve_locally = True
+#server = app.server
 
 
 # -----------------------------------------------------------------------------
@@ -1679,7 +1681,7 @@ def display_page(pathname):
 
 
 if __name__ == '__main__':
-    app.run_server(debug=True, host="0.0.0.0", port=8010)
-#    app.run_server(debug=True, port=8088)
+#    app.run_server(debug=True, host="0.0.0.0", port=8010)
+    app.run_server(debug=True, port=8087)
 
 # print(data)

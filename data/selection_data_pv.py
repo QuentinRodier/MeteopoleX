@@ -1,3 +1,4 @@
+from app import app
 import datetime
 from config.variables import VARIABLES_PV_PLOT, VARIABLES
 from config.models import MODELS_PV

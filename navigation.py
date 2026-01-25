@@ -3,66 +3,43 @@
 #-----------------------------------------------------------------------------------------
 ##########################################################################################
 #-----------------------------------------------------------------------------------------
-
-# Organisation de ce code :
-# Toutes les pages du site se touvent ici, elles sont délimités par leur titre de type :
-
-# -----------------------------------------------------------------------------
-#   2. SERIES TEMPORELLES : Comparaison Obs/Modèles
-# -----------------------------------------------------------------------------
-
-# La plupart des pages contiennent plusieurs parties des 4 ci-dessous, dans cet ordre :
-# x.1. DONNEES
-# x.2. WIDGETS
-# x.3. CALLBACKS
-# x.4. LAYOUT
-
-# Les données contiennent les fonctions nécessaires à la récupérations des valeurs de tous les modèles.
-
-# Les widgets sont les objets qui permettent de choisir quoi afficher (quelles courbes à quelle date/heure/période)
-
-# Les callbacks actualisent la page.
-# Ils ont obligatoirement besoin d'une liste Output et une liste Input pour fonctionner
-# Ils contiennent la/les fonction(s) qui vont actualiser l'/les Output(s)
-# à chaque fois qu'un/que des Input(s) est/sont modifié(s)
-
-# Le layout est la mise en page.
-
-# La dernière partie du code est :
-# -----------------------------------------------------------------------------
-#   9. GESTION DES PAGES
-# -----------------------------------------------------------------------------
-
-# qui est destinée à la gestion des pages lors de la navigation sur le site.
-
+#app/
+#├── app.py                  # Création de l'objet Dash (UNIQUE)
+#├── navigation.py           # Routing entre les pages
+#│
+#├── layouts/                # Définition des layouts Dash (HTML / DCC)
+#│   ├── sidebar.py
+#│   ├── series_temporelles.py
+#│   ├── notice.py
+#│   ├── biais.py
+#│   └── ...
+#│
+#├── callbacks/              # Callbacks Dash (logique d'interaction)
+#│   ├── series_temporelles.py
+#│   ├── notice.py
+#│   ├── biais.py
+#│   └── ...
+#│
+#├── data/                   # Accès et préparation des données
+#│   ├── selection_donnees.py
+#│   ├── lecture_mesoNH.py
+#│   ├── lecture_surfex.py
+#│   └── ...
+#│
+#├── config/                 # Configuration globale (pas de logique)
+#│   ├── variables.py
+#│   └── models.py
+#│
+#└── assets/                 # CSS, images, fichiers statiques
+#
 #-----------------------------------------------------------------------------------------
 ##########################################################################################
 #-----------------------------------------------------------------------------------------
 
 from app import app
-# Callbacks
-#import callbacks # force le chargement des callbacks
-
-import os
-import time
-import datetime
-from datetime import timedelta, date
-from dateutil.relativedelta import relativedelta
-import base64                                   # encode binaire en ASCII. Rq: pybase64 utile pour accélérer ?
-
-# Biais computation
-import numpy as np
-import pandas as pd                             # dataframes pour les calculs biais obs/modèle (grille temporelle différente)
-
-# Dash Vue
-import flask                                    # web framework (faire du web facilement)
-import dash                                     # Python framework for building analytical web applications.
+import dash
 from dash import dcc
-import dash_bootstrap_components as dbc
 from dash import html
-from dash.dependencies import Input, Output, State
-import plotly.graph_objects as go
-import json
 
 # Layouts
 from layouts.sidebar import layout_sidebar
@@ -74,65 +51,11 @@ from layouts.serie_temporelle import layout_serie_temporelle
 from layouts.biais import layout_biais
 from layouts.biais_moyen import layout_biais_moyen
 
-# Config static
-from config.variables import VARIABLES_PLOT, VARIABLES, VARIABLES_PV_PLOT, VARIABLES_RS_PLOT, VARIABLES_RS
-from config.models import MODELS_PLOT, MODELS_PLOT_RS, MODELS, MODELS_BIAIS, MODELS_PV, RESEAUX, LEGENDE_HEURES_PROFILS, LEGENDE_HEURES_PROFILS_AROARP
-
-
-# Data extraction
-import read_aida
-import lecture_mesoNH
-import lecture_surfex
-import read_arome
-
-# Les programmes appelés par navigation.py
-import mesonh
-
-# -----------------------------------------------------------------------------
-#   1. CREATION App Object
-# -----------------------------------------------------------------------------
-
-# 1.1 CREATION CSS
-# -----------------------------------------------------------------------------
-
-#external_stylesheets = ['assets/bootstrap.min.css']
-
-#app = dash.Dash(
-#    __name__,
-#    external_stylesheets=external_stylesheets,
-#    suppress_callback_exceptions=True,
-#    title='MeteopoleX'
-#    requests_pathname_prefix='/MeteopoleX/',
-#    routes_pathname_prefix='/'
-#)
-
-#app.css.config.serve_locally = True
-#app.scripts.config.serve_locally = True
-#server = app.server
-
-
-# -----------------------------------------------------------------------------
-#   Styles globaux
-# -----------------------------------------------------------------------------
-
 CONTENT_STYLE = {
     "margin-left": "20rem",
     "margin-right": "2rem",
     "padding": "2rem 1rem",
 }
-
-
-# -----------------------------------------------------------------------------
-#   1.2 WIDGETS
-# -----------------------------------------------------------------------------
-
-today = datetime.date.today()
-tomorrow = today + timedelta(days=1)
-yesterday = today - timedelta(days=1)
-
-# Période par défaut
-start_day = yesterday
-end_day = today
 
 content = html.Div(id="page-content", style=CONTENT_STYLE)
 
@@ -159,7 +82,6 @@ mesoNH_layout = html.Div([layout_mesonh_gui])
 
 # Mise en place des callbacks associees a la GUI
 mesonhgui.start_callbacks(app)
-
 
 # -----------------------------------------------------------------------------
 #   10. GESTION DES PAGES

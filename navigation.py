@@ -69,6 +69,9 @@ import json
 from layouts.sidebar import layout_sidebar
 from layouts.notice import layout_notice
 from layouts.paneaux_solaire import layout_pv
+from layouts.surfex import layout_surfex
+from layouts.radiosoundings import layout_radiosoundings
+
 # Config static
 from config.variables import VARIABLES_PLOT, VARIABLES, VARIABLES_PV_PLOT, VARIABLES_RS_PLOT, VARIABLES_RS
 from config.models import MODELS_PLOT, MODELS_PLOT_RS, MODELS, MODELS_BIAIS, MODELS_PV, RESEAUX, LEGENDE_HEURES_PROFILS, LEGENDE_HEURES_PROFILS_AROARP
@@ -83,7 +86,6 @@ from data.selection_data_pv import selection_donnees_PV
 
 # Les programmes appelés par navigation.py
 import mesonh
-import radio_sondage
 
 # -----------------------------------------------------------------------------
 #   1. CREATION App Object
@@ -1450,172 +1452,6 @@ biaisM_layout = html.Div([
     row3,
 ], className="twelve columns", style={"text-align": "center", "justifyContent": "center"})
 
-
-# -----------------------------------------------------------------------------
-#   6. PROFILS VERTICAUX
-# -----------------------------------------------------------------------------
-
-day = datetime.date.today()
-
-#   6.2 WIDGETS
-# -----------------------------------------------------------------------------
-
-calendrier = html.Div([
-    dcc.DatePickerSingle(
-        id='my-date-picker-single',
-        first_day_of_week=1,
-        min_date_allowed=date(2015, 1, 1),
-        max_date_allowed=date(yesterday.year, yesterday.month, yesterday.day),
-        date=yesterday,
-        display_format="DD/MM/YYYY",
-        initial_visible_month=date(yesterday.year, yesterday.month, yesterday.day),
-    ), html.Div(id='output-container-date-picker-single')], className="twelve columns", style={"text-align": "center", "justifyContent": "center"})
-
-wich_heure = html.Div([
-dcc.Checklist(
-        options=[{'label': x, 'value': x} for x in LEGENDE_HEURES_PROFILS],
-        value=["6h"],
-        id='wich_heure')])
-
-labels = []
-for model in MODELS_PLOT_RS:
-    labels.append(MODELS_PLOT_RS[model]["name"])
-
-# C'est le widget qui permet de sélectionner les courbes que l'on veut afficher
-multi_select_line_chart_model = html.Div([
-    dcc.Dropdown(
-        id="multi_select_line_chart_model",
-        options=[{"value": value, "label": label} for value, label in zip(MODELS_PLOT_RS, labels)],
-        value=["Ab"],
-        multi=True,
-        clearable=False,
-        style={'width':'100%'}
-    )], className="six columns", style={"text-align": "center", "justifyContent": "center"})
-
-# Premier chargement des données à la date d'aujourd'hui
-data_rs = radio_sondage.radio_sondage(day, MODELS, VARIABLES_RS_PLOT, LEGENDE_HEURES_PROFILS, LEGENDE_HEURES_PROFILS_AROARP)
-#aroarp_rs = radio_sondage.pv_aroarp(day,MODELS,VARIABLES_RS_PLOT,LEGENDE_HEURES_PROFILS)
-
-# Création des figures
-chart = {}
-for param in VARIABLES_RS_PLOT:
-    chart[param] = go.Figure()
-
-# Tranformation en HTML
-graph = {}
-for param in VARIABLES_RS_PLOT:
-    graph[param] = dcc.Graph(id='graph_' + param, figure=chart[param])
-
-# 6.3   CALLBACKS (voir 2.3)
-# -----------------------------------------------------------------------------
-# Contient fonctions qui vont actualiser les Outputs à chaque fois qu'un Input est modifié
-
-output_rs = []
-for param in VARIABLES_RS_PLOT:
-    output_rs.append(Output('graph_' + param, 'figure'))  # Graphs qui seront mis à jour
-
-@app.callback(output_rs, [Input('wich_heure', 'value'),
-                          Input('my-date-picker-single', 'date'),
-                          Input('multi_select_line_chart_model', 'value')])
-
-def update_rs(wich_heure, date_value, model_choisi):
-
-    if date_value is not None:
-        date_object = date.fromisoformat(date_value)
-
-    # Puis, mise à jour des graphes :
-    for param in VARIABLES_RS_PLOT:
-        chart[param] = go.Figure()
-
-    # Extraction des données
-    data_rs = radio_sondage.radio_sondage(date_object, MODELS, VARIABLES_RS_PLOT, LEGENDE_HEURES_PROFILS, LEGENDE_HEURES_PROFILS_AROARP)
-    #aroarp_rs = radio_sondage.pv_aroarp(date_object,MODELS,VARIABLES_RS_PLOT,LEGENDE_HEURES_PROFILS)
-
-    # Mise à jour des courbes
-    courbe_affichee = []
-    for selection in wich_heure:
-        if selection not in courbe_affichee:
-            courbe_affichee.append(selection)
-            afficher_legende = True
-        else:
-            afficher_legende = False
-        for param in VARIABLES_RS_PLOT:
-            for model in model_choisi:
-
-                if model == 'Ab' and len(data_rs[model][selection][param]) > 1:
-                    try:
-
-                        chart[param].add_trace(
-                            go.Scatter(
-                                x=data_rs[model][selection][param],
-                                y=data_rs[model][selection]['level'],
-                                line=dict(
-                                    color=LEGENDE_HEURES_PROFILS[selection]["color"],
-                                    width=8,
-                                    dash=MODELS_PLOT_RS[model]["line"]),
-                                mode="markers",
-                                name=MODELS_PLOT_RS[model]["name"] +
-                                ' - ' +
-                                LEGENDE_HEURES_PROFILS[selection]["value"],
-                                showlegend=afficher_legende))
-                    except KeyError:
-                        pass
-
-                else:
-
-                    try:
-                        chart[param].add_trace(
-                            go.Scatter(
-                                x=data_rs[model][selection][param],
-                                y=data_rs[model]['level'],
-                                line=dict(
-                                    color=LEGENDE_HEURES_PROFILS[selection]["color"],
-                                    width=4,
-                                    dash=MODELS_PLOT_RS[model]["line"]),
-                                mode="lines",
-                                name=MODELS_PLOT_RS[model]["name"] +
-                                ' - ' +
-                                LEGENDE_HEURES_PROFILS[selection]["value"],
-                                showlegend=afficher_legende))
-                    except KeyError:
-                        pass
-    list_charts = []
-    for param in VARIABLES_RS_PLOT:
-        chart[param].update_layout(height=1000, width=500,
-                                   xaxis_title=VARIABLES_RS[param]["label"] +
-                                   " (" + VARIABLES_RS[param]["unit"] + ")",
-                                   yaxis_title="Altitude (m agl)",
-                                   title=param)
-        list_charts.append(chart[param])
-
-    return list_charts
-
-# 6.4   LAYOUT
-# ---------------------------------------------------------------------------
-
-all_graphs = []
-for param in VARIABLES_RS_PLOT:
-    all_graphs.append(
-        html.Div(
-            graph[param],
-            className="six columns",
-            style={
-                'display': 'inline-block'}))
-
-row2 = html.Div(children=all_graphs, className="six columns")
-
-rs_layout = html.Div([
-    html.H1('Profils verticaux'),
-    calendrier,
-    html.Br(),
-    html.Br(),
-    wich_heure,
-    multi_select_line_chart_model,
-    row2,
-    html.Br(),
-], className="twelve columns", style={"text-align": "center", "justifyContent": "center"})
-
-
 # -----------------------------------------------------------------------------
 #   7. REJEU MESO-NH
 # -----------------------------------------------------------------------------
@@ -1636,22 +1472,6 @@ mesonhgui.start_callbacks(app)
 
 
 # -----------------------------------------------------------------------------
-#   8. REJEU SURFEX
-# -----------------------------------------------------------------------------
-
-surfex_layout = html.Div([
-    html.H1('Rejeu de SURFEX'),
-], className="twelve columns", style={"text-align": "center", "justifyContent": "center"})
-
-
-# -----------------------------------------------------------------------------
-#   9. Panneaux photovoltaïques
-# -----------------------------------------------------------------------------
-
-
-# Externalisé
-
-# -----------------------------------------------------------------------------
 #   10. GESTION DES PAGES
 # -----------------------------------------------------------------------------
 
@@ -1668,9 +1488,9 @@ def display_page(pathname):
     elif pathname == '/MeteopoleX/mesoNH':
         return mesoNH_layout
     elif pathname == '/MeteopoleX/surfex':
-        return surfex_layout
+        return layout_surfex
     elif pathname == '/MeteopoleX/rs':
-        return rs_layout
+        return layout_radiosoundings
     elif pathname == '/MeteopoleX/notice':
         return layout_notice
     elif pathname=='/MeteopoleX/PV':

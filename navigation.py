@@ -1,18 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-
-"""
-Created on 
-Updated on 02/02/2023
-@authors: rodierq, canut, roya, capoj, nicolasc, topam
-version : 1.4.1
-"""
-
 #-----------------------------------------------------------------------------------------
 ##########################################################################################
 #-----------------------------------------------------------------------------------------
 
-# Petit préambule sur l'organisation de ce code :
+# Organisation de ce code :
 # Toutes les pages du site se touvent ici, elles sont délimités par leur titre de type :
 
 # -----------------------------------------------------------------------------
@@ -36,21 +28,16 @@ version : 1.4.1
 
 # Le layout est la mise en page.
 
-
 # La dernière partie du code est :
 # -----------------------------------------------------------------------------
 #   9. GESTION DES PAGES
 # -----------------------------------------------------------------------------
 
-# qui est, comme son nom l'indique, destinée à la gestion des pages lors
-# de la navigation sur le site.
+# qui est destinée à la gestion des pages lors de la navigation sur le site.
 
 #-----------------------------------------------------------------------------------------
 ##########################################################################################
 #-----------------------------------------------------------------------------------------
-
-# Les packages communs, liés aux dates et aux nombres
-import json
 
 import os
 import time
@@ -59,31 +46,35 @@ from datetime import timedelta, date
 from dateutil.relativedelta import relativedelta
 import matplotlib.dates as mdates
 import base64                                   # encode binaire en ASCII. Rq: pybase64 utile pour accélérer ?
-import shortuuid                                # generates short, pretty, unambiguous unique IDs
+
+# Biais computation
 import numpy as np
 import pandas as pd                             # dataframes pour les calculs biais obs/modèle (grille temporelle différente)
-import plotly.graph_objects as go
 
-# Les packages pour faire du web 
+# Dash Vue
 import flask                                    # web framework (faire du web facilement)
 import dash                                     # Python framework for building analytical web applications.
 from dash import dcc
 import dash_bootstrap_components as dbc
 from dash import html
 from dash.dependencies import Input, Output, State
+import plotly.graph_objects as go
+import json
 
+# Layouts
 from layouts.sidebar import layout_sidebar
 from layouts.notice import layout_notice
 
+# Config static
 from config.variables import VARIABLES_PLOT, VARIABLES, VARIABLES_PV_PLOT, VARIABLES_RS_PLOT, VARIABLES_RS
 from config.models import MODELS_PLOT, MODELS, MODELS_BIAIS, MODELS_PV, RESEAUX, LEGENDE_HEURES_PROFILS, LEGENDE_HEURES_PROFILS_AROARP
 
-# Tous les programmes qui permettent de récupérer les données
+# Data extraction
 import read_aida
 import lecture_mesoNH
 import lecture_surfex
-#!# Ajout enveloppe
 import read_arome
+from data.selection_data_pv import selection_donnees_PV
 
 # Les programmes appelés par navigation.py
 import mesonh
@@ -143,14 +134,12 @@ app.layout = html.Div([
     content
 ])
 
-
 # -----------------------------------------------------------------------------
 #   3. SERIES TEMPORELLES : Comparaison Obs/Modèles
 # -----------------------------------------------------------------------------
 
 #   3.1. DONNEES : Lecture des données dans AIDA
 # -----------------------------------------------------------------------------
-
 
 def selection_donnees(start_day, end_day):
     """
@@ -1654,102 +1643,7 @@ surfex_layout = html.Div([
 #   9. Panneaux photovoltaïques
 # -----------------------------------------------------------------------------
 
-def selection_donnees_PV(start_day, end_day):
-    
-    data_PV = {}
-    chart_PV = {}
-    graph_PV = {}
-    
-    doy1 = datetime.datetime(int(start_day.year), int(start_day.month), int(start_day.day)). strftime('%j')
-    doy2 = datetime.datetime(int(end_day.year), int(end_day.month), int(end_day.day)). strftime('%j')
-    
-    for param in VARIABLES_PV_PLOT:
-        if param not in data_PV:
-            data_PV[param] = {}
-        for model in MODELS_PV:
-            if model not in data_PV[param]:
-                data_PV[param][model] = {}
-                
-                if model == "Obs_moy":
-                    id_aida = VARIABLES[param]["index_obs_moy"]
-                    # Read AIDA : lit tous les paramètres alors que selection de données va
-                    # lire uniquement un parametre specifique
-                    (values, time, header) = read_aida.donnees(doy1, doy2, str(start_day.year), str(end_day.year),id_aida, "Tf")
-                    data_PV[param][model]['values'] = values
-                    data_PV[param][model]['time'] = time
-                
-                elif model == "Obs_1":
-                    id_aida = VARIABLES[param]["index_obs_1"]
-                    # Read AIDA : lit tous les paramètres alors que selection de données va
-                    # lire uniquement un parametre specifique
-                    (values, time, header) = read_aida.donnees(doy1, doy2, str(start_day.year), str(end_day.year),id_aida, "Tf")
-                    data_PV[param][model]['values'] = values
-                    data_PV[param][model]['time'] = time
-                    
-                elif model == "Obs_2":
-                    id_aida = VARIABLES[param]["index_obs_2"]
-                    # Read AIDA : lit tous les paramètres alors que selection de données va
-                    # lire uniquement un parametre specifique
-                    (values, time, header) = read_aida.donnees(doy1, doy2, str(start_day.year), str(end_day.year),id_aida, "Tf")
-                    data_PV[param][model]['values'] = values
-                    data_PV[param][model]['time'] = time
-                    
-                elif model == "Obs_3":
-                    id_aida = VARIABLES[param]["index_obs_3"]
-                    # Read AIDA : lit tous les paramètres alors que selection de données va
-                    # lire uniquement un parametre specifique
-                    (values, time, header) = read_aida.donnees(doy1, doy2, str(start_day.year), str(end_day.year),id_aida, "Tf")
-                    data_PV[param][model]['values'] = values
-                    data_PV[param][model]['time'] = time
-                    
-                elif model == "Obs_cnr4":
-                    id_aida = VARIABLES[param]["index_cnr4"]
-                    # Read AIDA : lit tous les paramètres alors que selection de données va
-                    # lire uniquement un parametre specifique
-                    (values, time, header) = read_aida.donnees(doy1, doy2, str(start_day.year), str(end_day.year),id_aida, "Tf")
-                    data_PV[param][model]['values'] = values
-                    data_PV[param][model]['time'] = time
-                
-                elif model == "Obs_bf5":
-                    id_aida = VARIABLES[param]["index_bf5"]
-                    # Read AIDA : lit tous les paramètres alors que selection de données va
-                    # lire uniquement un parametre specifique
-                    (values, time, header) = read_aida.donnees(doy1, doy2, str(start_day.year), str(end_day.year),id_aida, "Tf")
-                    data_PV[param][model]['values'] = values
-                    data_PV[param][model]['time'] = time
-                
-                elif model == "arome_J0":
-#                        if param == "RGD":
-#                            param_arome = VARIABLES[param]['index_arome_J0']
-#                            donnee_arome = read_arome.donnees(start_day, end_day, 0, param_arome)
-#                            mean_arome= donnee_arome.groupby(donnee_arome.index).mean()[param_arome]
-#                            data_PV[param][model]['values'] = mean_arome[param_arome]
-#                            data_PV[param][model]['time'] = [datetime.strptime(ts_str, "%Y-%m-%d %H:%M:%S") for ts_str in mean_arome.index]
-#                        else:
-                    id_aida = VARIABLES[param]["index_arome_J0"] 
-                    (values, time, header) = read_aida.donnees(doy1, doy2, str(start_day.year), str(end_day.year), id_aida, "Tf")
-                    data_PV[param][model]['values'] = values
-                    data_PV[param][model]['time'] = time
-                        
-                elif model == "arome_J-1":
-#                            if param == "RGD":
-#                            param_arome = VARIABLES[param]['index_arome_J-1']
-#                            donnee_arome = read_arome.donnees(start_day, end_day, 12, param_arome)
-#                            mean_arome= donnee_arome.groupby(donnee_arome.index).mean()[param_arome]
-#                            data_PV[param][model]['values'] = mean_arome[param_arome]
-#                            data_PV[param][model]['time'] = [datetime.strptime(ts_str, "%Y-%m-%d %H:%M:%S") for ts_str in mean_arome.index]
-#                        else:
-                    id_aida = VARIABLES[param]["index_arome_J-1"] 
-                    (values, time, header) = read_aida.donnees(doy1, doy2, str(start_day.year), str(end_day.year), id_aida, "Tf")
-                    data_PV[param][model]['values'] = values
-                    data_PV[param][model]['time'] = time
-         
-        chart_PV[param] = go.Figure()
-        graph_PV[param] = dcc.Graph(id='graph_PV_'+param, figure=chart_PV[param])
-
-    return data_PV, chart_PV, graph_PV
-
-# Première extraction des données
+# Extraction des données PV
 data_PV, chart_PV, graph_PV = selection_donnees_PV(start_day, end_day)
 
 # Callbacks

@@ -1,9 +1,9 @@
 from dash import html
 
 import datetime
-from datetime import date, timedelta
+from datetime import timedelta
 
-from config.models import MODELS, MODELS_PLOT_RS, LEGENDE_HEURES_PROFILS, LEGENDE_HEURES_PROFILS_AROARP
+from config.models import MODELS
 from config.variables import VARIABLES_PLOT
 
 from data.selection_data_brut_serieT import selection_data_brut_serieT

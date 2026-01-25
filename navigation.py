@@ -64,7 +64,7 @@ import json
 # Layouts
 from layouts.sidebar import layout_sidebar
 from layouts.notice import layout_notice
-
+from layouts.paneaux_solaire import layout_pv
 # Config static
 from config.variables import VARIABLES_PLOT, VARIABLES, VARIABLES_PV_PLOT, VARIABLES_RS_PLOT, VARIABLES_RS
 from config.models import MODELS_PLOT, MODELS_PLOT_RS, MODELS, MODELS_BIAIS, MODELS_PV, RESEAUX, LEGENDE_HEURES_PROFILS, LEGENDE_HEURES_PROFILS_AROARP
@@ -1647,25 +1647,7 @@ surfex_layout = html.Div([
 # -----------------------------------------------------------------------------
 
 
-
-
-# 9.3   LAYOUT
-# ---------------------------------------------------------------------------
-
-# Puisqu'on n'a pas la main sur la css (cf. external_stylesheets en haut), on joue sur les html.Div.
-# Ici par exemple, chaque graph est d'abord mis dans une Div dont on réduit la taille ("className="six columns"),
-# puis on met toutes ces Div dans une seule qui elle prend toute la page
-all_graphs_PV = []
-for param in VARIABLES_PV_PLOT:
-    all_graphs_PV.append(html.Div(graph_PV[param], className="six columns", style={'display': 'inline-block'}))
-#all_graphs_PV.append(html.Div(graph_PV_2,className="six columns",style={'display': 'inline-block'}))
-row = html.Div(children=all_graphs_PV, className="six columns")
-
-# Ces dernières lignes sont la mise en forme finale de la page
-PV_layout = html.Div([html.H1('Panneaux photovoltaïques'), row], 
-                     className="row",
-                     style={"text-align": "center", "justifyContent": "center"})
-
+# Externalisé
 
 # -----------------------------------------------------------------------------
 #   10. GESTION DES PAGES
@@ -1690,7 +1672,7 @@ def display_page(pathname):
     elif pathname == '/MeteopoleX/notice':
         return layout_notice
     elif pathname=='/MeteopoleX/PV':
-        return PV_layout
+        return layout_pv
     else:
         return "Error 404 URL not found"
     

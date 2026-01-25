@@ -75,6 +75,9 @@ from dash.dependencies import Input, Output, State
 from layouts.sidebar import layout_sidebar
 from layouts.notice import layout_notice
 
+from config.variables import VARIABLES_PLOT, VARIABLES, VARIABLES_PV_PLOT, VARIABLES_RS_PLOT, VARIABLES_RS
+from config.models import MODELS_PLOT, MODELS, MODELS_BIAIS, MODELS_PV, RESEAUX, LEGENDE_HEURES_PROFILS, LEGENDE_HEURES_PROFILS_AROARP
+
 # Tous les programmes qui permettent de récupérer les données
 import read_aida
 import lecture_mesoNH
@@ -124,6 +127,14 @@ CONTENT_STYLE = {
 #   1.2 WIDGETS
 # -----------------------------------------------------------------------------
 
+today = datetime.date.today()
+tomorrow = today + timedelta(days=1)
+yesterday = today - timedelta(days=1)
+
+# Période par défaut
+start_day = yesterday
+end_day = today
+
 content = html.Div(id="page-content", style=CONTENT_STYLE)
 
 app.layout = html.Div([
@@ -140,233 +151,6 @@ app.layout = html.Div([
 #   3.1. DONNEES : Lecture des données dans AIDA
 # -----------------------------------------------------------------------------
 
-# Ce dictionnaire rassemble les spécificités de chaque paramètres tracés. Les 2 premiers 'index' sont les noms donnés sur AIDA au paramètre en question, dans les observations et dans les modèles.
- #!# Ajout enveloppe Le 'index_modl_arome' est le dico de la nouvelle recuperation AROME.
-# Le 'title' est le titre du graph qui sera affiché, donc c'est l'utilisateur qui choisi, idem pour le unit, c'est à l'utilisateur de rentrer les bonnes unités.
-dico_params = {
-    "tmp_2m": {
-        "index_obs": "tpr_air_bs_c1_%60_Met_%1800",
-        "index_model": "tpr_air2m",
-        "index_model_arome" : "t2m", 
-        "title": "Température à 2m",
-        "unit": "°C"
-    },
-    "tmp_10m": {
-        "index_obs": "tpr_air_ht_c1_%60_Met_%1800",
-        "index_model": "tpr_air10m",
-        "index_model_arome": None,
-        "title": "Température à 10m",
-        "unit": "°C"
-    },
-    "hum_rel": {
-        "index_obs": "hum_relcapa_bs_c1_%60_Met_%1800",
-        "index_model": "hum_rel",
-        "index_model_arome": "hu2m",
-        "title": "Humidité relative",
-        "unit": "%"
-    },
-    "vent_ff10m": {
-        "index_obs": "ven_ff_10mn_c1_UV_%1800",
-        "index_model": "ven_ff10m",
-        "index_model_arome": "Vamp10m", 
-        "title": "Vent moyen à 10m",
-        "unit": "m/s"
-    },
-    "flx_mvt": {
-        "index_obs": "flx_mvt_Chb_%1800",
-        "index_model": "flx_mvt",
-        "index_model_arome": None,
-        "title": "Vitesse de friction",
-        "unit": "m/s"
-    },
-    "tke": {
-        "index_obs": "trb_ect_gill_tke_%1800",
-        "index_model": "",
-        "index_model_arome": "tke",
-        "title": "Energie cinétique turbulente",
-        "unit": "m²/s²"
-        },
-    "flx_chaleur_sens": {
-        "index_obs": "flx_hs_tson_Chb_%1800",
-        "index_model": "flx_hs",
-        "index_model_arome": "sfc_sens_flx",
-        "title": "Flux de chaleur sensible",
-        "unit": "W/m²"
-    },
-    "flx_chaleur_lat": {
-        "index_obs": "flx_le_Chb_%1800",
-        "index_model": "flx_le",
-        "index_model_arome": "sfc_lat_flx",
-        "title": "Flux de chaleur latente",
-        "unit": "W/m²"
-    },    
-    "SWD": {
-        "index_obs": "ray_rgd_cnr1_c2_%60_Met_%1800",
-        "index_model": "ray_rgd",
-        "index_model_arome" : "SWd",
-        "title": "Rayonnement global descendant (SW down)",
-        "unit": "W/m²"
-    },
-    "SWU": {
-        "index_obs": "ray_rgm_cnr1_c2_%60_Met_%1800",
-        "index_model": "ray_rgm",
-        "index_model_arome" : "SWu",
-        "title": "Rayonnement global montant (SW up)",
-        "unit": "W/m²"
-    },
-    "LWD": {
-        "index_obs": "ray_ird_cnr1_c2_%60_Met_%1800",
-        "index_model": "ray_ird",
-        "index_model_arome" : "LWd",
-        "title": "Rayonnement IR descendant (LW down)",
-        "unit": "W/m²"
-    },
-    "LWU": {
-        "index_obs": "ray_irm_cnr1_c2_%60_Met_%1800",
-        "index_model": "ray_irm",
-        "index_model_arome": "LWu", 
-        "title": "Rayonnement IR montant (LW up)",
-        "unit": "W/m²"
-    },    
-    "flx_chaleur_sol": {
-        "index_obs": "flx_phi0_moy_c2_%60",
-        "index_model": "",
-        "index_model_arome": None,
-        "title": "Flux de conduction dans le sol",
-        "unit": "W/m²"
-    },
-    "t_surface": {
-        "index_obs": "tpr_solIR_c1_%60",
-        "index_model": "",
-        "index_model_arome": None,
-        "title": "Température de surface",
-        "unit": "°C"
-    },
-    "t-1": {
-        "index_obs": "tpr_sol1cm_c4_%900_Met_%1800",
-        "index_model": "",
-        "index_model_arome": None, 
-        "title": "Température du sol à -1 cm",
-        "unit": "°C"
-    },
-    "hu_couche1": {
-        "index_obs": "hum_sol1cm_ec5_c3_%900_Met_%1800",
-        "index_model": "",
-        "index_model_arome": None,
-        "title": "Humidité de la première couche",
-        "unit": "kg/kg"
-    },
-    "cumul_RR": {
-        "index_obs": "prp_rr_min_c2_%60_Som_%1800",
-        "index_model": "",
-        "index_model_arome": None,
-        "title": "Cumuls de pluie (Obs: 30mn, ARO-ARP: 1h, MNH: 15mn)",
-        "unit": "mm"
-    },
-    "altitude_CL": {
-        "index_obs": "",
-        "index_model": "",
-        "index_model_arome": "pblh",
-        "title": "Altitude de la couche limite",
-        "unit": "m"
-    },
-    "PV": {"index_obs_moy":"ray_power_pv_Eti_%900_Met_%3600",
-        "index_obs_1": "ray_power_pv_Eti_%900",
-        "index_obs_2": "ray_power_pv_LG_Eti_%1800",
-        "index_obs_3": "ray_power_pv_Voltec_Eti_%1800",
-        "index_cnr4":"",
-        "index_bf5":"",
-        "index_arome_J0": "ray_power_pv_estim_aromeJ0_00_%3600",
-        "index_arome_J-1": "ray_power_pv_estim_aromeJ_1_12_%3600",
-        "title": "Puissance émise par les panneaux solaires ",
-        "unit": "W/m²"
-    },
-    "RGD": {"index_obs_moy":"",
-        "index_obs_1": "",
-        "index_obs_2": "",
-        "index_obs_3": "",
-        "index_cnr4": "ray_rgd_cnr4_c7_Eti_%10",
-        "index_bf5": "ray_rgd_bf5_c7_Eti_%10",
-        "index_arome_J0": 'SWd',
-        "index_arome_J-1": 'SWd',
-        "title": "Rayonnement global descendant ",
-        "unit": "W/m²"
-        },
-
-    "RD": {"index_obs_moy":"",
-        "index_obs_1": "",
-        "index_obs_2": "",
-        "index_obs_3": "",
-        "index_cnr4": "",
-        "index_bf5": "ray_rdiff_bf5_c7_Eti_%10",
-        "index_arome_J0": "",
-        "index_arome_J-1": "",
-        "title": "Rayonnement diffus ",
-        "unit": "W/m²"
-        },
-     
-    "INSO": {"index_obs_moy":"",
-        "index_obs_1": "",
-        "index_obs_2": "",
-        "index_obs_3": "",
-        "index_cnr4": "",
-        "index_bf5": "ray_inso_bf5_c7_Eti_%10",
-        "index_arome_J0": "",
-        "index_arome_J-1": "",
-        "title": "Durée d'insolation ",
-        "unit": "h"
-        }
-    
-}
-    
-# DRIVER LECTURE DES SIMULATIONS MESONH ET SURFEX : AJOUT DE NOUVEAU RUN ICI
-dico_model = {"MésoNH_Arp":
-              {'name': 'Gt',
-               'color': 'purple'},
-              "MésoNH_Aro":
-              {'name': 'Rt',
-               'color': "limegreen"},
-              "MésoNH_Obs":
-              {'name': 'Tf',
-               'color': 'orange'},
-              "SURFEX_Arp":
-              {'name': 'Gt',
-               'color': 'darkgreen'},
-              "SURFEX_Aro":
-              {'name': 'Rt',
-               'color': 'pink'},
-              "SURFEX_Obs":
-              {'name': 'Tf',
-               'color': 'gold'}}
-
-# Liste de tous les paramètres qui vont être tracés. Pour toute modification de cette liste,
-# modifier le dico_params en conséquence.
-params = [
-    "tmp_2m",
-    "tmp_10m",
-    "hum_rel",
-    "vent_ff10m",
-    "flx_mvt",
-    "tke",
-    "flx_chaleur_sens",
-    "flx_chaleur_lat",
-    "SWD",
-    "SWU",
-    "LWD",
-    "LWU",    
-    "flx_chaleur_sol",
-    "t_surface",
-    "t-1",
-    "hu_couche1",
-    "cumul_RR"]
-#    "altitude_CL"]
-
-# Liste des modèles de dico_model 
-models = ["Gt", "Rt", "Arome"]
-#models = ["Gt", "Rt", "Tf"]
-
-# Liste des réseaux pour les modèles numériques
-reseaux = ["J-1:00_%3600", "J-1:12_%3600", "J0:00_%3600", "J0:12_%3600"]
 
 def selection_donnees(start_day, end_day):
     """
@@ -391,7 +175,7 @@ def selection_donnees(start_day, end_day):
     # -------------------------------------------------------------------------
     # Boucle principale sur les paramètres
     # -------------------------------------------------------------------------
-    for param in params:
+    for param in VARIABLES_PLOT:
 
         data.setdefault(param, {})
 
@@ -401,7 +185,7 @@ def selection_donnees(start_day, end_day):
         obs_model = 'Tf'
         data[param][obs_model] = {}
 
-        obs_index = dico_params[param]["index_obs"]
+        obs_index = VARIABLES[param]["index_obs"]
 
         values_obs, time_obs, _ = read_aida.donnees(
             start_doy,
@@ -418,11 +202,11 @@ def selection_donnees(start_day, end_day):
         # ---------------------------------------------------------------------
         # Modèles numériques
         # ---------------------------------------------------------------------
-        for model in models:
+        for model in MODELS:
 
             data[param].setdefault(model, {})
 
-            for reseau in reseaux:
+            for reseau in RESEAUX:
 
                 data[param][model].setdefault(reseau, {})
 
@@ -446,7 +230,7 @@ def selection_donnees(start_day, end_day):
                         'time': {}
                     })
 
-                    param_arome = dico_params[param]['index_model_arome']
+                    param_arome = VARIABLES[param]['index_model_arome']
 
                     if param_arome is not None:
 
@@ -498,7 +282,7 @@ def selection_donnees(start_day, end_day):
                 # -------------------------------------------------------------
                 else:
 
-                    model_index = f"{dico_params[param]['index_model']}_{reseau}"
+                    model_index = f"{VARIABLES[param]['index_model']}_{reseau}"
 
                     values_mod, time_mod, _ = read_aida.donnees(
                         start_doy,
@@ -545,9 +329,9 @@ data, chart, graph = selection_donnees(start_day, end_day)
 #print(data['tmp_2m']['Gt']['J0:00_%3600']['values'])
 #print(data['tmp_2m']['Gt']['J0:00_%3600']['time'])
 
-# Pour ajouter un nouveau run de MesoNH, changer la liste models : en créer une autre
-data_mnh = lecture_mesoNH.mesoNH(start_day, end_day, models, params)
-data_surfex = lecture_surfex.surfex(start_day, end_day, models, params)
+# Pour ajouter un nouveau run de MesoNH, changer la liste MODELS : en créer une autre
+data_mnh = lecture_mesoNH.mesoNH(start_day, end_day, MODELS, VARIABLES_PLOT)
+data_surfex = lecture_surfex.surfex(start_day, end_day, MODELS, VARIABLES_PLOT)
 
 # -----------------------------------------------------------------------------
 #   3.2 CALLBACKS
@@ -556,7 +340,7 @@ data_surfex = lecture_surfex.surfex(start_day, end_day, models, params)
 
 output_graphs = []
 
-for param in params:
+for param in VARIABLES_PLOT:
     output_graphs.append(Output(f'graph_{param}', 'figure'))
 
 
@@ -613,14 +397,14 @@ def update_line(
     # -------------------------------------------------------------------------
     data, chart, graph = selection_donnees(start_day, end_day)
 
-    data_mnh = lecture_mesoNH.mesoNH(start_day, end_day, models, params)
-    data_surfex = lecture_surfex.surfex(start_day, end_day, models, params)
+    data_mnh = lecture_mesoNH.mesoNH(start_day, end_day, MODELS, VARIABLES_PLOT)
+    data_surfex = lecture_surfex.surfex(start_day, end_day, MODELS, VARIABLES_PLOT)
 
 
     # -------------------------------------------------------------------------
     # Initialisation des figures
     # -------------------------------------------------------------------------
-    for param in params:
+    for param in VARIABLES_PLOT:
         chart[param] = go.Figure()
 
 
@@ -631,7 +415,7 @@ def update_line(
 
     for idx, user_id in enumerate([id_user1, id_user2, id_user3, id_user4, id_user5]):
 
-        data_user = lecture_mesoNH.mesoNH_user(start_day, end_day, user_id, params)
+        data_user = lecture_mesoNH.mesoNH_user(start_day, end_day, user_id, VARIABLES_PLOT)
         nb_days = (end_day - start_day).days
 
         displayed_curves = []
@@ -649,7 +433,7 @@ def update_line(
             else:
                 show_legend = False
 
-            for param in params:
+            for param in VARIABLES_PLOT:
                 try:
                     if isinstance(data_user[day_str][param], (list, np.ndarray)):
                         chart[param].add_trace(
@@ -670,7 +454,7 @@ def update_line(
     # -------------------------------------------------------------------------
     for idx, user_id in enumerate([id_user1, id_user2, id_user3, id_user4, id_user5]):
 
-        data_user = lecture_surfex.surfex_user(start_day, end_day, user_id, params)
+        data_user = lecture_surfex.surfex_user(start_day, end_day, user_id, VARIABLES_PLOT)
         nb_days = (end_day - start_day).days
 
         displayed_curves = []
@@ -688,7 +472,7 @@ def update_line(
             else:
                 show_legend = False
 
-            for param in params:
+            for param in VARIABLES_PLOT:
                 try:
                     if isinstance(data_user[day_str][param], (list, np.ndarray)):
 
@@ -718,7 +502,7 @@ def update_line(
     # -------------------------------------------------------------------------
     for selection in reseau_obs:
         if selection == "Obs":
-            for param in params:
+            for param in VARIABLES_PLOT:
                 if isinstance(data[param]['Tf']['values'], (list, np.ndarray)):
                     chart[param].add_trace(
                         go.Scatter(
@@ -737,26 +521,26 @@ def update_line(
     for selection in reseau_arp:
 
         if selection == "Arp_J-1_00h":
-            reseau = reseaux[0]
+            reseau = RESEAUX[0]
             line_param = dict(color='navy', dash='dot')
             visible_settings = True
 
         if selection == "Arp_J-1_12h":
-            reseau = reseaux[1]
+            reseau = RESEAUX[1]
             line_param = dict(color='mediumslateblue', dash='dot')
             visible_settings = 'legendonly'
 
         if selection == "Arp_J0_00h":
-            reseau = reseaux[2]
+            reseau = RESEAUX[2]
             line_param = dict(color='navy')
             visible_settings = True
 
         if selection == "Arp_J0_12h":
-            reseau = reseaux[3]
+            reseau = RESEAUX[3]
             line_param = dict(color='mediumslateblue')
             visible_settings = True
 
-        for param in params:
+        for param in VARIABLES_PLOT:
             if isinstance(data[param]['Gt'][reseau]['values'], (list, np.ndarray)):
                 chart[param].add_trace(
                     go.Scatter(
@@ -775,22 +559,22 @@ def update_line(
     for selection in reseau_aro:
 
         if selection == "Aro_J-1_00h":
-            reseau = reseaux[0]
+            reseau = RESEAUX[0]
             line_param = dict(color='green', dash='dot')
 
         if selection == "Aro_J-1_12h":
-            reseau = reseaux[1]
+            reseau = RESEAUX[1]
             line_param = dict(color='olive', dash='dot')
 
         if selection == "Aro_J0_00h":
-            reseau = reseaux[2]
+            reseau = RESEAUX[2]
             line_param = dict(color='green')
 
         if selection == "Aro_J0_12h":
-            reseau = reseaux[3]
+            reseau = RESEAUX[3]
             line_param = dict(color='olive')
 
-        for param in params:
+        for param in VARIABLES_PLOT:
             if isinstance(data[param]['Rt'][reseau]['values'], (list, np.ndarray)):
                 chart[param].add_trace(
                     go.Scatter(
@@ -807,13 +591,13 @@ def update_line(
     # -------------------------------------------------------------------------
     updated_charts = []
 
-    for param in params:
+    for param in VARIABLES_PLOT:
         chart[param].update_layout(
             height=450,
             width=800,
             xaxis_title="Date et heure",
-            yaxis_title=str(dico_params[param]['unit']),
-            title=dico_params[param]['title'],
+            yaxis_title=str(VARIABLES[param]['unit']),
+            title=VARIABLES[param]['title'],
         )
         updated_charts.append(chart[param])
 
@@ -828,7 +612,7 @@ def update_line(
 
 graphs_layout = []
 
-for param in params:
+for param in VARIABLES_PLOT:
     graphs_layout.append(
         html.Div(
             graph[param],
@@ -863,7 +647,6 @@ obs_modeles_layout = html.Div(
 
 def calcul_biais(start_day, end_day):
 
-    models=['Tf', 'Rt', 'Gt'] #Avec ancienne version de Arome #!# Ajout enveloppe
     doy1 = datetime.datetime(int(start_day.year), int(
         start_day.month), int(start_day.day)).strftime('%j')
     doy2 = datetime.datetime(int(end_day.year), int(end_day.month), int(end_day.day)).strftime('%j')
@@ -889,20 +672,20 @@ def calcul_biais(start_day, end_day):
     dataframe_sanstrou = pd.DataFrame(index=dataallyear)
 
     # Données des simulations MésoNH OPER
-    data_mnh = lecture_mesoNH.mesoNH(start_day, end_day, models, params)
+    data_mnh = lecture_mesoNH.mesoNH(start_day, end_day, MODELS_BIAIS, VARIABLES_PLOT)
 
-    for param in params:
+    for param in VARIABLES_PLOT:
         if param not in biais:
             biais[param] = {}
-        for model in models:
-            id_aida_obs = dico_params[param]["index_obs"]
+        for model in MODELS_BIAIS:
+            id_aida_obs = VARIABLES[param]["index_obs"]
             (values_obs, time_obs, header_obs) = read_aida.donnees(doy1, doy2, str(start_day.year), str(end_day.year), id_aida_obs, "Tf")
             if model not in biais[param]:
                 biais[param][model] = {}
-            for reseau in reseaux:
+            for reseau in RESEAUX:
                 if reseau not in biais[param][model]:
                     biais[param][model][reseau] = {}
-                id_aida_mod = dico_params[param]["index_model"] + "_" + reseau
+                id_aida_mod = VARIABLES[param]["index_model"] + "_" + reseau
                 (values_mod, time_mod, header_mod) = read_aida.donnees(doy1, doy2, str(start_day.year), str(end_day.year), id_aida_mod, model)
 
                 # Correction des données ARPEGE parfois datées à H-1:59 au lieu de H:00
@@ -965,7 +748,7 @@ def calcul_biais(start_day, end_day):
                 day_2 = datetime.datetime(int(day_after.year), int(
                     day_after.month), int(day_after.day)).strftime('%j')
 
-                id_aida_obs = dico_params[param]["index_obs"]
+                id_aida_obs = VARIABLES[param]["index_obs"]
                 (values_obs, time_obs, header_obs) = read_aida.donnees(
                     day_1, day_2, str(start_day.year), str(end_day.year), id_aida_obs, "Tf")
 
@@ -1019,7 +802,7 @@ def calcul_biais(start_day, end_day):
                             pass
                              
         #for id_user in enumerate([id_user1, id_user2, id_user3, id_user4, id_user5]):
-        #data_user = lecture_mesoNH.mesoNH_user(start_day,end_day,id_user,params)  
+        #data_user = lecture_mesoNH.mesoNH_user(start_day,end_day,id_user,VARIABLES_PLOT)  
         #print("MODEL ID_USER :", id_user)                
         #on utilise le 'id_user' en tant que nom du 'model' pour le dictionnaire                  
 
@@ -1046,12 +829,12 @@ biais, chartB, graphB = calcul_biais(start_day, end_day)
 
 output_graphsB = []
 
-for param in params:
+for param in VARIABLES_PLOT:
     # Définition des Outputs c-à-d des graphs qui seront mis à jour
     output_graphsB.append(Output('graphB_' + param, 'figure'))
 
 # BIAIS MNH
-# for param in params:
+# for param in VARIABLES_PLOT:
 #    output_graphsB.append(Output('graphB_mnh_' + param, 'figure'))
 
 # Chaque Input prend en argument l'id d'une dcc.Input et la valeur qu'elle récupère
@@ -1080,15 +863,15 @@ def update_lineB(reseau2, reseau3, reseau4, reseau5, start_day, end_day,
     # transformation des dates de type str que l'on récupère du "calendrier" en datetime.date
 
     # UPDATE DES DATES APRES LE CALLBACK
-    data_mnh = lecture_mesoNH.mesoNH(start_day, end_day, models, params)
-    data_surfex = lecture_surfex.surfex(start_day, end_day, models, params)
-    #data_user = lecture_mesoNH.mesoNH_user(start_day,end_day,id_user,params) 
+    data_mnh = lecture_mesoNH.mesoNH(start_day, end_day, MODELS, VARIABLES_PLOT)
+    data_surfex = lecture_surfex.surfex(start_day, end_day, MODELS, VARIABLES_PLOT)
+    #data_user = lecture_mesoNH.mesoNH_user(start_day,end_day,id_user,VARIABLES_PLOT) 
     
     # CALCUL DES BIAIS correspondants à la période choisie
     biais, chartB, graphB = calcul_biais(start_day, end_day)
 
     # Puis, mise à jour des graphes :
-    for param in params:
+    for param in VARIABLES_PLOT:
         chartB[param] = go.Figure()
 
     # Pour les 5 rejeux possibles de MésoNH, correspondants aux différents id_user :
@@ -1097,7 +880,7 @@ def update_lineB(reseau2, reseau3, reseau4, reseau5, start_day, end_day,
     # tirets/alternance tirets-points)
     types = ['solid', 'dot', 'dash', 'longdash', 'dashdot']
     for j, id_user in enumerate([id_user1, id_user2, id_user3, id_user4, id_user5]):
-        #data_user = lecture_mesoNH.mesoNH_user(start_day, end_day, id_user, params)
+        #data_user = lecture_mesoNH.mesoNH_user(start_day, end_day, id_user, VARIABLES_PLOT)
         nb_jour = (end_day - start_day).days
         
         #Calcul du biais USER doit se faire ici normalement (après avoir défini le "id_user")
@@ -1106,7 +889,7 @@ def update_lineB(reseau2, reseau3, reseau4, reseau5, start_day, end_day,
         for i in range(nb_jour):
             date_run = start_day + datetime.timedelta(days=i)
             today_str = date_run.strftime('%Y%m%d')
-            for param in params:
+            for param in VARIABLES_PLOT:
                 #print(biais[param][id_user][today_str])
                 # Ici try/except permet de rien afficher lorsque les données ne sont pas disponibles
                 try:
@@ -1128,26 +911,26 @@ def update_lineB(reseau2, reseau3, reseau4, reseau5, start_day, end_day,
     # Ici plus besoin de try/except, c'est AIDA qui s'en charge
     #    for selection in reseau1:
     #        if selection == "Obs" :
-    #            for param in params:
+    #            for param in VARIABLES_PLOT:
     #                if isinstance(biais[param]['Tf']['values'],(list,np.ndarray)):
     #                    chartB[param].add_trace(go.Scatter(x=biais[param]['Tf']['time'], y=biais[param]['Tf']['values'],marker={"color":"red"},mode="lines",name=selection))
 
     # Pour les différents réseaux d'Arpège :
     for selection in reseau2:
         if selection == "Arp_J-1_00h":
-            reseau = reseaux[0]
+            reseau = RESEAUX[0]
             line_param = dict(color='navy', dash='dot')
         if selection == "Arp_J-1_12h":
-            reseau = reseaux[1]
+            reseau = RESEAUX[1]
             line_param = dict(color='mediumslateblue', dash='dot')
         if selection == "Arp_J0_00h":
-            reseau = reseaux[2]
+            reseau = RESEAUX[2]
             line_param = dict(color='navy')
         if selection == "Arp_J0_12h":
-            reseau = reseaux[3]
+            reseau = RESEAUX[3]
             line_param = dict(color='mediumslateblue')
 
-        for param in params:
+        for param in VARIABLES_PLOT:
             if isinstance(biais[param]['Gt'][reseau]['values'], (list, np.ndarray)):
                 chartB[param].add_trace(
                     go.Scatter(
@@ -1159,19 +942,19 @@ def update_lineB(reseau2, reseau3, reseau4, reseau5, start_day, end_day,
     # Pour les différents réseaux d'Arome :
     for selection in reseau3:
         if selection == "Aro_J-1_00h":
-            reseau = reseaux[0]
+            reseau = RESEAUX[0]
             line_param = dict(color='green', dash='dot')
         if selection == "Aro_J-1_12h":
-            reseau = reseaux[1]
+            reseau = RESEAUX[1]
             line_param = dict(color='olive', dash='dot')
         if selection == "Aro_J0_00h":
-            reseau = reseaux[2]
+            reseau = RESEAUX[2]
             line_param = dict(color='green')
         if selection == "Aro_J0_12h":
-            reseau = reseaux[3]
+            reseau = RESEAUX[3]
             line_param = dict(color='olive')
 
-        for param in params:
+        for param in VARIABLES_PLOT:
             if isinstance(biais[param]['Rt'][reseau]['values'], (list, np.ndarray)):
                 chartB[param].add_trace(
                     go.Scatter(
@@ -1205,7 +988,7 @@ def update_lineB(reseau2, reseau3, reseau4, reseau5, start_day, end_day,
                 # Ce montage un peu douteux de if/else permet de n'afficher qu'une seule fois la légende de la courbe MésoNH choisie. Sans ça, le programme affichait autant de fois la légende
                 # qu'il y avait de jours entre le start_day et le end_day.
 
-            for param in params:
+            for param in VARIABLES_PLOT:
                 # Le retour du try/except pour éviter que le script ne se bloque.
                 try:
                     if isinstance(biais[param][dico_model[selection]['name']]
@@ -1241,7 +1024,7 @@ def update_lineB(reseau2, reseau3, reseau4, reseau5, start_day, end_day,
                 afficher_legende_surfex = True
             else:
                 afficher_legende_surfex = False
-            for param in params:
+            for param in VARIABLES_PLOT:
                 # Ici try/except permet de rien afficher lorsque les données ne sont pas disponibles
                 try:
                     if isinstance(data_surfex[today_str][dico_model[selection]
@@ -1259,11 +1042,11 @@ def update_lineB(reseau2, reseau3, reseau4, reseau5, start_day, end_day,
 
     # Mise à jour des graphiques après tous les changements
     list_chartsB = []
-    for param in params:
+    for param in VARIABLES_PLOT:
         chartB[param].update_layout(height=450, width=800,
                                     xaxis_title="Date et heure",
-                                    yaxis_title=str(dico_params[param]['unit']),
-                                    title=dico_params[param]['title'])
+                                    yaxis_title=str(VARIABLES[param]['unit']),
+                                    title=VARIABLES[param]['title'])
         list_chartsB.append(chartB[param])
 
     return list_chartsB  # Le callback attend des Outputs qui sont contenus dans chartB[param]
@@ -1273,7 +1056,7 @@ def update_lineB(reseau2, reseau3, reseau4, reseau5, start_day, end_day,
 #!!!!!!!!!!!!!!! Tracé des graphes sur la page correspondantes: à modifier avec les graphes affichant les biais (calculés plus haut)
 all_graphsB = []
 
-for param in params:
+for param in VARIABLES_PLOT:
     all_graphsB.append(
         html.Div(
             graphB[param],
@@ -1304,7 +1087,6 @@ biais_layout = html.Div([
 
 def biais_moyen(start_day, end_day):
    
-    models=['Tf', 'Rt', 'Gt'] #Avec ancienne version de Arome #!# Ajout enveloppe
     biais, chartB, graphB = calcul_biais(start_day, end_day)
     # Initialisation du DataFrame final vide
     DF = []
@@ -1314,11 +1096,11 @@ def biais_moyen(start_day, end_day):
     except TypeError:
         pass
 
-    for param in params:
-        for model in models:
+    for param in VARIABLES_PLOT:
+        for model in MODELS_BIAIS:
             if model != 'Tf':
                 # Ajout des données ARO/ARP OPER
-                for reseau in reseaux:
+                for reseau in RESEAUX:
                     if len(biais[param][model][reseau]) > 1 :
                        dico_loc = {}
                        df_loc = []
@@ -1389,15 +1171,15 @@ def biais_moyen(start_day, end_day):
     biais_moy = {}
 
     # Intégration des données du DataFrame DF_CyDi dans le dictionnaire biais_moy
-    for param in params:
+    for param in VARIABLES_PLOT:
         if param not in biais_moy:
             biais_moy[param] = {}
-        for model in models:
+        for model in MODELS_BIAIS:
             if model not in biais_moy[param]:
                 biais_moy[param][model] = {}
             if model != 'Tf':
                 # Ajout des données ARO/ARP OPER
-                for reseau in reseaux:
+                for reseau in RESEAUX:
                     if reseau not in biais_moy[param][model]:
                         biais_moy[param][model][reseau] = {}
                     colname = str(param + '_' + model + '_' + reseau)
@@ -1437,12 +1219,12 @@ biais_moy, chartM, graphM = biais_moyen(start_day, end_day)
 
 output_graphsM = []
 
-for param in params:
+for param in VARIABLES_PLOT:
     # Définition des Outputs c-à-d des graphs qui seront mis à jour
     output_graphsM.append(Output('graphM_' + param, 'figure'))
 
 # BIAIS MNH
-# for param in params:
+# for param in VARIABLES_PLOT:
 #    output_graphsB.append(Output('graphB_mnh_' + param, 'figure'))
 
 # Chaque Input prend en argument l'id d'une dcc.Input et la valeur qu'elle récupère
@@ -1471,14 +1253,14 @@ def update_lineM(reseau2, reseau3, reseau4, reseau5, start_day, end_day,
         end_day = date.fromisoformat(end_day)
 
     # UPDATE DES DATES APRES LE CALLBACK
-    data_mnh = lecture_mesoNH.mesoNH(start_day, end_day, models, params)
-    data_surfex = lecture_surfex.surfex(start_day, end_day, models, params)
+    data_mnh = lecture_mesoNH.mesoNH(start_day, end_day, MODELS, VARIABLES_PLOT)
+    data_surfex = lecture_surfex.surfex(start_day, end_day, MODELS, VARIABLES_PLOT)
 
     # CALCUL DES BIAIS moyens sur la période choisie - Cycle Diurne:
     biais_moy, chartM, graphM = biais_moyen(start_day, end_day)
 
     # Puis, mise à jour des graphes :
-    for param in params:
+    for param in VARIABLES_PLOT:
         chartM[param] = go.Figure()
 
     # Pour les 5 rejeux possibles de MésoNH, correspondants aux différents id_user :
@@ -1487,12 +1269,12 @@ def update_lineM(reseau2, reseau3, reseau4, reseau5, start_day, end_day,
     # tirets/alternance tirets-points)
     types = ['solid', 'dot', 'dash', 'longdash', 'dashdot']
     for j, id_user in enumerate([id_user1, id_user2, id_user3, id_user4, id_user5]):
-        data_user = lecture_mesoNH.mesoNH_user(start_day, end_day, id_user, params)
+        data_user = lecture_mesoNH.mesoNH_user(start_day, end_day, id_user, VARIABLES_PLOT)
         nb_jour = (end_day - start_day).days
         for i in range(nb_jour + 1):
             date_run = start_day + datetime.timedelta(days=i)
             today_str = date_run.strftime('%Y%m%d')
-            for param in params:
+            for param in VARIABLES_PLOT:
                 # Ici try/except permet de rien afficher lorsque les données ne sont pas disponibles
                 try:
                     if isinstance(data_user[today_str][param],
@@ -1513,7 +1295,7 @@ def update_lineM(reseau2, reseau3, reseau4, reseau5, start_day, end_day,
     # BIAIS -> le calcul sur les obs permet d'avoir le zéro en affichage (obs - obs = 0)
     #    for selection in reseau1:
     #        if selection == "Obs" :
-    #            for param in params:
+    #            for param in VARIABLES_PLOT:
     #                if isinstance(biais[param]['Tf']['values'],(list,np.ndarray)):
     #                    chartB[param].add_trace(go.Scatter(x=biais[param]['Tf']['time'], y=biais[param]['Tf']['values'],marker={"color":"red"},mode="lines",name=selection))
     # Ici plus besoin de try/except, c'est AIDA qui s'en charge
@@ -1521,19 +1303,19 @@ def update_lineM(reseau2, reseau3, reseau4, reseau5, start_day, end_day,
     # Pour les différents réseaux d'Arpège :
     for selection in reseau2:
         if selection == "Arp_J-1_00h":
-            reseau = reseaux[0]
+            reseau = RESEAUX[0]
             line_param = dict(color='navy', dash='dot')
         if selection == "Arp_J-1_12h":
-            reseau = reseaux[1]
+            reseau = RESEAUX[1]
             line_param = dict(color='mediumslateblue', dash='dot')
         if selection == "Arp_J0_00h":
-            reseau = reseaux[2]
+            reseau = RESEAUX[2]
             line_param = dict(color='navy')
         if selection == "Arp_J0_12h":
-            reseau = reseaux[3]
+            reseau = RESEAUX[3]
             line_param = dict(color='mediumslateblue')
 
-        for param in params:
+        for param in VARIABLES_PLOT:
             if isinstance(biais_moy[param]['Gt'][reseau]['values'], (list, np.ndarray)):
                 chartM[param].add_trace(
                     go.Scatter(
@@ -1545,19 +1327,19 @@ def update_lineM(reseau2, reseau3, reseau4, reseau5, start_day, end_day,
     # Pour les différents réseaux d'Arome :
     for selection in reseau3:
         if selection == "Aro_J-1_00h":
-            reseau = reseaux[0]
+            reseau = RESEAUX[0]
             line_param = dict(color='green', dash='dot')
         if selection == "Aro_J-1_12h":
-            reseau = reseaux[1]
+            reseau = RESEAUX[1]
             line_param = dict(color='olive', dash='dot')
         if selection == "Aro_J0_00h":
-            reseau = reseaux[2]
+            reseau = RESEAUX[2]
             line_param = dict(color='green')
         if selection == "Aro_J0_12h":
-            reseau = reseaux[3]
+            reseau = RESEAUX[3]
             line_param = dict(color='olive')
 
-        for param in params:
+        for param in VARIABLES_PLOT:
             if isinstance(biais_moy[param]['Rt'][reseau]['values'], (list, np.ndarray)):
                 chartM[param].add_trace(
                     go.Scatter(
@@ -1592,7 +1374,7 @@ def update_lineM(reseau2, reseau3, reseau4, reseau5, start_day, end_day,
                 # Ce montage un peu douteux de if/else permet de n'afficher qu'une seule fois la légende de la courbe MésoNH choisie. Sans ça, le programme affichait autant de fois la légende
                 # qu'il y avait de jours entre le start_day et le end_day.
 
-            for param in params:
+            for param in VARIABLES_PLOT:
                 # Le retour du try/except pour éviter que le script ne se bloque.
                 try:
                     if isinstance(biais_moy[param][dico_model[selection]['name']]
@@ -1623,7 +1405,7 @@ def update_lineM(reseau2, reseau3, reseau4, reseau5, start_day, end_day,
                 afficher_legende_surfex = True
             else:
                 afficher_legende_surfex = False
-            for param in params:
+            for param in VARIABLES_PLOT:
                 try:
                     if isinstance(data_surfex[today_str][dico_model[selection]
                                   ['name']][param], (list, np.ndarray)):
@@ -1641,11 +1423,11 @@ def update_lineM(reseau2, reseau3, reseau4, reseau5, start_day, end_day,
 
     # Mise à jour des graphiques après tous les changements
     list_chartsM = []
-    for param in params:
+    for param in VARIABLES_PLOT:
         chartM[param].update_layout(height=450, width=800,
                                     xaxis_title="Heure de la journée",
-                                    yaxis_title=str(dico_params[param]['unit']),
-                                    title=dico_params[param]['title'])
+                                    yaxis_title=str(VARIABLES[param]['unit']),
+                                    title=VARIABLES[param]['title'])
         list_chartsM.append(chartM[param])
 
     return list_chartsM  # Le callback attend des Outputs qui sont contenus dans chartB[param]
@@ -1655,7 +1437,7 @@ def update_lineM(reseau2, reseau3, reseau4, reseau5, start_day, end_day,
 #!!!!!!!!!!!!!!! Tracé des graphes sur la page correspondantes: à modifier avec les graphes affichant les biais (calculés plus haut)
 all_graphsM = []
 
-for param in params:
+for param in VARIABLES_PLOT:
     all_graphsM.append(
         html.Div(
             graphM[param],
@@ -1679,111 +1461,6 @@ biaisM_layout = html.Div([
 #   6. PROFILS VERTICAUX
 # -----------------------------------------------------------------------------
 
-#   6.1. DONNEES : Lecture des données dans AIDA
-# -----------------------------------------------------------------------------
-
-params_rs = ["Température", "Humidité relative", "Vent"]
-
-# Ce dictionnaire permet de nommer les axes des graphiques
-options_params_rs = {"Température":
-                     {"label": "Température",
-                      "unit": "°C"},
-                     "Humidité relative":
-                         {"label": "Humidité relative",
-                          "unit": "%"},  # HR n'existe pas dans les obs AMDAR
-                     "Vent":
-                         {"label": "Vent",
-                          "unit": "m/s"}
-                     }
-
-# Ce dictionnaire attribue des types de ligne à chaque modèle tracé.
-options_models = {"Gt": {
-    "name": "MNH-ARPEGE",
-    "line": "dash"},
-    "Rt": {
-    "name": "MNH-AROME",
-    "line": "longdash"},
-    "Tf": {
-    "name": "MNH-OBS",
-    "line": "solid"},
-    "ARP": {
-    "name": "ARP-OPER",
-    "line": "dashdot"},
-    "ARO": {
-    "name": "ARO-OPER",
-    "line": "dot"},
-    "Ab": {
-    "name": "OBS-AMDAR",
-    "line": "solid"}}
-
-heures = {"00h": {
-    "value": "00h",
-    "num_val": 0,
-    "color": "black"},
-    "3h": {
-    "value": "3h",
-    "num_val": 12,
-    "color": "brown"},
-    "6h": {
-    "value": "6h",
-    "num_val": 24,
-    "color": "red"},
-    "9h": {
-    "value": "9h",
-    "num_val": 36,
-    "color": "orange"},
-    "12h": {
-    "value": "12h",
-    "num_val": 48,
-    "color": "green"},
-    "15h": {
-    "value": "15h",
-    "num_val": 60,
-    "color": "blue"},
-    "18h": {
-    "value": "18h",
-    "num_val": 72,
-    "color": "purple"},
-    "21h": {
-    "value": "21h",
-    "num_val": 84,
-    "color": "fuchsia"}}
-
-heures_aroarp = {"00h": {
-    "value": "00h",
-    "num_val": 0,
-    "color": "black"},
-    "3h": {
-    "value": "3h",
-    "num_val": 3,
-    "color": "brown"},
-    "6h": {
-    "value": "6h",
-    "num_val": 6,
-    "color": "red"},
-    "9h": {
-    "value": "9h",
-    "num_val": 9,
-    "color": "orange"},
-    "12h": {
-    "value": "12h",
-    "num_val": 12,
-    "color": "green"},
-    "15h": {
-    "value": "15h",
-    "num_val": 15,
-    "color": "blue"},
-    "18h": {
-    "value": "18h",
-    "num_val": 18,
-    "color": "purple"},
-    "21h": {
-    "value": "21h",
-    "num_val": 21,
-    "color": "fuchsia"}}
-
-# "num_val" est le rang de la valeur correspondant à l'heure, par exemple : puisqu'il y a une valeur tous les quarts d'heure (4 valeurs par heure), pour 9h on prend la 9x4=36ème valeur du paramètre.
-
 day = datetime.date.today()
 
 #   6.2 WIDGETS
@@ -1802,19 +1479,19 @@ calendrier = html.Div([
 
 wich_heure = html.Div([
 dcc.Checklist(
-        options=[{'label': x, 'value': x} for x in heures],
+        options=[{'label': x, 'value': x} for x in LEGENDE_HEURES_PROFILS],
         value=["6h"],
         id='wich_heure')])
 
 labels = []
-for model in options_models:
-    labels.append(options_models[model]["name"])
+for model in MODELS_PLOT_RS:
+    labels.append(MODELS_PLOT_RS[model]["name"])
 
 # C'est le widget qui permet de sélectionner les courbes que l'on veut afficher
 multi_select_line_chart_model = html.Div([
     dcc.Dropdown(
         id="multi_select_line_chart_model",
-        options=[{"value": value, "label": label} for value, label in zip(options_models, labels)],
+        options=[{"value": value, "label": label} for value, label in zip(MODELS_PLOT_RS, labels)],
         value=["Ab"],
         multi=True,
         clearable=False,
@@ -1822,17 +1499,17 @@ multi_select_line_chart_model = html.Div([
     )], className="six columns", style={"text-align": "center", "justifyContent": "center"})
 
 # Premier chargement des données à la date d'aujourd'hui
-data_rs = radio_sondage.radio_sondage(day, models, params_rs, heures, heures_aroarp)
-#aroarp_rs = radio_sondage.pv_aroarp(day,models,params_rs,heures)
+data_rs = radio_sondage.radio_sondage(day, MODELS, VARIABLES_RS_PLOT, LEGENDE_HEURES_PROFILS, LEGENDE_HEURES_PROFILS_AROARP)
+#aroarp_rs = radio_sondage.pv_aroarp(day,MODELS,VARIABLES_RS_PLOT,LEGENDE_HEURES_PROFILS)
 
 # Création des figures
 chart = {}
-for param in params_rs:
+for param in VARIABLES_RS_PLOT:
     chart[param] = go.Figure()
 
 # Tranformation en HTML
 graph = {}
-for param in params_rs:
+for param in VARIABLES_RS_PLOT:
     graph[param] = dcc.Graph(id='graph_' + param, figure=chart[param])
 
 # 6.3   CALLBACKS (voir 2.3)
@@ -1840,7 +1517,7 @@ for param in params_rs:
 # Contient fonctions qui vont actualiser les Outputs à chaque fois qu'un Input est modifié
 
 output_rs = []
-for param in params_rs:
+for param in VARIABLES_RS_PLOT:
     output_rs.append(Output('graph_' + param, 'figure'))  # Graphs qui seront mis à jour
 
 @app.callback(output_rs, [Input('wich_heure', 'value'),
@@ -1853,12 +1530,12 @@ def update_rs(wich_heure, date_value, model_choisi):
         date_object = date.fromisoformat(date_value)
 
     # Puis, mise à jour des graphes :
-    for param in params_rs:
+    for param in VARIABLES_RS_PLOT:
         chart[param] = go.Figure()
 
     # Extraction des données
-    data_rs = radio_sondage.radio_sondage(date_object, models, params_rs, heures, heures_aroarp)
-    #aroarp_rs = radio_sondage.pv_aroarp(date_object,models,params_rs,heures)
+    data_rs = radio_sondage.radio_sondage(date_object, MODELS, VARIABLES_RS_PLOT, LEGENDE_HEURES_PROFILS, LEGENDE_HEURES_PROFILS_AROARP)
+    #aroarp_rs = radio_sondage.pv_aroarp(date_object,MODELS,VARIABLES_RS_PLOT,LEGENDE_HEURES_PROFILS)
 
     # Mise à jour des courbes
     courbe_affichee = []
@@ -1868,7 +1545,7 @@ def update_rs(wich_heure, date_value, model_choisi):
             afficher_legende = True
         else:
             afficher_legende = False
-        for param in params_rs:
+        for param in VARIABLES_RS_PLOT:
             for model in model_choisi:
 
                 if model == 'Ab' and len(data_rs[model][selection][param]) > 1:
@@ -1879,13 +1556,13 @@ def update_rs(wich_heure, date_value, model_choisi):
                                 x=data_rs[model][selection][param],
                                 y=data_rs[model][selection]['level'],
                                 line=dict(
-                                    color=heures[selection]["color"],
+                                    color=LEGENDE_HEURES_PROFILS[selection]["color"],
                                     width=8,
-                                    dash=options_models[model]["line"]),
+                                    dash=MODELS_PLOT_RS[model]["line"]),
                                 mode="markers",
-                                name=options_models[model]["name"] +
+                                name=MODELS_PLOT_RS[model]["name"] +
                                 ' - ' +
-                                heures[selection]["value"],
+                                LEGENDE_HEURES_PROFILS[selection]["value"],
                                 showlegend=afficher_legende))
                     except KeyError:
                         pass
@@ -1898,21 +1575,21 @@ def update_rs(wich_heure, date_value, model_choisi):
                                 x=data_rs[model][selection][param],
                                 y=data_rs[model]['level'],
                                 line=dict(
-                                    color=heures[selection]["color"],
+                                    color=LEGENDE_HEURES_PROFILS[selection]["color"],
                                     width=4,
-                                    dash=options_models[model]["line"]),
+                                    dash=MODELS_PLOT_RS[model]["line"]),
                                 mode="lines",
-                                name=options_models[model]["name"] +
+                                name=MODELS_PLOT_RS[model]["name"] +
                                 ' - ' +
-                                heures[selection]["value"],
+                                LEGENDE_HEURES_PROFILS[selection]["value"],
                                 showlegend=afficher_legende))
                     except KeyError:
                         pass
     list_charts = []
-    for param in params_rs:
+    for param in VARIABLES_RS_PLOT:
         chart[param].update_layout(height=1000, width=500,
-                                   xaxis_title=options_params_rs[param]["label"] +
-                                   " (" + options_params_rs[param]["unit"] + ")",
+                                   xaxis_title=VARIABLES_RS[param]["label"] +
+                                   " (" + VARIABLES_RS[param]["unit"] + ")",
                                    yaxis_title="Altitude (m agl)",
                                    title=param)
         list_charts.append(chart[param])
@@ -1923,7 +1600,7 @@ def update_rs(wich_heure, date_value, model_choisi):
 # ---------------------------------------------------------------------------
 
 all_graphs = []
-for param in params_rs:
+for param in VARIABLES_RS_PLOT:
     all_graphs.append(
         html.Div(
             graph[param],
@@ -1976,8 +1653,6 @@ surfex_layout = html.Div([
 # -----------------------------------------------------------------------------
 #   9. Panneaux photovoltaïques
 # -----------------------------------------------------------------------------
-params_PV = ["PV", "RGD", "RD", "INSO"]
-models_PV = ["Obs_moy", "Obs_1", "Obs_2", "Obs_3", "Obs_cnr4", "Obs_bf5", "arome_J0", "arome_J-1"]
 
 def selection_donnees_PV(start_day, end_day):
     
@@ -1988,15 +1663,15 @@ def selection_donnees_PV(start_day, end_day):
     doy1 = datetime.datetime(int(start_day.year), int(start_day.month), int(start_day.day)). strftime('%j')
     doy2 = datetime.datetime(int(end_day.year), int(end_day.month), int(end_day.day)). strftime('%j')
     
-    for param in params_PV:
+    for param in VARIABLES_PV_PLOT:
         if param not in data_PV:
             data_PV[param] = {}
-        for model in models_PV:
+        for model in MODELS_PV:
             if model not in data_PV[param]:
                 data_PV[param][model] = {}
                 
                 if model == "Obs_moy":
-                    id_aida = dico_params[param]["index_obs_moy"]
+                    id_aida = VARIABLES[param]["index_obs_moy"]
                     # Read AIDA : lit tous les paramètres alors que selection de données va
                     # lire uniquement un parametre specifique
                     (values, time, header) = read_aida.donnees(doy1, doy2, str(start_day.year), str(end_day.year),id_aida, "Tf")
@@ -2004,7 +1679,7 @@ def selection_donnees_PV(start_day, end_day):
                     data_PV[param][model]['time'] = time
                 
                 elif model == "Obs_1":
-                    id_aida = dico_params[param]["index_obs_1"]
+                    id_aida = VARIABLES[param]["index_obs_1"]
                     # Read AIDA : lit tous les paramètres alors que selection de données va
                     # lire uniquement un parametre specifique
                     (values, time, header) = read_aida.donnees(doy1, doy2, str(start_day.year), str(end_day.year),id_aida, "Tf")
@@ -2012,7 +1687,7 @@ def selection_donnees_PV(start_day, end_day):
                     data_PV[param][model]['time'] = time
                     
                 elif model == "Obs_2":
-                    id_aida = dico_params[param]["index_obs_2"]
+                    id_aida = VARIABLES[param]["index_obs_2"]
                     # Read AIDA : lit tous les paramètres alors que selection de données va
                     # lire uniquement un parametre specifique
                     (values, time, header) = read_aida.donnees(doy1, doy2, str(start_day.year), str(end_day.year),id_aida, "Tf")
@@ -2020,7 +1695,7 @@ def selection_donnees_PV(start_day, end_day):
                     data_PV[param][model]['time'] = time
                     
                 elif model == "Obs_3":
-                    id_aida = dico_params[param]["index_obs_3"]
+                    id_aida = VARIABLES[param]["index_obs_3"]
                     # Read AIDA : lit tous les paramètres alors que selection de données va
                     # lire uniquement un parametre specifique
                     (values, time, header) = read_aida.donnees(doy1, doy2, str(start_day.year), str(end_day.year),id_aida, "Tf")
@@ -2028,7 +1703,7 @@ def selection_donnees_PV(start_day, end_day):
                     data_PV[param][model]['time'] = time
                     
                 elif model == "Obs_cnr4":
-                    id_aida = dico_params[param]["index_cnr4"]
+                    id_aida = VARIABLES[param]["index_cnr4"]
                     # Read AIDA : lit tous les paramètres alors que selection de données va
                     # lire uniquement un parametre specifique
                     (values, time, header) = read_aida.donnees(doy1, doy2, str(start_day.year), str(end_day.year),id_aida, "Tf")
@@ -2036,7 +1711,7 @@ def selection_donnees_PV(start_day, end_day):
                     data_PV[param][model]['time'] = time
                 
                 elif model == "Obs_bf5":
-                    id_aida = dico_params[param]["index_bf5"]
+                    id_aida = VARIABLES[param]["index_bf5"]
                     # Read AIDA : lit tous les paramètres alors que selection de données va
                     # lire uniquement un parametre specifique
                     (values, time, header) = read_aida.donnees(doy1, doy2, str(start_day.year), str(end_day.year),id_aida, "Tf")
@@ -2045,26 +1720,26 @@ def selection_donnees_PV(start_day, end_day):
                 
                 elif model == "arome_J0":
 #                        if param == "RGD":
-#                            param_arome = dico_params[param]['index_arome_J0']
+#                            param_arome = VARIABLES[param]['index_arome_J0']
 #                            donnee_arome = read_arome.donnees(start_day, end_day, 0, param_arome)
 #                            mean_arome= donnee_arome.groupby(donnee_arome.index).mean()[param_arome]
 #                            data_PV[param][model]['values'] = mean_arome[param_arome]
 #                            data_PV[param][model]['time'] = [datetime.strptime(ts_str, "%Y-%m-%d %H:%M:%S") for ts_str in mean_arome.index]
 #                        else:
-                    id_aida = dico_params[param]["index_arome_J0"] 
+                    id_aida = VARIABLES[param]["index_arome_J0"] 
                     (values, time, header) = read_aida.donnees(doy1, doy2, str(start_day.year), str(end_day.year), id_aida, "Tf")
                     data_PV[param][model]['values'] = values
                     data_PV[param][model]['time'] = time
                         
                 elif model == "arome_J-1":
 #                            if param == "RGD":
-#                            param_arome = dico_params[param]['index_arome_J-1']
+#                            param_arome = VARIABLES[param]['index_arome_J-1']
 #                            donnee_arome = read_arome.donnees(start_day, end_day, 12, param_arome)
 #                            mean_arome= donnee_arome.groupby(donnee_arome.index).mean()[param_arome]
 #                            data_PV[param][model]['values'] = mean_arome[param_arome]
 #                            data_PV[param][model]['time'] = [datetime.strptime(ts_str, "%Y-%m-%d %H:%M:%S") for ts_str in mean_arome.index]
 #                        else:
-                    id_aida = dico_params[param]["index_arome_J-1"] 
+                    id_aida = VARIABLES[param]["index_arome_J-1"] 
                     (values, time, header) = read_aida.donnees(doy1, doy2, str(start_day.year), str(end_day.year), id_aida, "Tf")
                     data_PV[param][model]['values'] = values
                     data_PV[param][model]['time'] = time
@@ -2080,7 +1755,7 @@ data_PV, chart_PV, graph_PV = selection_donnees_PV(start_day, end_day)
 # Callbacks
 output_PV = []
 
-for param in params_PV:
+for param in VARIABLES_PV_PLOT:
     # Définition des Outputs c-à-d des graphs qui seront mis à jour
     output_PV.append(Output('graph_PV_'+param, 'figure'))
 
@@ -2098,11 +1773,11 @@ def update_linePV(start_day, end_day):
     
     list_charts_PV = []
     
-    for param in params_PV:
+    for param in VARIABLES_PV_PLOT:
         #chart = go.Figure()  # Créez un nouveau graphique pour chaque paramètre
         chart_PV[param] = go.Figure()
         
-        for model in models_PV:
+        for model in MODELS_PV:
             if model == "Obs_moy":
                 line_param = dict(color='black')
             elif model == "Obs_1":
@@ -2132,8 +1807,8 @@ def update_linePV(start_day, end_day):
         # Mettre à jour le layout du graphique avec les titres et les axes appropriés
         chart_PV[param].update_layout(height=450, width=800,
                                       xaxis_title="Date et heure",
-                                      yaxis_title=str(dico_params[param]['unit']),
-                                      title=dico_params[param]['title'])
+                                      yaxis_title=str(VARIABLES[param]['unit']),
+                                      title=VARIABLES[param]['title'])
 
         list_charts_PV.append(chart_PV[param])  # Ajouter le graphique actuel à la liste
 
@@ -2147,7 +1822,7 @@ def update_linePV(start_day, end_day):
 # Ici par exemple, chaque graph est d'abord mis dans une Div dont on réduit la taille ("className="six columns"),
 # puis on met toutes ces Div dans une seule qui elle prend toute la page
 all_graphs_PV = []
-for param in params_PV:
+for param in VARIABLES_PV_PLOT:
     all_graphs_PV.append(html.Div(graph_PV[param], className="six columns", style={'display': 'inline-block'}))
 #all_graphs_PV.append(html.Div(graph_PV_2,className="six columns",style={'display': 'inline-block'}))
 row = html.Div(children=all_graphs_PV, className="six columns")

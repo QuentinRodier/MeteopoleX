@@ -67,7 +67,7 @@ from layouts.notice import layout_notice
 
 # Config static
 from config.variables import VARIABLES_PLOT, VARIABLES, VARIABLES_PV_PLOT, VARIABLES_RS_PLOT, VARIABLES_RS
-from config.models import MODELS_PLOT, MODELS, MODELS_BIAIS, MODELS_PV, RESEAUX, LEGENDE_HEURES_PROFILS, LEGENDE_HEURES_PROFILS_AROARP
+from config.models import MODELS_PLOT, MODELS_PLOT_RS, MODELS, MODELS_BIAIS, MODELS_PV, RESEAUX, LEGENDE_HEURES_PROFILS, LEGENDE_HEURES_PROFILS_AROARP
 
 # Callbacks
 import callbacks # force le chargement des callbacks
@@ -968,10 +968,10 @@ def update_lineB(reseau2, reseau3, reseau4, reseau5, start_day, end_day,
             today_str = day.strftime('%Y%m%d')
 
             # Gestion du nombre de légende affichée : La légende est affichée si elle absente avant cad si courbe_affichee est vide (courbe affichee est remplie au 1er jour affiche)
-            # if selection not in courbe_affichee and dico_model[selection]['name'] in
+            # if selection not in courbe_affichee and MODELS_PLOT[selection]['name'] in
             # biais['tmp_2m'] and
-            # isinstance(biais['tmp_2m'][dico_model[selection]['name']][today_str],(list,np.ndarray)):
-            if selection not in courbe_affichee and dico_model[selection]['name'] in biais['tmp_2m']:
+            # isinstance(biais['tmp_2m'][MODELS_PLOT[selection]['name']][today_str],(list,np.ndarray)):
+            if selection not in courbe_affichee and MODELS_PLOT[selection]['name'] in biais['tmp_2m']:
                 courbe_affichee.append(selection)
                 afficher_legende = True
             else:
@@ -983,11 +983,11 @@ def update_lineB(reseau2, reseau3, reseau4, reseau5, start_day, end_day,
             for param in VARIABLES_PLOT:
                 # Le retour du try/except pour éviter que le script ne se bloque.
                 try:
-                    if isinstance(biais[param][dico_model[selection]['name']]
+                    if isinstance(biais[param][MODELS_PLOT[selection]['name']]
                                   [str(today_str)]['values'], (list, np.ndarray)):
 
-                        chartB[param].add_trace(go.Scatter(x=biais[param][dico_model[selection]['name']][str(today_str)]['time'], y=biais[param][dico_model[selection]['name']][str(
-                            today_str)]['values'], marker={"color": dico_model[selection]['color']}, mode="lines", name=selection, showlegend=afficher_legende))
+                        chartB[param].add_trace(go.Scatter(x=biais[param][MODELS_PLOT[selection]['name']][str(today_str)]['time'], y=biais[param][MODELS_PLOT[selection]['name']][str(
+                            today_str)]['values'], marker={"color": MODELS_PLOT[selection]['color']}, mode="lines", name=selection, showlegend=afficher_legende))
                    
                     #Partie user "manuelle" en attendant de pouvoir la coder automatiquement  
                     """       
@@ -1010,8 +1010,8 @@ def update_lineB(reseau2, reseau3, reseau4, reseau5, start_day, end_day,
             day = start_day + timedelta(days=i)
             today_str = day.strftime('%Y%m%d')
 
-            if selection not in courbe_affichee_surfex and dico_model[selection]['name'] in data_surfex[today_str] and isinstance(
-                    data_surfex[today_str][dico_model[selection]['name']]['tmp_2m'], (list, np.ndarray)):
+            if selection not in courbe_affichee_surfex and MODELS_PLOT[selection]['name'] in data_surfex[today_str] and isinstance(
+                    data_surfex[today_str][MODELS_PLOT[selection]['name']]['tmp_2m'], (list, np.ndarray)):
                 courbe_affichee_surfex.append(selection)
                 afficher_legende_surfex = True
             else:
@@ -1019,12 +1019,12 @@ def update_lineB(reseau2, reseau3, reseau4, reseau5, start_day, end_day,
             for param in VARIABLES_PLOT:
                 # Ici try/except permet de rien afficher lorsque les données ne sont pas disponibles
                 try:
-                    if isinstance(data_surfex[today_str][dico_model[selection]
+                    if isinstance(data_surfex[today_str][MODELS_PLOT[selection]
                                   ['name']][param], (list, np.ndarray)):
                         chartB[param].add_trace(go.Scatter(x=data_surfex[today_str]['time'],
-                                                           y=data_surfex[today_str][dico_model[selection]
+                                                           y=data_surfex[today_str][MODELS_PLOT[selection]
                                                                                     ['name']][param],
-                                                           line=dict(color=dico_model[selection]['color'],
+                                                           line=dict(color=MODELS_PLOT[selection]['color'],
                                                                      dash='dashdot'),
                                                            name=selection,
                                                            showlegend=afficher_legende_surfex))
@@ -1354,10 +1354,10 @@ def update_lineM(reseau2, reseau3, reseau4, reseau5, start_day, end_day,
             today_str = day.strftime('%Y%m%d')
 
             # Gestion du nombre de légende affichée : La légende est affichée si elle absente avant cad si courbe_affichee est vide (courbe affichee est remplie au 1er jour affiche)
-            # if selection not in courbe_affichee and dico_model[selection]['name'] in
+            # if selection not in courbe_affichee and MODELS_PLOT[selection]['name'] in
             # biais['tmp_2m'] and
-            # isinstance(biais['tmp_2m'][dico_model[selection]['name']][today_str],(list,np.ndarray)):
-            if selection not in courbe_affichee and dico_model[selection]['name'] in biais['tmp_2m']:
+            # isinstance(biais['tmp_2m'][MODELS_PLOT[selection]['name']][today_str],(list,np.ndarray)):
+            if selection not in courbe_affichee and MODELS_PLOT[selection]['name'] in biais['tmp_2m']:
                 courbe_affichee.append(selection)
                 afficher_legende = True
             else:
@@ -1369,14 +1369,14 @@ def update_lineM(reseau2, reseau3, reseau4, reseau5, start_day, end_day,
             for param in VARIABLES_PLOT:
                 # Le retour du try/except pour éviter que le script ne se bloque.
                 try:
-                    if isinstance(biais_moy[param][dico_model[selection]['name']]
+                    if isinstance(biais_moy[param][MODELS_PLOT[selection]['name']]
                                   ['MNH']['values'], (list, np.ndarray)):
 
-                        chartM[param].add_trace(go.Scatter(x=biais_moy[param][dico_model[selection]['name']]['MNH']['time'],
-                                                           y=biais_moy[param][dico_model[selection]
+                        chartM[param].add_trace(go.Scatter(x=biais_moy[param][MODELS_PLOT[selection]['name']]['MNH']['time'],
+                                                           y=biais_moy[param][MODELS_PLOT[selection]
                                                                               ['name']]['MNH']['values'],
                                                            marker={
-                            "color": dico_model[selection]['color']},
+                            "color": MODELS_PLOT[selection]['color']},
                             mode="lines",
                             name=selection,
                             showlegend=afficher_legende))
@@ -1391,20 +1391,20 @@ def update_lineM(reseau2, reseau3, reseau4, reseau5, start_day, end_day,
             day = start_day + timedelta(days=i)
             today_str = day.strftime('%Y%m%d')
 
-            if selection not in courbe_affichee_surfex and dico_model[selection]['name'] in data_surfex[today_str] and isinstance(
-                    data_surfex[today_str][dico_model[selection]['name']]['tmp_2m'], (list, np.ndarray)):
+            if selection not in courbe_affichee_surfex and MODELS_PLOT[selection]['name'] in data_surfex[today_str] and isinstance(
+                    data_surfex[today_str][MODELS_PLOT[selection]['name']]['tmp_2m'], (list, np.ndarray)):
                 courbe_affichee_surfex.append(selection)
                 afficher_legende_surfex = True
             else:
                 afficher_legende_surfex = False
             for param in VARIABLES_PLOT:
                 try:
-                    if isinstance(data_surfex[today_str][dico_model[selection]
+                    if isinstance(data_surfex[today_str][MODELS_PLOT[selection]
                                   ['name']][param], (list, np.ndarray)):
                         chartM[param].add_trace(go.Scatter(x=data_surfex[today_str]['time'],
-                                                           y=data_surfex[today_str][dico_model[selection]
+                                                           y=data_surfex[today_str][MODELS_PLOT[selection]
                                                                                     ['name']][param],
-                                                           line=dict(color=dico_model[selection]['color'],
+                                                           line=dict(color=MODELS_PLOT[selection]['color'],
                                                                      dash='dashdot'),
                                                            name=selection,
                                                            showlegend=afficher_legende_surfex))

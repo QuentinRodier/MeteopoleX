@@ -1,0 +1,1 @@
+from . import paneaux_solaires

@@ -3,7 +3,7 @@ from app import app
 from dash import dcc
 import plotly.graph_objects as go
 
-import read_aida
+from . import read_aida
 import lecture_mesoNH
 
 from config.variables import VARIABLES_PLOT, VARIABLES

@@ -12,7 +12,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy import interpolate
 # Lecture obs AMDAR
-import read_aida
+from . import read_aida
 import pandas as pd
 
 def radio_sondage(day, models, params_rs, heures, heures_aroarp):

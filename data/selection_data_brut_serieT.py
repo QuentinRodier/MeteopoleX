@@ -4,8 +4,8 @@ import datetime
 from dash import dcc
 import plotly.graph_objects as go
 
-import read_aida
-import read_arome
+from . import read_aida
+from . import read_arome
 
 from config.variables import VARIABLES_PLOT, VARIABLES
 from config.models import MODELS, RESEAUX

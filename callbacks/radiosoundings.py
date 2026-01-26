@@ -35,8 +35,8 @@ def update_rs(wich_heure, date_value, model_choisi):
         chart[param] = go.Figure()
 
     # Extraction des données
-    data_rs = radio_sondage.radio_sondage(date_object, MODELS, VARIABLES_RS_PLOT, LEGENDE_HEURES_PROFILS, LEGENDE_HEURES_PROFILS_AROARP)
-    #aroarp_rs = radio_sondage.pv_aroarp(date_object,MODELS,VARIABLES_RS_PLOT,LEGENDE_HEURES_PROFILS)
+    data_rs = radio_sondage(date_object, MODELS, VARIABLES_RS_PLOT, LEGENDE_HEURES_PROFILS, LEGENDE_HEURES_PROFILS_AROARP)
+    #aroarp_rs = pv_aroarp(date_object,MODELS,VARIABLES_RS_PLOT,LEGENDE_HEURES_PROFILS)
 
     # Mise à jour des courbes
     courbe_affichee = []

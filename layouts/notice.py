@@ -8,7 +8,7 @@ import base64
 # -----------------------------------------------------------------------------
 
 # Chargement de l'image explicative
-notice_image_path = 'fig1.png'
+notice_image_path = 'assets/fig1.png'
 notice_image_base64 = base64.b64encode(
     open(notice_image_path, 'rb').read()
 ).decode('ascii')

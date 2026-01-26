@@ -3,7 +3,7 @@ import datetime
 from config.variables import VARIABLES_PV_PLOT, VARIABLES
 from config.models import MODELS_PV
 from dash import dcc
-import read_aida
+from . import read_aida
 import plotly.graph_objects as go
 
 def selection_donnees_PV(start_day, end_day):

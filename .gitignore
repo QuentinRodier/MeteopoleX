@@ -4,3 +4,10 @@ REJEU_OFFLINE/SURFEX
 REJEU_OFFLINE/__pycache__/
 __pycache__/
 */__pycache__/
+assets/
+mesonh_lannemezan.py
+navigation_lannemezan.py
+read_aida_lannemezan.log
+read_aida_lannemezan.py
+read_arome_lannemezan.py
+

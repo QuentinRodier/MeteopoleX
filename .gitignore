@@ -2,3 +2,5 @@ nohup.out
 REJEU_OFFLINE/MNH
 REJEU_OFFLINE/SURFEX
 REJEU_OFFLINE/__pycache__/
+__pycache__/
+*/__pycache__/

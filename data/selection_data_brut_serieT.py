@@ -7,8 +7,8 @@ import plotly.graph_objects as go
 import read_aida
 import read_arome
 
-from config.variables import VARIABLES_PLOT, VARIABLES, RESEAUX
-from config.models import MODELS
+from config.variables import VARIABLES_PLOT, VARIABLES
+from config.models import MODELS, RESEAUX
 
 # -----------------------------------------------------------------------------
 #   3. SERIES TEMPORELLES : Comparaison Obs/Modèles

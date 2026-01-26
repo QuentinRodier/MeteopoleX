@@ -52,7 +52,7 @@ multi_select_line_chart_model = html.Div([
     )], className="six columns", style={"text-align": "center", "justifyContent": "center"})
 
 # Load data at the date of TODAY
-data_rs = radio_sondage.radio_sondage(today, MODELS, VARIABLES_RS_PLOT, LEGENDE_HEURES_PROFILS, LEGENDE_HEURES_PROFILS_AROARP)
+data_rs = radio_sondage(today, MODELS, VARIABLES_RS_PLOT, LEGENDE_HEURES_PROFILS, LEGENDE_HEURES_PROFILS_AROARP)
 #aroarp_rs = radio_sondage.pv_aroarp(day,MODELS,VARIABLES_RS_PLOT,LEGENDE_HEURES_PROFILS)
 
 # Create charts to plot

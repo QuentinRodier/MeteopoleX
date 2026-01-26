@@ -9,7 +9,7 @@ from config.variables import VARIABLES_PLOT, VARIABLES
 from config.models import MODELS, RESEAUX, MODELS_PLOT
 
 from data.biais_moyen import biais_moyen
-from data.biais import biais
+from data.biais import calcul_biais
 
 import lecture_mesoNH
 import lecture_surfex
@@ -163,7 +163,7 @@ def update_lineM(reseau2, reseau3, reseau4, reseau5, start_day, end_day,
             # if selection not in courbe_affichee and MODELS_PLOT[selection]['name'] in
             # biais['tmp_2m'] and
             # isinstance(biais['tmp_2m'][MODELS_PLOT[selection]['name']][today_str],(list,np.ndarray)):
-            if selection not in courbe_affichee and MODELS_PLOT[selection]['name'] in biais['tmp_2m']:
+            if selection not in courbe_affichee and MODELS_PLOT[selection]['name'] in biais_moy['tmp_2m']:
                 courbe_affichee.append(selection)
                 afficher_legende = True
             else:

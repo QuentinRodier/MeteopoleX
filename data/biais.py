@@ -6,8 +6,8 @@ import plotly.graph_objects as go
 import read_aida
 import lecture_mesoNH
 
-from config.variables import VARIABLES_PLOT, VARIABLES, RESEAUX
-from config.models import MODELS, MODELS_BIAIS
+from config.variables import VARIABLES_PLOT, VARIABLES
+from config.models import MODELS, MODELS_BIAIS, RESEAUX
 
 import numpy as np
 import pandas as pd

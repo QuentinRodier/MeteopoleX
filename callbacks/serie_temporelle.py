@@ -12,6 +12,7 @@ from data.selection_data_brut_serieT import selection_data_brut_serieT
 import lecture_mesoNH
 import lecture_surfex
 import numpy as np
+import pandas as pd
 
 output_graphs = []
 
@@ -255,6 +256,121 @@ def update_line(
                     )
                 )
 
+    # -------------------------------------------------------------------------
+    # AROME enveloppe (16 points)
+    # -------------------------------------------------------------------------
+    for selection in reseau_arome:
+        if selection == "Arome_J-1_00h":
+            reseau = RESEAUX[0]
+            line_param = dict(color='blue', dash='dot')
+            color_etendue = 'rgba(0,15,226,0.2)'
+            color_etendue_2= 'rgba(0,15,226,0.5)'
+            visible_settings = True
+        if selection == "Arome_J-1_12h":
+            reseau = RESEAUX[1]
+            line_param = dict(color='black', dash='dot')
+            visible_settings = 'legendonly'
+            color_etendue = 'rgba(0,15,226,0.2)'
+            color_etendue_2 = 'rgba(0,15,226,0.5)'
+        if selection == "Arome_J0_00h":
+            reseau = RESEAUX[2]
+            line_param = dict(color='blue')
+            color_etendue = 'rgba(0,176,246,0.2)'
+            color_etendue_2= 'rgba(0,176,246,0.5)'
+            visible_settings = True
+        if selection == "Arome_J0_12h":
+            reseau = RESEAUX[3]
+            line_param = dict(color='black')
+            color_etendue = 'rgba(0,176,246,0.2)'
+            color_etendue_2 = 'rgba(0,176,246,0.5)'
+            visible_settings = True
+                
+        for param in VARIABLES_PLOT:
+            # Courbe moyenne
+            if isinstance(data[param]['Arome'][reseau]['values_mean'], (pd.Series)):
+               chart[param].add_trace(
+                    go.Scatter(
+                        x=data[param]['Arome'][reseau]['time'],
+                        y=data[param]['Arome'][reseau]['values_mean'],
+                        line=line_param, visible=visible_settings,
+                        name=f"{selection}"+" moyenne"))
+
+            # Courbe point plus proche
+            if isinstance(data[param]['Arome'][reseau]['values_P1'], (pd.Series)):
+               chart[param].add_trace(
+                    go.Scatter(
+                        x=data[param]['Arome'][reseau]['time'],
+                        y=data[param]['Arome'][reseau]['values_P1'],
+                        line=dict(color='pink'), visible = visible_settings,
+                        name=f"{selection}"+" Point le plus proche"))
+               print('traçage times', data[param]['Arome'][reseau]['time'])
+               print('traçage P1 values', data[param]['Arome'][reseau]['values_P1'])
+
+            # Courbe point 100% urbain
+            if isinstance(data[param]['Arome'][reseau]['values_P2'], (pd.Series)): 
+                chart[param].add_trace(
+                    go.Scatter(
+                        x=data[param]['Arome'][reseau]['time'],
+                        y=data[param]['Arome'][reseau]['values_P2'],
+                        line=dict(color='Grey'), visible = visible_settings,
+                        name=f"{selection}"+" Point 100% urbain"))
+
+            # Courbe point 100% champs
+            if isinstance(data[param]['Arome'][reseau]['values_P3'], (pd.Series)): 
+                chart[param].add_trace(
+                    go.Scatter(
+                        x=data[param]['Arome'][reseau]['time'],
+                        y=data[param]['Arome'][reseau]['values_P3'],
+                        line=dict(color='gold'), visible = visible_settings,
+                        name=f"{selection}"+" Point 100% champs"))
+
+            # Courbe point 50% urbain 50% champs
+            if isinstance(data[param]['Arome'][reseau]['values_P4'], (pd.Series)): 
+                chart[param].add_trace(
+                    go.Scatter(
+                        x=data[param]['Arome'][reseau]['time'],
+                        y=data[param]['Arome'][reseau]['values_P4'],
+                        line=dict(color='Brown'), visible = visible_settings,
+                        name=f"{selection}"+" Point 50% urbain 50% champs"))
+
+            # Étendue moyenne + écart-type
+            if isinstance(data[param]['Arome'][reseau]['values_mean_plus_std'], (pd.Series)):
+                chart[param].add_trace(
+                    go.Scatter(
+                        x=data[param]['Arome'][reseau]['time'],
+                        y=data[param]['Arome'][reseau]['values_mean_plus_std'],
+                        line=dict(color='rgba(0,0,0,0)'),
+                        showlegend=False,
+                        visible = visible_settings,
+                        name=f"{selection}"+" +écart-type"))
+                chart[param].add_trace(
+                    go.Scatter(
+                        x=data[param]['Arome'][reseau]['time'],
+                        y=data[param]['Arome'][reseau]['values_mean_moins_std'],
+                        line = dict(color='rgba(0,0,0,0)'),
+                        fill='tonexty',
+                        fillcolor=color_etendue_2, visible = visible_settings,
+                        name=f"{selection}"+" enveloppe ecart-type "))
+
+            # Étendue min/max
+            if isinstance(data[param]['Arome'][reseau]['values_max'], (pd.Series)): 
+                chart[param].add_trace(
+                    go.Scatter(
+                        x=data[param]['Arome'][reseau]['time'],
+                        y=data[param]['Arome'][reseau]['values_max'],
+                        line=dict(color='rgba(0,0,0,0)'),
+                        showlegend=False,
+                        visible = visible_settings,
+                        name=f"{selection}"+" max"))
+                chart[param].add_trace(
+                    go.Scatter(
+                        x=data[param]['Arome'][reseau]['time'],
+                        y=data[param]['Arome'][reseau]['values_min'],
+                        line = dict(color='rgba(0,0,0,0)'),
+                        fill='tonexty',
+                        fillcolor=color_etendue, visible = visible_settings,
+                        name=f"{selection}"+" min et max"))
+ 
     # -------------------------------------------------------------------------
     # Mise à jour finale des figures
     # -------------------------------------------------------------------------

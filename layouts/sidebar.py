@@ -6,6 +6,7 @@ import dash_bootstrap_components as dbc
 
 import datetime
 from datetime import timedelta, date
+from config.dates_config import start_day, end_day, today
 
 SIDEBAR_STYLE = {
     "position": "fixed",
@@ -18,15 +19,6 @@ SIDEBAR_STYLE = {
     "overflow": "scroll",
 }
 
-today = datetime.date.today()
-tomorrow = today + timedelta(days=1)
-yesterday = today - timedelta(days=1)
-
-# Période par défaut
-start_day = yesterday
-end_day = today
-
-
 # --- Calendrier ---------------------------------------------------------------
 
 date_picker = html.Div([
@@ -34,11 +26,11 @@ date_picker = html.Div([
         id='my-date-picker-range',
         first_day_of_week=1,
         min_date_allowed=date(2015, 1, 1),
-        max_date_allowed=date(tomorrow.year, tomorrow.month, tomorrow.day),
+        max_date_allowed=date(end_day.year, end_day.month, end_day.day),
         display_format="DD/MM/YYYY",
         initial_visible_month=date(today.year, today.month, today.day),
-        start_date=yesterday,
-        end_date=today,
+        start_date=start_day,
+        end_date=end_day,
         minimum_nights=0
     ),
     html.Div(id='output-container-date-picker-range')

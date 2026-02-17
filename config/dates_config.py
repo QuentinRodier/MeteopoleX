@@ -1,8 +1,8 @@
 import datetime
 from datetime import timedelta, date
 
-start = 2
-end = 2
+start = 7
+end = 1
 
 today = datetime.date.today()
 

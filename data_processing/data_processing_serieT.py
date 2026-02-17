@@ -23,7 +23,7 @@ def build_series_figures(
     id_users,
 ):
 
-    loaded = data_loader.load_base(start_day, end_day)
+    loaded = data_loader.load_series(start_day, end_day)
     data = loaded["base"]
 
     figures = {param: go.Figure() for param in VARIABLES_PLOT}
@@ -44,9 +44,7 @@ def build_series_figures(
                     )
                 )
 
-    # ------------------------------------------------------------------
     # ARPÈGE
-    # ------------------------------------------------------------------
     arp_mapping = {
         "Arp_J-1_00h": (RESEAUX[0], dict(color="navy", dash="dot"), True),
         "Arp_J-1_12h": (RESEAUX[1], dict(color="mediumslateblue", dash="dot"), "legendonly"),
@@ -69,9 +67,7 @@ def build_series_figures(
                         )
                     )
 
-    # ------------------------------------------------------------------
     # AROME ANCIENNE VERSION
-    # ------------------------------------------------------------------
     aro_mapping = {
         "Aro_J-1_00h": (RESEAUX[0], dict(color="green", dash="dot")),
         "Aro_J-1_12h": (RESEAUX[1], dict(color="olive", dash="dot")),
@@ -93,9 +89,7 @@ def build_series_figures(
                         )
                     )
 
-    # ------------------------------------------------------------------
     # AROME ENVELOPPE
-    # ------------------------------------------------------------------
     arome_mapping = {
         "Arome_J-1_00h": (RESEAUX[0], dict(color="blue", dash="dot")),
         "Arome_J-1_12h": (RESEAUX[1], dict(color="black", dash="dot")),
@@ -115,7 +109,7 @@ def build_series_figures(
             block = data[param]["Arome"][reseau]
             time = block["time"]
 
-            # Moyenne
+            '''# Moyenne
             if isinstance(block.get("values_mean"), pd.Series):
                 figures[param].add_trace(
                     go.Scatter(
@@ -124,26 +118,27 @@ def build_series_figures(
                         name=f"{selection} moyenne",
                         line=style,
                     )
-                )
+                )'''
 
             # Points spécifiques
-            for key, color, label in [
-                ("values_P1", "pink", "Point proche"),
-                ("values_P2", "grey", "100% urbain"),
-                ("values_P3", "gold", "100% champs"),
-                ("values_P4", "brown", "50/50"),
-            ]:
-                if isinstance(block.get(key), pd.Series):
-                    figures[param].add_trace(
-                        go.Scatter(
-                            x=time,
-                            y=block[key],
-                            name=f"{selection} {label}",
-                            line=dict(color=color),
-                        )
+            '''for key, color, label in [
+                ("values_P1", "pink", "Point proche") ,
+                #("values_P2", "grey", "100% urbain"),
+                #("values_P3", "gold", "100% champs"),
+                #("values_P4", "brown", "50/50"),
+            ]:'''
+            if isinstance(block.get("values_P1"), pd.Series):
+                figures[param].add_trace(
+                    go.Scatter(
+                        x=time,
+                        y=block["values_P1"],
+                        name=f"{selection} Point proche",
+                        #line=dict(color=color),
+                        line=style
                     )
+                )
 
-            # Enveloppe écart-type
+            '''# Enveloppe écart-type
             if isinstance(block.get("values_mean_plus_std"), pd.Series):
                 figures[param].add_trace(
                     go.Scatter(
@@ -183,11 +178,9 @@ def build_series_figures(
                         line=dict(color="rgba(0,0,0,0)"),
                         name=f"{selection} min/max",
                     )
-                )
+                )'''
 
-    # ------------------------------------------------------------------
-    # MÉSO-NH UTILISATEURS
-    # ------------------------------------------------------------------
+    '''# MÉSO-NH UTILISATEURS
     line_styles = ["solid", "dot", "dash", "longdash", "dashdot"]
 
     for idx, user_id in enumerate(id_users or []):
@@ -220,9 +213,7 @@ def build_series_figures(
                 except KeyError:
                     pass
 
-    # ------------------------------------------------------------------
     # SURFEX UTILISATEURS
-    # ------------------------------------------------------------------
     for idx, user_id in enumerate(id_users or []):
         if not user_id:
             continue
@@ -265,7 +256,7 @@ def build_series_figures(
                             )
                         )
                 except KeyError:
-                    pass
+                    pass'''
 
     # ------------------------------------------------------------------
     # Layout final
@@ -273,7 +264,6 @@ def build_series_figures(
     for param in VARIABLES_PLOT:
         figures[param].update_layout(
             height=450,
-            width=800,
             xaxis_title="Date et heure",
             yaxis_title=VARIABLES[param]["unit"],
             title=VARIABLES[param]["title"],

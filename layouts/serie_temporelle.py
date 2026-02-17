@@ -6,7 +6,7 @@ layout_serie_temporelle = html.Div(
 
         html.Div(
             id="series-graphs-container",
-            className="row"
+            #className="row"
         )
 
     ],

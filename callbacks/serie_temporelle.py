@@ -64,7 +64,9 @@ def update_line(
             html.Div(
                 dcc.Graph(
                     id=f"graph_{param}",
-                    figure=figures[param]
+                    figure=figures[param],
+                    style={"width":"100%"},
+                    config={'responsive':True}
                 ),
                 className="six columns"
             )

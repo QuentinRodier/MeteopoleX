@@ -15,8 +15,8 @@ def build_series_figures(
     start_day,
     end_day,
     reseau_obs,
-    reseau_arp,
-    reseau_aro,
+    #reseau_arp,
+    #reseau_aro,
     reseau_arome,
     reseau_mnh,
     reseau_surfex,
@@ -45,7 +45,7 @@ def build_series_figures(
                 )
 
     # ARPÈGE
-    arp_mapping = {
+    '''arp_mapping = {
         "Arp_J-1_00h": (RESEAUX[0], dict(color="navy", dash="dot"), True),
         "Arp_J-1_12h": (RESEAUX[1], dict(color="mediumslateblue", dash="dot"), "legendonly"),
         "Arp_J0_00h": (RESEAUX[2], dict(color="navy"), True),
@@ -65,10 +65,10 @@ def build_series_figures(
                             line=style,
                             visible=visible,
                         )
-                    )
+                    )'''
 
     # AROME ANCIENNE VERSION
-    aro_mapping = {
+    '''aro_mapping = {
         "Aro_J-1_00h": (RESEAUX[0], dict(color="green", dash="dot")),
         "Aro_J-1_12h": (RESEAUX[1], dict(color="olive", dash="dot")),
         "Aro_J0_00h": (RESEAUX[2], dict(color="green")),
@@ -87,7 +87,7 @@ def build_series_figures(
                             name=selection,
                             line=style,
                         )
-                    )
+                    )'''
 
     # AROME ENVELOPPE
     arome_mapping = {
@@ -263,10 +263,11 @@ def build_series_figures(
     # ------------------------------------------------------------------
     for param in VARIABLES_PLOT:
         figures[param].update_layout(
-            height=450,
+            height=450, width=800,
             xaxis_title="Date et heure",
             yaxis_title=VARIABLES[param]["unit"],
             title=VARIABLES[param]["title"],
+            showlegend=True
         )
 
     return figures

@@ -9,8 +9,8 @@ from data_processing.data_processing_serieT import build_series_figures
     Output("series-graphs-container", "children"),
     [
         Input("multi_select_line_chart_obs", "value"),
-        Input("multi_select_line_chart_ARP", "value"),
-        Input("multi_select_line_chart_ARO", "value"),
+        #Input("multi_select_line_chart_ARP", "value"),
+        #Input("multi_select_line_chart_ARO", "value"),
         Input("multi_select_line_chart_AROME", "value"),
         Input("multi_select_line_chart_MNH", "value"),
         Input("multi_select_line_chart_SURFEX", "value"),
@@ -25,8 +25,8 @@ from data_processing.data_processing_serieT import build_series_figures
 )
 def update_line(
     reseau_obs,
-    reseau_arp,
-    reseau_aro,
+    #reseau_arp,
+    #reseau_aro,
     reseau_arome,
     reseau_mnh,
     reseau_surfex,
@@ -48,8 +48,8 @@ def update_line(
         start_day,
         end_day,
         reseau_obs,
-        reseau_arp,
-        reseau_aro,
+        #reseau_arp,
+        #reseau_aro,
         reseau_arome,
         reseau_mnh,
         reseau_surfex,
@@ -68,7 +68,7 @@ def update_line(
                     config={'responsive':True}
                 ),
                 className="six columns",
-                style={'display': 'inline-block'}       
+                style={'display': 'inline-block'}       #Intéraction zoom / nbr de colonnes
             )
         )
 

@@ -7,6 +7,7 @@ import dash_bootstrap_components as dbc
 import datetime
 from datetime import timedelta, date
 from config.dates_config import start_day, end_day, today
+from config.models import selection_obs, selection_arp, selection_aro, selection_arome, selection_mnh, selection_surfex
 
 SIDEBAR_STYLE = {
     "position": "fixed",
@@ -42,7 +43,7 @@ date_picker = html.Div([
 dropdown_obs = dcc.Dropdown(
     id="multi_select_line_chart_obs",
     options=[{"value": "Obs", "label": "Obs"}],
-    value=["Obs"],
+    value=selection_obs,
     multi=True,
     clearable=False
 )
@@ -51,7 +52,7 @@ dropdown_arp = dcc.Dropdown(
     id="multi_select_line_chart_ARP",
     options=[{"value": label, "label": label} for label in
              ["Arp_J-1_00h", "Arp_J-1_12h", "Arp_J0_00h", "Arp_J0_12h"]],
-    value=["Arp_J0_00h", "Arp_J-1_12h"],
+    value=selection_arp,
     multi=True,
     clearable=False
 )
@@ -60,7 +61,7 @@ dropdown_aro = dcc.Dropdown(
     id="multi_select_line_chart_ARO",
     options=[{"value": label, "label": label} for label in
              ["Aro_J-1_00h", "Aro_J-1_12h", "Aro_J0_00h", "Aro_J0_12h"]],
-    value=["Aro_J0_00h", "Aro_J-1_12h"],
+    value=selection_aro,
     multi=True,
     clearable=False
 )
@@ -69,7 +70,7 @@ dropdown_arome = dcc.Dropdown(
     id="multi_select_line_chart_AROME",
     options=[{"value": label, "label": label} for label in
              ["Arome_J-1_00h", "Arome_J-1_12h", "Arome_J0_00h", "Arome_J0_12h"]],
-    value=["Arome_J0_00h", "Arome_J-1_12h"],
+    value=selection_arome, 
     multi=True,
     clearable=False
 )
@@ -78,7 +79,7 @@ dropdown_mnh = dcc.Dropdown(
     id="multi_select_line_chart_MNH",
     options=[{"value": label, "label": label} for label in
              ["MésoNH_Arp", "MésoNH_Aro", "MésoNH_Obs"]],
-    value=["MésoNH_Arp", "MésoNH_Aro"],
+    value=selection_mnh,
     multi=True,
     clearable=False
 )
@@ -87,7 +88,7 @@ dropdown_surfex = dcc.Dropdown(
     id="multi_select_line_chart_SURFEX",
     options=[{"value": label, "label": label} for label in
              ["SURFEX_Arp", "SURFEX_Aro", "SURFEX_Obs"]],
-    value=["SURFEX_Arp"],
+    value=selection_surfex,
     multi=True,
     clearable=False
 )

@@ -65,10 +65,10 @@ def update_line(
                 dcc.Graph(
                     id=f"graph_{param}",
                     figure=figures[param],
-                    style={"width":"100%"},
                     config={'responsive':True}
                 ),
-                className="six columns"
+                className="six columns",
+                style={'display': 'inline-block'}       
             )
         )
 

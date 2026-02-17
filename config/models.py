@@ -35,6 +35,14 @@ MODELS_PLOT = {"MésoNH_Arp":
               {'name': 'Tf',
                'color': 'gold'}}
 
+#Sélection des modèles et réseaux affichés par défaut (sur les séries temporelles)
+selection_obs = ["Obs"]
+selection_arp = []
+selection_aro = []
+selection_arome = ["Arome_J0_00h"]
+selection_mnh = []
+selection_surfex = [] 
+
 # Couleur et légendes par modèles sur Profils Verticaux
 MODELS_PLOT_RS = {"Gt": {
     "name": "MNH-ARPEGE",

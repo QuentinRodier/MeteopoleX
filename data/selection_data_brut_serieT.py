@@ -187,10 +187,6 @@ def selection_data_brut_serieT(start_day, end_day):
 
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Version optimisée de selection_data_brut_serieT
-Utilise les lectures batch pour réduire drastiquement les I/O
-"""
 
 from app import app
 import datetime
@@ -207,12 +203,6 @@ from config.models import MODELS, RESEAUX
 def selection_data_brut_serieT(start_day, end_day):
     """
     Version optimisée de la récupération des données AIDA/AROME
-    
-    OPTIMISATIONS:
-    1. Lecture batch de tous les paramètres AIDA en une fois par modèle
-    2. Lecture batch de tous les paramètres AROME en une fois par réseau
-    3. Pré-calcul des statistiques AROME (mean, std, min, max)
-    4. Cache à 2 niveaux (mémoire + disque)
     """
     
     # Conversion des dates en jour de l'année
@@ -228,10 +218,8 @@ def selection_data_brut_serieT(start_day, end_day):
     charts = {}
     graphs = {}
 
-    # =========================================================================
-    # OPTIMISATION 1: Préparer la liste de tous les paramètres à charger
-    # =========================================================================
-    
+    #----------------------------------------------------------------------------------
+    # Listes des paramètres à charger
     # Paramètres observations
     params_obs = {
         param: VARIABLES[param]["index_obs"] 
@@ -248,17 +236,15 @@ def selection_data_brut_serieT(start_day, end_day):
                 for param in VARIABLES_PLOT
             }'''
     
-    # Paramètres AROME nouvelle version (NetCDF)
+    # Paramètres AROME enveloppe
     params_arome = {
         param: VARIABLES[param]['index_model_arome']
         for param in VARIABLES_PLOT
         if VARIABLES[param]['index_model_arome'] is not None
     }
 
-    # =========================================================================
-    # OPTIMISATION 2: Lecture batch des observations (1 seul appel)
-    # =========================================================================
-    
+    #----------------------------------------------------------------------------------
+    # Lecture batch des observations 
     obs_data_batch = read_aida.donnees_batch(
         start_doy, end_doy,
         str(start_day.year), str(end_day.year),
@@ -266,10 +252,7 @@ def selection_data_brut_serieT(start_day, end_day):
         'Tf'
     )
     
-    # =========================================================================
-    # OPTIMISATION 3: Lecture batch des modèles AIDA
-    # =========================================================================
-    
+    # Lecture batch des modèles AIDA
     '''models_data_batch = {}
     for model in ['Gt', 'Rt']:
         models_data_batch[model] = {}
@@ -281,11 +264,7 @@ def selection_data_brut_serieT(start_day, end_day):
                 model
             )'''
     
-    # =========================================================================
-    # OPTIMISATION 4: Lecture batch AROME NetCDF (tous params à la fois)
-    # =========================================================================
-    
-    # Liste des paramètres AROME à charger
+    # Lecture batch AROME enveloppe
     arome_params_to_load = [v for v in params_arome.values() if v is not None]
     
     arome_data_batch = {}
@@ -295,17 +274,13 @@ def selection_data_brut_serieT(start_day, end_day):
             start_day, end_day, reseau, arome_params_to_load
         )
     
-    # =========================================================================
-    # CONSTRUCTION de la structure de données
-    # =========================================================================
-    
+    #----------------------------------------------------------------------------------
+    # Structure données
     for param in VARIABLES_PLOT:
         
         data.setdefault(param, {})
         
-        # ---------------------------------------------------------------------
-        # Observations (depuis le batch)
-        # ---------------------------------------------------------------------
+        # Observations
         obs_model = 'Tf'
         data[param][obs_model] = {}
         
@@ -317,9 +292,7 @@ def selection_data_brut_serieT(start_day, end_day):
             data[param][obs_model]['values'] = None
             data[param][obs_model]['time'] = None
         
-        # ---------------------------------------------------------------------
         # Modèles numériques
-        # ---------------------------------------------------------------------
         for model in MODELS:
             
             data[param].setdefault(model, {})
@@ -328,9 +301,7 @@ def selection_data_brut_serieT(start_day, end_day):
                 
                 data[param][model].setdefault(reseau, {})
                 
-                # -------------------------------------------------------------
                 # AROME enveloppes
-                # -------------------------------------------------------------
                 if model == "Arome":
                     
                     param_arome = VARIABLES[param]['index_model_arome']
@@ -375,9 +346,7 @@ def selection_data_brut_serieT(start_day, end_day):
                             'time': {}
                         })
                 
-                # -------------------------------------------------------------
                 # AROME / ARPEGE (AIDA) 
-                # -------------------------------------------------------------
                 '''else:
                     
                     if param in models_data_batch[model][reseau]:
@@ -404,9 +373,7 @@ def selection_data_brut_serieT(start_day, end_day):
                         data[param][model][reseau]['values'] = None
                         data[param][model][reseau]['time'] = None'''
         
-        # ---------------------------------------------------------------------
-        # Création des figures (identique)
-        # ---------------------------------------------------------------------
+        # Création des figures
         charts[param] = go.Figure()
         graphs[param] = dcc.Graph(
             id=f'graph_{param}',

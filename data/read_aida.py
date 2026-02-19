@@ -184,3 +184,4 @@ def clear_cache(older_than_days=7):
             deleted += 1
     
     print(f"Cache AIDA nettoyé: {deleted} fichiers supprimés")
+

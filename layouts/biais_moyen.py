@@ -1,4 +1,4 @@
-from dash import html
+'''from dash import html
 
 import datetime
 from datetime import date, timedelta
@@ -29,4 +29,29 @@ row3 = html.Div(children=all_graphsM, className="twelve columns")
 layout_biais_moyen = html.Div([
     html.H1('Biais moyens'),
     row3,
-], className="twelve columns", style={"text-align": "center", "justifyContent": "center"})
+], className="twelve columns", style={"text-align": "center", "justifyContent": "center"})'''
+
+
+
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Layout pour la page d'analyse des biais moyens horaires (cycle diurne).
+"""
+
+from dash import html
+
+layout_biais_moyen = html.Div(
+    [
+        html.H1("Biais Moyens Horaires"),
+        
+        html.Div(
+            id="biais-moyen-graphs-container",
+            className="row"
+        )
+    ],
+    style={
+        "textAlign": "center",
+        "justifyContent": "center"
+    }
+)

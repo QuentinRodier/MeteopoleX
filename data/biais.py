@@ -4,7 +4,7 @@ from dash import dcc
 import plotly.graph_objects as go
 
 from . import read_aida
-import lecture_mesoNH
+#import lecture_mesoNH
 
 from config.variables import VARIABLES_PLOT, VARIABLES
 from config.models import MODELS, MODELS_BIAIS, RESEAUX
@@ -15,6 +15,8 @@ import pandas as pd
 import datetime
 from datetime import date, timedelta
 import matplotlib.dates as mdates
+
+from data.data_loader import data_loader
 
 
 def calcul_biais(start_day, end_day):
@@ -44,7 +46,9 @@ def calcul_biais(start_day, end_day):
     dataframe_sanstrou = pd.DataFrame(index=dataallyear)
 
     # Données des simulations MésoNH OPER
-    data_mnh = lecture_mesoNH.mesoNH(start_day, end_day, MODELS_BIAIS, VARIABLES_PLOT)
+    #data_mnh = lecture_mesoNH.mesoNH(start_day, end_day, MODELS_BIAIS, VARIABLES_PLOT)
+    loader = data_loader.load_biais(start_day, end_day)
+    data_mnh = loader["meso"]
 
     for param in VARIABLES_PLOT:
         if param not in biais:

@@ -1,4 +1,4 @@
-from dash import html
+'''from dash import html
 
 import datetime
 from datetime import date, timedelta
@@ -29,4 +29,29 @@ row2 = html.Div(children=all_graphsB, className="twelve columns")
 layout_biais = html.Div([
     html.H1('Biais'),
     row2,
-], className="twelve columns", style={"text-align": "center", "justifyContent": "center"})
+], className="twelve columns", style={"text-align": "center", "justifyContent": "center"})'''
+
+
+
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Layout pour la page d'analyse des biais instantanés.
+"""
+
+from dash import html
+
+layout_biais = html.Div(
+    [
+        html.H1("Biais Instantanés"),
+        
+        html.Div(
+            id="biais-graphs-container",
+            className="row"
+        )
+    ],
+    style={
+        "textAlign": "center",
+        "justifyContent": "center"
+    }
+)

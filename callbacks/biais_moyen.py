@@ -1,4 +1,4 @@
-from app import app
+'''from app import app
 from datetime import date, timedelta
 import datetime
 
@@ -228,4 +228,74 @@ def update_lineM(reseau2, reseau3, reseau4, reseau5, start_day, end_day,
                                     title=VARIABLES[param]['title'])
         list_chartsM.append(chartM[param])
 
-    return list_chartsM  # Le callback attend des Outputs qui sont contenus dans chartB[param]
+    return list_chartsM  # Le callback attend des Outputs qui sont contenus dans chartB[param]'''
+
+
+ 
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Callbacks pour la page d'analyse des biais moyens horaires.
+"""
+
+from dash import Input, Output, html, dcc
+from app import app
+from datetime import date, timedelta, datetime
+from config.variables import VARIABLES_PLOT
+from config.dates_config import start, end
+from data_processing.data_processing_biais_moyen import build_biais_moyen_figures
+
+
+@app.callback(
+    Output("biais-moyen-graphs-container", "children"),
+    [
+        Input("my-date-picker-range", "start_date"),
+        Input("my-date-picker-range", "end_date"),
+    ],
+)
+def update_biais_moyen(start_day, end_day):
+    """
+    Met à jour les graphiques des biais moyens horaires.
+    
+    Ce callback est très simple : il délègue tout le traitement
+    à la fonction build_biais_moyen_figures() du module data_processing.
+    """
+    
+    # Utiliser les dates de config par défaut si aucune n'est fournie
+    '''if not start_day:
+        today = datetime.today().date()
+        start_day = today - timedelta(days=start)
+    else:
+        start_day = date.fromisoformat(start_day)
+    
+    if not end_day:
+        today = datetime.today().date()
+        end_day = today + timedelta(days=end)
+    else:
+        end_day = date.fromisoformat(end_day)'''
+
+    if start_day:
+        start_day = date.fromisoformat(start_day)
+    if end_day:
+        end_day = date.fromisoformat(end_day)
+    
+    # Construction des figures via le module de traitement
+    chartM, graphM = build_biais_moyen_figures(start_day, end_day)
+    
+    # Génération dynamique des graphes
+    graphs = []
+    
+    for param in VARIABLES_PLOT:
+        graphs.append(
+            html.Div(
+                dcc.Graph(
+                    id=f"graphM_{param}",
+                    figure=chartM[param],
+                    config={'responsive': True}
+                ),
+                className="six columns",
+                style={'display': 'inline-block'}  # Interaction zoom / nbr de colonnes
+            )
+        )
+    
+    return graphs

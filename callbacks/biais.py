@@ -1,4 +1,4 @@
-from app import app
+'''from app import app
 from datetime import date, timedelta
 import datetime
 
@@ -236,4 +236,76 @@ def update_lineB(reseau2, reseau3, reseau4, reseau5, start_day, end_day,
                                     title=VARIABLES[param]['title'])
         list_chartsB.append(chartB[param])
 
-    return list_chartsB  # Le callback attend des Outputs qui sont contenus dans chartB[param]
+    return list_chartsB  # Le callback attend des Outputs qui sont contenus dans chartB[param]'''
+
+
+
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Callbacks pour la page d'analyse des biais instantanés.
+"""
+
+from dash import Input, Output, html, dcc
+from app import app
+from datetime import date, timedelta, datetime
+from config.variables import VARIABLES_PLOT
+from config.dates_config import start, end
+from data_processing.data_processing_biais import build_biais_figures
+
+
+@app.callback(
+    Output("biais-graphs-container", "children"),
+    [
+        Input('multi_select_line_chart_MNH', 'value'),
+        Input('my-date-picker-range', 'start_date'),
+        Input('my-date-picker-range', 'end_date'),
+        Input('id_user1', 'value'),
+        Input('id_user2', 'value'),
+        Input('id_user3', 'value'),
+        Input('id_user4', 'value'),
+        Input('id_user5', 'value')
+    ],
+)
+def update_biais(reseau_mnh, 
+                 start_day, end_day, id_user1, id_user2, id_user3, 
+                 id_user4, id_user5):
+    """
+    Met à jour les graphiques des biais instantanés.
+    
+    Ce callback est simple : il délègue tout le traitement
+    à la fonction build_biais_figures() du module data_processing.
+    """
+    
+    start_day = date.fromisoformat(start_day)
+    end_day = date.fromisoformat(end_day)
+    
+    # Construction des figures via le module de traitement
+    chartB, graphB = build_biais_figures(
+        start_day, end_day,
+        reseau_mnh=reseau_mnh,
+        id_user1=id_user1,
+        id_user2=id_user2,
+        id_user3=id_user3,
+        id_user4=id_user4,
+        id_user5=id_user5
+    )
+    
+    # Génération dynamique des graphes
+    graphs = []
+    
+    for param in VARIABLES_PLOT:
+        graphs.append(
+            html.Div(
+                dcc.Graph(
+                    id=f"graphB_{param}",
+                    figure=chartB[param],
+                    config={'responsive': True}
+                ),
+                className="six columns",
+                style={'display': 'inline-block'}  # Interaction zoom / nbr de colonnes
+            )
+        )
+    
+    return graphs
+

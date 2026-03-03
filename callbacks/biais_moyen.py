@@ -239,6 +239,7 @@ Callbacks pour la page d'analyse des biais moyens horaires.
 """
 
 from dash import Input, Output, html, dcc
+from dash.exceptions import PreventUpdate
 from app import app
 from datetime import date, timedelta, datetime
 from config.variables import VARIABLES_PLOT
@@ -249,38 +250,19 @@ from data_processing.data_processing_biais_moyen import build_biais_moyen_figure
 @app.callback(
     Output("biais-moyen-graphs-container", "children"),
     [
+        Input("multi_select_line_chart_AROME", "value"),
         Input("my-date-picker-range", "start_date"),
         Input("my-date-picker-range", "end_date"),
     ],
 )
-def update_biais_moyen(start_day, end_day):
-    """
-    Met à jour les graphiques des biais moyens horaires.
     
-    Ce callback est très simple : il délègue tout le traitement
-    à la fonction build_biais_moyen_figures() du module data_processing.
-    """
+def update_biais_moyen(reseau_arome, start_day, end_day):
     
-    # Utiliser les dates de config par défaut si aucune n'est fournie
-    '''if not start_day:
-        today = datetime.today().date()
-        start_day = today - timedelta(days=start)
-    else:
-        start_day = date.fromisoformat(start_day)
-    
-    if not end_day:
-        today = datetime.today().date()
-        end_day = today + timedelta(days=end)
-    else:
-        end_day = date.fromisoformat(end_day)'''
-
-    if start_day:
-        start_day = date.fromisoformat(start_day)
-    if end_day:
-        end_day = date.fromisoformat(end_day)
+    start_day = date.fromisoformat(start_day)
+    end_day = date.fromisoformat(end_day)
     
     # Construction des figures via le module de traitement
-    chartM, graphM = build_biais_moyen_figures(start_day, end_day)
+    chartM, graphM = build_biais_moyen_figures(reseau_arome, start_day, end_day)
     
     # Génération dynamique des graphes
     graphs = []

@@ -44,7 +44,7 @@ from dash import html
 layout_biais = html.Div(
     [
         html.H1("Biais Instantanés"),
-        
+
         html.Div(
             id="biais-graphs-container",
             className="row"

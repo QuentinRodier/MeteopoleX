@@ -157,7 +157,7 @@ import pandas as pd
 from datetime import timedelta
 
 from config.variables import VARIABLES_PLOT
-from config.models import MODELS_BIAIS, RESEAUX
+from config.models import MODELS, RESEAUX
 
 from data.biais import calcul_biais
 #from data.selection_data_brut_serieT import selection_data_brut_serieT
@@ -184,7 +184,7 @@ def biais_moyen(start_day, end_day):
     #data, chart, graph = selection_data_brut_serieT(start_day, end_day)
     loader = data_loader.load_series(start_day, end_day)
     data = loader["base"]
-    biais, chartB, graphB = calcul_biais(start_day, end_day)
+    biais = calcul_biais(start_day, end_day)
     
     # Initialisation du DataFrame final vide
     DF = []
@@ -196,11 +196,11 @@ def biais_moyen(start_day, end_day):
         pass
 
     for param in VARIABLES_PLOT:
-        for model in MODELS_BIAIS:
+        for model in MODELS:
             if model != 'Tf':
-                # Ajout des données ARO/ARP OPER
+                # Ajout des données opérationnelles
                 for reseau in RESEAUX:
-                    if len(biais[param][model][reseau]) > 1:
+                    '''if len(biais[param][model][reseau]) > 1:
                         dico_loc = {}
                         df_loc = []
                         # Nom des colonnes du DF
@@ -212,13 +212,31 @@ def biais_moyen(start_day, end_day):
                             df_loc = pd.DataFrame(data=dico_loc, index=list(biais[param][model][reseau]['time']))
                             DF = pd.concat([DF, df_loc], axis=1)
                         except BaseException:
-                            pass
+                            pass'''
+
+                    block = biais.get(param, {}).get(model, {}).get(reseau, {})
+                    vals = block.get("values")
+                    tim = block.get("time")
+
+                    if not isinstance(vals, (list, np.ndarray)) or not isinstance(tim, (list, np.ndarray)):
+                        continue
+                    if len(vals) == 0 or len(tim) == 0:
+                        continue
+
+                    colname = f"{param}_{model}_{reseau}"
+
+                    try:
+                        df_loc = pd.DataFrame({colname: list(vals)}, index=list(tim))
+                        DF = pd.concat([DF, df_loc], axis=1)
+                    except Exception:
+                        pass
+
 
             # Ajout des données MNH-OPER
-            nb_jour = (end_day - start_day).days
+            '''nb_jour = (end_day - start_day).days'''
 
             # Création d'un dataframe vide où vont se concaténer tous les jours de la période
-            df_mnh = []
+            '''df_mnh = []
             df_mnh = pd.DataFrame(df_mnh)
 
             for i in range(nb_jour):
@@ -245,7 +263,7 @@ def biais_moyen(start_day, end_day):
             try:
                 DF = pd.concat([DF, df_mnh], axis=1)
             except TypeError:
-                pass
+                pass'''
 
     # Conversion colonnes type 'object' en type 'numeric'
     # Sinon le 'groupby' enlève les colonnes 'object'
@@ -271,14 +289,16 @@ def biais_moyen(start_day, end_day):
 
     # Intégration des données du DataFrame DF_CyDi dans le dictionnaire biais_moy
     for param in VARIABLES_PLOT:
-        if param not in biais_moy:
-            biais_moy[param] = {}
-        for model in MODELS_BIAIS:
+        #if param not in biais_moy:
+        #    biais_moy[param] = {}
+        biais_moy.setdefault(param, {})
+
+        for model in MODELS:
             if model not in biais_moy[param]:
                 biais_moy[param][model] = {}
             if model != 'Tf':
-                # Ajout des données ARO/ARP OPER
-                for reseau in RESEAUX:
+                # Ajout des données opérationnelles
+                '''for reseau in RESEAUX:
                     if reseau not in biais_moy[param][model]:
                         biais_moy[param][model][reseau] = {}
                     colname = str(param + '_' + model + '_' + reseau)
@@ -289,9 +309,22 @@ def biais_moyen(start_day, end_day):
                     except BaseException:
                         biais_moy[param][model][reseau]['values'] = 0.
                         biais_moy[param][model][reseau]['time'] = list(DF_CyDi.index)
-                        pass
+                        pass'''
 
-            if 'MNH' not in biais_moy[param][model]:
+                for reseau in RESEAUX:
+                    biais_moy[param][model].setdefault(reseau, {})
+                    colname = f"{param}_{model}_{reseau}"
+
+                    if colname in DF_CyDi.columns:
+                        biais_moy[param][model][reseau]["values"] = list(DF_CyDi[colname].values)
+                        biais_moy[param][model][reseau]["time"] = list(DF_CyDi.index)
+                    else:
+                        # laisse vide/NaN plutôt que 0 
+                        biais_moy[param][model][reseau]["values"] = [np.nan] * len(DF_CyDi.index)
+                        biais_moy[param][model][reseau]["time"] = list(DF_CyDi.index)
+
+
+            '''if 'MNH' not in biais_moy[param][model]:
                 biais_moy[param][model]['MNH'] = {}
             colname = str(param + '_MesoNH_' + model)
 
@@ -301,6 +334,6 @@ def biais_moyen(start_day, end_day):
             except BaseException:
                 biais_moy[param][model]['MNH']['values'] = 0.
                 biais_moy[param][model]['MNH']['time'] = list(DF_CyDi.index)
-                pass
+                pass'''
 
-    return biais_moy, chartM, graphM
+    return biais_moy

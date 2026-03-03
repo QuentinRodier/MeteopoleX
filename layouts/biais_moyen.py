@@ -39,7 +39,7 @@ layout_biais_moyen = html.Div([
 Layout pour la page d'analyse des biais moyens horaires (cycle diurne).
 """
 
-from dash import html, dcc
+from dash import html
 
 layout_biais_moyen = html.Div(
     [

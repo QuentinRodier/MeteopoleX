@@ -3,11 +3,13 @@ from app import app
 from dash import dcc
 import plotly.graph_objects as go
 
-from . import read_aida
+#from . import read_aida
+#from . import read_arome
 #import lecture_mesoNH
 
-from config.variables import VARIABLES_PLOT, VARIABLES
-from config.models import MODELS, MODELS_BIAIS, RESEAUX
+from config.variables import VARIABLES_PLOT
+from config.models import MODELS, RESEAUX
+from data.data_loader import data_loader
 
 import numpy as np
 import pandas as pd
@@ -16,17 +18,12 @@ import datetime
 from datetime import date, timedelta
 import matplotlib.dates as mdates
 
-from data.data_loader import data_loader
-
 
 def calcul_biais(start_day, end_day):
 
     doy1 = datetime.datetime(int(start_day.year), int(
         start_day.month), int(start_day.day)).strftime('%j')
     doy2 = datetime.datetime(int(end_day.year), int(end_day.month), int(end_day.day)).strftime('%j')
-
-    chartB = {}
-    graphB = {}
 
     biais = {}
     #biais_mnh = {}
@@ -45,12 +42,12 @@ def calcul_biais(start_day, end_day):
     dataallyear = [i.replace(tzinfo=None) for i in dt]
     dataframe_sanstrou = pd.DataFrame(index=dataallyear)
 
-    # Données des simulations MésoNH OPER
+    # Chargement des données
     #data_mnh = lecture_mesoNH.mesoNH(start_day, end_day, MODELS_BIAIS, VARIABLES_PLOT)
-    loader = data_loader.load_biais(start_day, end_day)
-    data_mnh = loader["meso"]
+    loader = data_loader.load_series(start_day, end_day)
+    base = loader["base"]
 
-    for param in VARIABLES_PLOT:
+    '''for param in VARIABLES_PLOT:
         if param not in biais:
             biais[param] = {}
         for model in MODELS_BIAIS:
@@ -108,7 +105,6 @@ def calcul_biais(start_day, end_day):
                     biais[param][model][reseau]['time'] = list(df_biais.index)
                     
             # Pour MesoNH, une simulation = 1 jour, calcul du biais par jour
-            # TODO: optimisation
             nb_jour = (end_day - start_day).days
 
             for i in range(nb_jour):
@@ -190,4 +186,70 @@ def calcul_biais(start_day, end_day):
             figure=chartB[param],
         )
 
-    return biais, chartB, graphB
+    return biais, chartB, graphB'''
+
+
+    for param in VARIABLES_PLOT:
+            biais.setdefault(param, {})
+
+            # --- OBS ---
+            obs_pack = base.get(param, {}).get("Tf", {})
+            values_obs = obs_pack.get("values", None)
+            time_obs = obs_pack.get("time", None)
+
+            if values_obs is None or time_obs is None:
+                # pas d'obs => NaN partout
+                for model in MODELS:
+                    biais[param].setdefault(model, {})
+                    for reseau in RESEAUX:
+                        biais[param][model][reseau] = {"values": np.nan}
+                continue
+
+            df_obs = pd.DataFrame(list(values_obs), index=time_obs)
+            df_obs = dataframe_sanstrou.join(df_obs).dropna()
+            df_obs.index = pd.to_datetime(df_obs.index)
+
+            # --- MODELES ---
+            for model in MODELS:  
+                biais[param].setdefault(model, {})
+
+                for reseau in RESEAUX:
+                    biais[param][model].setdefault(reseau, {})
+
+                    mod_pack = base.get(param, {}).get(model, {}).get(reseau, {})
+
+                    s_p1 = mod_pack.get("values_P1", None)  # pandas Series attendue
+                    t_mod = mod_pack.get("time", None)
+
+                    # values_P1 vide ou inexistant
+                    if s_p1 is None or (hasattr(s_p1, "empty") and s_p1.empty):
+                        biais[param][model][reseau]["values"] = np.nan
+                        continue
+
+                    # Normalisation en série avec index datetime
+                    if not isinstance(s_p1, pd.Series):
+                        # au cas où ça arrive en dict/array
+                        try:
+                            s_p1 = pd.Series(s_p1)
+                        except Exception:
+                            biais[param][model][reseau]["values"] = np.nan
+                            continue
+
+                    s_mod = s_p1.copy()
+                    s_mod.index = pd.to_datetime(s_mod.index)
+
+                    df_mod = pd.DataFrame(s_mod)
+                    df_mod = dataframe_sanstrou.join(df_mod).dropna()
+                    df_mod.index = pd.to_datetime(df_mod.index)
+
+                    joined = df_mod.join(df_obs, how="inner", lsuffix="_mod", rsuffix="_obs").dropna()
+                    if joined.empty:
+                        biais[param][model][reseau]["values"] = np.nan
+                        continue
+
+                    b = joined.iloc[:, 0] - joined.iloc[:, 1]  # mod - obs
+                    biais[param][model][reseau]["values"] = list(b.values)
+                    biais[param][model][reseau]["time"] = list(b.index)
+
+    return biais
+

@@ -257,7 +257,8 @@ from data_processing.data_processing_biais import build_biais_figures
 @app.callback(
     Output("biais-graphs-container", "children"),
     [
-        Input('multi_select_line_chart_MNH', 'value'),
+        Input("multi_select_line_chart_AROME", "value"),
+        #Input('multi_select_line_chart_MNH', 'value'),
         Input('my-date-picker-range', 'start_date'),
         Input('my-date-picker-range', 'end_date'),
         Input('id_user1', 'value'),
@@ -267,7 +268,8 @@ from data_processing.data_processing_biais import build_biais_figures
         Input('id_user5', 'value')
     ],
 )
-def update_biais(reseau_mnh, 
+
+def update_biais(reseau_arome, 
                  start_day, end_day, id_user1, id_user2, id_user3, 
                  id_user4, id_user5):
     """
@@ -283,7 +285,7 @@ def update_biais(reseau_mnh,
     # Construction des figures via le module de traitement
     chartB, graphB = build_biais_figures(
         start_day, end_day,
-        reseau_mnh=reseau_mnh,
+        reseau_arome=reseau_arome,
         id_user1=id_user1,
         id_user2=id_user2,
         id_user3=id_user3,

@@ -14,12 +14,10 @@ class DataLoader:
         key = (start, end)
 
         if key not in self.cache_series:
-            data, chart, graph = selection_data_brut_serieT(start, end)
+            data = selection_data_brut_serieT(start, end)
 
             self.cache_series[key] = {
                 "base": data,
-                #"chart": chart,
-                #"graph": graph,
                 #"meso": lecture_mesoNH.mesoNH(start, end, MODELS, VARIABLES_PLOT),
                 #"surfex": lecture_surfex.surfex(start, end, MODELS, VARIABLES_PLOT),
             }

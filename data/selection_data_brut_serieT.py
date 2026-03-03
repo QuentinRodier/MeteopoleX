@@ -215,8 +215,6 @@ def selection_data_brut_serieT(start_day, end_day):
     ).strftime('%j')
 
     data = {}
-    charts = {}
-    graphs = {}
 
     #----------------------------------------------------------------------------------
     # Listes des paramètres à charger
@@ -372,12 +370,5 @@ def selection_data_brut_serieT(start_day, end_day):
                     else:
                         data[param][model][reseau]['values'] = None
                         data[param][model][reseau]['time'] = None'''
-        
-        # Création des figures
-        charts[param] = go.Figure()
-        graphs[param] = dcc.Graph(
-            id=f'graph_{param}',
-            figure=charts[param]
-        )
     
-    return data, charts, graphs
+    return data

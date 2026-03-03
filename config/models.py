@@ -6,11 +6,11 @@
 # AROME = AROME NetCDF
 
 # Liste des modèles (et observations) dans les séries temporelles
-MODELS = ["Gt", "Rt", "Arome"]
+MODELS = ["Arome"]
 #MODELS = ["Gt", "Rt", "Tf"]
 
 # Liste des modèles sur lesquels les biais et biais moyens sont calculés
-MODELS_BIAIS=['Tf', 'Rt', 'Gt'] #Avec ancienne version de Arome #!# Ajout enveloppe
+#MODELS_BIAIS=['Tf', 'Rt', 'Gt'] #Avec ancienne version de Arome #!# Ajout enveloppe
 
 # Liste des réseaux pour les modèles
 RESEAUX = ["J-1:00_%3600", "J-1:12_%3600", "J0:00_%3600", "J0:12_%3600"]

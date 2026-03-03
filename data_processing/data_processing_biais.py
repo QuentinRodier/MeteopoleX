@@ -17,7 +17,7 @@ from config.models import MODELS_PLOT, RESEAUX
 
 
 def build_biais_figures(start_day, end_day, 
-                        reseau_mnh=None, 
+                        reseau_arome, 
                         id_user1=None, id_user2=None, id_user3=None, 
                         id_user4=None, id_user5=None):
     """
@@ -26,7 +26,7 @@ def build_biais_figures(start_day, end_day,
     Args:
         start_day: Date de début
         end_day: Date de fin
-        reseau_mnh: Liste des simulations MésoNH sélectionnées
+        reseau_arome
         id_user1 à id_user5: IDs des rejeux utilisateur
     
     Returns:
@@ -36,13 +36,13 @@ def build_biais_figures(start_day, end_day,
     """
     
     # Valeurs par défaut si None
-    if reseau_mnh is None:
-        reseau_mnh = []
+    '''if reseau_mnh is None:
+        reseau_mnh = []'''
     
     # ------------------------------------------------------------------
     # CHARGEMENT DES DONNÉES
     # ------------------------------------------------------------------
-    biais, _, _ = calcul_biais(start_day, end_day)
+    biais = calcul_biais(start_day, end_day)
     
     nb_jour = (end_day - start_day).days
     
@@ -59,7 +59,7 @@ def build_biais_figures(start_day, end_day,
         # ------------------------------------------------------------------
         # AJOUT DES REJEUX UTILISATEUR (MésoNH modifié)
         # ------------------------------------------------------------------
-        types = ['solid', 'dot', 'dash', 'longdash', 'dashdot']
+        '''types = ['solid', 'dot', 'dash', 'longdash', 'dashdot']
         for j, id_user in enumerate([id_user1, id_user2, id_user3, id_user4, id_user5]):
             if id_user:
                 for i in range(nb_jour):
@@ -80,10 +80,10 @@ def build_biais_figures(start_day, end_day,
                                 )
                             )
                     except KeyError:
-                        pass
+                        pass'''
         
         # ------------------------------------------------------------------
-        # AJOUT DES RÉSEAUX ARPEGE
+        # AJOUT DES RÉSEAUX ARPEGE AIDA 
         # ------------------------------------------------------------------
         '''for selection in reseau_arp:
             if selection == "Arp_J-1_00h":
@@ -115,7 +115,7 @@ def build_biais_figures(start_day, end_day,
                 pass'''
         
         # ------------------------------------------------------------------
-        # AJOUT DES RÉSEAUX AROME
+        # AJOUT DES RÉSEAUX AROME AIDA
         # ------------------------------------------------------------------
         '''for selection in reseau_aro:
             if selection == "Aro_J-1_00h":
@@ -145,11 +145,44 @@ def build_biais_figures(start_day, end_day,
                     )
             except (KeyError, TypeError):
                 pass'''
-        
+
+        # ------------------------------------------------------------------
+        # AJOUT DES RÉSEAUX AROME 
+        # ------------------------------------------------------------------
+        arome_mapping = {
+            "Arome_J-1_00h": (RESEAUX[0], dict(color="blue", dash="dot")),
+            "Arome_J-1_12h": (RESEAUX[1], dict(color="black", dash="dot")),
+            "Arome_J0_00h": (RESEAUX[2], dict(color="blue")),
+            "Arome_J0_12h": (RESEAUX[3], dict(color="black")),
+        }
+
+        for selection in (reseau_arome or []):
+            if selection not in arome_mapping:
+                continue
+
+            reseau, style = arome_mapping[selection]
+
+            try:
+                block = biais[param]['Arome'][reseau]
+                time = block.get("time")
+                values = block.get("values")
+
+                if isinstance(time, (list, np.ndarray)) and isinstance(values, (list, np.ndarray)):
+                    fig.add_trace(
+                        go.Scatter(
+                            x=time,
+                            y=values,
+                            name=f"{selection} biais (P1)",
+                            line=style,
+                        )
+                    )
+            except (KeyError, TypeError, AttributeError):
+                pass
+
         # ------------------------------------------------------------------
         # AJOUT DES COURBES MESO-NH
         # ------------------------------------------------------------------
-        courbe_affichee = []
+        '''courbe_affichee = []
         for selection in reseau_mnh:
             for i in range(nb_jour + 1):
                 day = start_day + timedelta(days=i)
@@ -177,7 +210,7 @@ def build_biais_figures(start_day, end_day,
                             )
                         )
                 except (KeyError, TypeError):
-                    pass
+                    pass'''
         
         # ------------------------------------------------------------------
         # AJOUT DES COURBES SURFEX

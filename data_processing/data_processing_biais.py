@@ -18,9 +18,9 @@ from config.config import mapping
 
 
 def build_biais_figures(start_day, end_day, 
-                        reseau_arome, 
-                        id_user1=None, id_user2=None, id_user3=None, 
-                        id_user4=None, id_user5=None):
+                        reseau_arome): #, 
+                        #id_user1=None, id_user2=None, id_user3=None, 
+                        #id_user4=None, id_user5=None):
     """
     Construit les figures des biais instantanés.
     

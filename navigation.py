@@ -69,7 +69,7 @@ app.layout = html.Div([
 #   7. REJEU MESO-NH
 # -----------------------------------------------------------------------------
 
-from GUI_MESONH import rejeu_gui
+'''from GUI_MESONH import rejeu_gui
 
 # Instanciation de la GUI
 mesonhgui = rejeu_gui.get_mesonh_gui()
@@ -81,7 +81,7 @@ layout_mesonh_gui = mesonhgui.layout_mesonh_gui
 mesoNH_layout = html.Div([layout_mesonh_gui])
 
 # Mise en place des callbacks associees a la GUI
-mesonhgui.start_callbacks(app)
+mesonhgui.start_callbacks(app)'''
 
 # -----------------------------------------------------------------------------
 #   10. GESTION DES PAGES
@@ -97,18 +97,18 @@ def display_page(pathname):
         return layout_biais
     elif pathname == '/MeteopoleX/biaisM':
         return layout_biais_moyen
-    elif pathname == '/MeteopoleX/mesoNH':
-        return mesoNH_layout
     elif pathname == '/MeteopoleX/surfex':
         return layout_surfex
-    elif pathname == '/MeteopoleX/rs':
-        return layout_radiosoundings
     elif pathname == '/MeteopoleX/notice':
         return layout_notice
-    elif pathname=='/MeteopoleX/PV':
-        return layout_pv
     else:
         return "Error 404 URL not found"
+    '''elif pathname == '/MeteopoleX/mesoNH':
+        return mesoNH_layout
+    elif pathname=='/MeteopoleX/PV':
+        return layout_pv
+    elif pathname == '/MeteopoleX/rs':
+        return layout_radiosoundings'''
     
 if __name__ == '__main__':
     app.run_server(debug=True, host="0.0.0.0", port=8090)

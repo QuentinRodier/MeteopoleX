@@ -19,9 +19,9 @@ def build_series_figures(
     #reseau_arp,
     #reseau_aro,
     reseau_arome,
-    reseau_mnh,
-    reseau_surfex,
-    id_users,
+    #reseau_mnh,
+    #reseau_surfex,
+    #id_users,
 ):
 
     loaded = data_loader.load_series(start_day, end_day)

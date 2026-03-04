@@ -260,17 +260,16 @@ from data_processing.data_processing_biais import build_biais_figures
         #Input('multi_select_line_chart_MNH', 'value'),
         Input('my-date-picker-range', 'start_date'),
         Input('my-date-picker-range', 'end_date'),
-        Input('id_user1', 'value'),
-        Input('id_user2', 'value'),
-        Input('id_user3', 'value'),
-        Input('id_user4', 'value'),
-        Input('id_user5', 'value')
+        #Input('id_user1', 'value'),
+        #Input('id_user2', 'value'),
+        #Input('id_user3', 'value'),
+        #Input('id_user4', 'value'),
+        #Input('id_user5', 'value')
     ],
 )
 
 def update_biais(reseau_arome, 
-                 start_day, end_day, id_user1, id_user2, id_user3, 
-                 id_user4, id_user5):
+                 start_day, end_day): #, id_user1, id_user2, id_user3, id_user4, id_user5):
     """
     Met à jour les graphiques des biais instantanés.
     
@@ -285,11 +284,11 @@ def update_biais(reseau_arome,
     chartB, graphB = build_biais_figures(
         start_day, end_day,
         reseau_arome=reseau_arome,
-        id_user1=id_user1,
-        id_user2=id_user2,
-        id_user3=id_user3,
-        id_user4=id_user4,
-        id_user5=id_user5
+        #id_user1=id_user1,
+        #id_user2=id_user2,
+        #id_user3=id_user3,
+        #id_user4=id_user4,
+        #id_user5=id_user5
     )
     
     # Génération dynamique des graphes

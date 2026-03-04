@@ -12,15 +12,15 @@ from data_processing.data_processing_serieT import build_series_figures
         #Input("multi_select_line_chart_ARP", "value"),
         #Input("multi_select_line_chart_ARO", "value"),
         Input("multi_select_line_chart_AROME", "value"),
-        Input("multi_select_line_chart_MNH", "value"),
-        Input("multi_select_line_chart_SURFEX", "value"),
+        #Input("multi_select_line_chart_MNH", "value"),
+        #Input("multi_select_line_chart_SURFEX", "value"),
         Input("my-date-picker-range", "start_date"),
         Input("my-date-picker-range", "end_date"),
-        Input("id_user1", "value"),
-        Input("id_user2", "value"),
-        Input("id_user3", "value"),
-        Input("id_user4", "value"),
-        Input("id_user5", "value"),
+        #Input("id_user1", "value"),
+        #Input("id_user2", "value"),
+        #Input("id_user3", "value"),
+        #Input("id_user4", "value"),
+        #Input("id_user5", "value"),
     ],
 )
 def update_line(
@@ -28,15 +28,15 @@ def update_line(
     #reseau_arp,
     #reseau_aro,
     reseau_arome,
-    reseau_mnh,
-    reseau_surfex,
+    #reseau_mnh,
+    #reseau_surfex,
     start_day,
     end_day,
-    id_user1,
-    id_user2,
-    id_user3,
-    id_user4,
-    id_user5,
+    #id_user1,
+    #id_user2,
+    #id_user3,
+    #id_user4,
+    #id_user5,
 ):
 
     if start_day:
@@ -51,9 +51,9 @@ def update_line(
         #reseau_arp,
         #reseau_aro,
         reseau_arome,
-        reseau_mnh,
-        reseau_surfex,
-        [id_user1, id_user2, id_user3, id_user4, id_user5],
+        #reseau_mnh,
+        #reseau_surfex,
+        #[id_user1, id_user2, id_user3, id_user4, id_user5],
     )
 
     # Génération dynamique des Graph

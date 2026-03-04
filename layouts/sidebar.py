@@ -6,7 +6,7 @@ import dash_bootstrap_components as dbc
 
 import datetime
 from datetime import timedelta, date
-from config.dates_config import start_day, end_day, today
+from config.config import start_day, end_day, today
 from config.models import selection_obs, selection_arp, selection_aro, selection_arome, selection_mnh, selection_surfex
 
 SIDEBAR_STYLE = {

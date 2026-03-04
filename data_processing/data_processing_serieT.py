@@ -5,8 +5,9 @@ import plotly.graph_objects as go
 
 from config.variables import VARIABLES_PLOT, VARIABLES
 from config.models import RESEAUX
-import lecture_mesoNH
-import lecture_surfex
+from config.config import mapping
+#import lecture_mesoNH
+#import lecture_surfex
 from data.data_loader import data_loader
 
 
@@ -90,19 +91,12 @@ def build_series_figures(
                     )'''
 
     # AROME ENVELOPPE
-    arome_mapping = {
-        "Arome_J-1_00h": (RESEAUX[0], dict(color="blue", dash="dot")),
-        "Arome_J-1_12h": (RESEAUX[1], dict(color="black", dash="dot")),
-        "Arome_J0_00h": (RESEAUX[2], dict(color="blue")),
-        "Arome_J0_12h": (RESEAUX[3], dict(color="black")),
-    }
-
     for selection in reseau_arome or []:
 
-        if selection not in arome_mapping:
+        if selection not in mapping:
             continue
 
-        reseau, style = arome_mapping[selection]
+        reseau, style = mapping[selection]
 
         for param in VARIABLES_PLOT:
 

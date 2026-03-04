@@ -250,7 +250,6 @@ from dash import Input, Output, html, dcc
 from app import app
 from datetime import date, timedelta, datetime
 from config.variables import VARIABLES_PLOT
-from config.dates_config import start, end
 from data_processing.data_processing_biais import build_biais_figures
 
 

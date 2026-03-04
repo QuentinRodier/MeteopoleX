@@ -13,6 +13,7 @@ import numpy as np
 from data.biais_moyen import biais_moyen
 from config.variables import VARIABLES, VARIABLES_PLOT
 from config.models import MODELS, RESEAUX
+from config.config import mapping
 
 
 # Fonction principale appelée par le callback
@@ -41,26 +42,6 @@ def build_biais_moyen_figures(reseau_arome, start_day, end_day):
     chartM = {}
     graphM = {}
 
-    # Configuration des couleurs et styles par modèle
-    arome_mapping = {
-        "Arome_J-1_00h": (RESEAUX[0], dict(color="blue", dash="dot")),
-        "Arome_J-1_12h": (RESEAUX[1], dict(color="black", dash="dot")),
-        "Arome_J0_00h":  (RESEAUX[2], dict(color="blue")),
-        "Arome_J0_12h":  (RESEAUX[3], dict(color="black")),
-    }
-
-    '''model_styles = {
-        'Rt': {'color': 'limegreen', 'name': 'ARO'},
-        'Gt': {'color': 'purple', 'name': 'ARP'}
-    }
-    
-    reseau_styles = {
-        "J-1:00_%3600": {'dash': 'dot', 'suffix': ' J-1 00h'},
-        "J-1:12_%3600": {'dash': 'dot', 'suffix': ' J-1 12h'},
-        "J0:00_%3600": {'dash': 'solid', 'suffix': ' J0 00h'},
-        "J0:12_%3600": {'dash': 'solid', 'suffix': ' J0 12h'},
-    }'''
-    
     for param in VARIABLES_PLOT:
         # Créer la figure Plotly
         fig = go.Figure()
@@ -96,10 +77,10 @@ def build_biais_moyen_figures(reseau_arome, start_day, end_day):
 
         # --- Arome netcdf ---
         for selection in (reseau_arome or []):
-            if selection not in arome_mapping:
+            if selection not in mapping:
                 continue
 
-            reseau, style = arome_mapping[selection]
+            reseau, style = mapping[selection]
 
             try:
                 block = biais_moy.get(param, {}).get('Arome', {}).get(reseau, {})
@@ -114,7 +95,7 @@ def build_biais_moyen_figures(reseau_arome, start_day, end_day):
                     fig.add_trace(go.Scatter(
                         x=time,
                         y=arr,
-                        mode="lines+markers",
+                        #mode="lines+markers",
                         name=selection,
                         line=style,
                         marker=dict(size=6),

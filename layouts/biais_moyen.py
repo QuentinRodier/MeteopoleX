@@ -46,7 +46,7 @@ layout_biais_moyen = html.Div(
         html.H1("Biais Moyens Horaires"),
         html.Div(
             id="biais-moyen-graphs-container",
-            className="row"
+            #className="row"
         )
     ],
     style={

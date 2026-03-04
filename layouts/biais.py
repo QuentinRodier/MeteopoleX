@@ -47,7 +47,7 @@ layout_biais = html.Div(
 
         html.Div(
             id="biais-graphs-container",
-            className="row"
+            #className="row"
         )
     ],
     style={

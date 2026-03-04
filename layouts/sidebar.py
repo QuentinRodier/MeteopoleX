@@ -51,7 +51,7 @@ dropdown_obs = dcc.Dropdown(
 dropdown_arp = dcc.Dropdown(
     id="multi_select_line_chart_ARP",
     options=[{"value": label, "label": label} for label in
-             ["Arp_J-1_00h", "Arp_J-1_12h", "Arp_J0_00h", "Arp_J0_12h"]],
+             ["Arpège_J-1_00h", "Arpège_J-1_12h", "Arpège_J0_00h", "Arpège_J0_12h"]],
     value=selection_arp,
     multi=True,
     clearable=False
@@ -87,7 +87,7 @@ dropdown_arome = dcc.Dropdown(
 dropdown_surfex = dcc.Dropdown(
     id="multi_select_line_chart_SURFEX",
     options=[{"value": label, "label": label} for label in
-             ["SURFEX_Arp", "SURFEX_Aro", "SURFEX_Obs"]],
+             ["SURFEX_Arpège"]], #, "SURFEX_Aro", "SURFEX_Obs"]],
     value=selection_surfex,
     multi=True,
     clearable=False

@@ -5,7 +5,7 @@ import plotly.graph_objects as go
 
 from config.variables import VARIABLES_PLOT, VARIABLES
 from config.models import RESEAUX
-from config.config import mapping
+from config.config import arome_mapping
 #import lecture_mesoNH
 #import lecture_surfex
 from data.data_loader import data_loader
@@ -93,10 +93,10 @@ def build_series_figures(
     # AROME ENVELOPPE
     for selection in reseau_arome or []:
 
-        if selection not in mapping:
+        if selection not in arome_mapping:
             continue
 
-        reseau, style = mapping[selection]
+        reseau, style = arome_mapping[selection]
 
         for param in VARIABLES_PLOT:
 

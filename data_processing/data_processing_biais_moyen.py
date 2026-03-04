@@ -13,7 +13,7 @@ import numpy as np
 from data.biais_moyen import biais_moyen
 from config.variables import VARIABLES, VARIABLES_PLOT
 from config.models import MODELS, RESEAUX
-from config.config import mapping
+from config.config import arome_mapping
 
 
 # Fonction principale appelée par le callback
@@ -77,10 +77,10 @@ def build_biais_moyen_figures(reseau_arome, start_day, end_day):
 
         # --- Arome netcdf ---
         for selection in (reseau_arome or []):
-            if selection not in mapping:
+            if selection not in arome_mapping:
                 continue
 
-            reseau, style = mapping[selection]
+            reseau, style = arome_mapping[selection]
 
             try:
                 block = biais_moy.get(param, {}).get('Arome', {}).get(reseau, {})

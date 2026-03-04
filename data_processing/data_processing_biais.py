@@ -14,7 +14,7 @@ from dash import dcc
 from data.biais import calcul_biais
 from config.variables import VARIABLES, VARIABLES_PLOT
 from config.models import MODELS_PLOT, RESEAUX
-from config.config import mapping
+from config.config import arome_mapping
 
 
 def build_biais_figures(start_day, end_day, 
@@ -151,10 +151,10 @@ def build_biais_figures(start_day, end_day,
         # AJOUT DES RÉSEAUX AROME 
         # ------------------------------------------------------------------
         for selection in (reseau_arome or []):
-            if selection not in mapping:
+            if selection not in arome_mapping:
                 continue
 
-            reseau, style = mapping[selection]
+            reseau, style = arome_mapping[selection]
 
             try:
                 block = biais[param]['Arome'][reseau]

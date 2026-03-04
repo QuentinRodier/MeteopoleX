@@ -14,7 +14,7 @@ start_day = today - timedelta(days=start)
 
 # Mapping
 
-mapping = {
+arome_mapping = {
         "Arome_J-1_00h": (RESEAUX[0], dict(color="#33a02c")),
         "Arome_J-1_12h": (RESEAUX[1], dict(color="#33a02c", dash="dot")),
         "Arome_J0_00h":  (RESEAUX[2], dict(color="#1f78b4")),

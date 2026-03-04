@@ -243,7 +243,6 @@ from dash.exceptions import PreventUpdate
 from app import app
 from datetime import date, timedelta, datetime
 from config.variables import VARIABLES_PLOT
-from config.dates_config import start, end
 from data_processing.data_processing_biais_moyen import build_biais_moyen_figures
 
 

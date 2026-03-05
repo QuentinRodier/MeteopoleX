@@ -267,7 +267,7 @@ def update_biais_moyen(reseau_arome, start_day, end_day):
     graphs = []
     
     for param in VARIABLES_PLOT:
-        graphs.append(
+        '''graphs.append(
             html.Div(
                 dcc.Graph(
                     id=f"graphM_{param}",
@@ -277,6 +277,22 @@ def update_biais_moyen(reseau_arome, start_day, end_day):
                 className="six columns",
                 style={'display': 'inline-block'}  # Interaction zoom / nbr de colonnes
             )
+        )'''
+
+        graphs.append(
+            html.Div(
+                dcc.Graph(
+                    figure=chartM[param],
+                    config={'responsive': True}
+                ),
+                className="six columns",
+                style={
+                    'width': '48%',
+                    'display': 'inline-block',
+                    #'vertical-align': 'top',
+                    #'margin': '1%'
+                }
+            )
         )
-    
+
     return graphs

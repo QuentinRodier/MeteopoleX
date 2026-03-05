@@ -170,16 +170,6 @@ from data.data_loader import data_loader
 def biais_moyen(start_day, end_day):
     """
     Calcule les biais moyens horaires sur une période.
-    
-    Args:
-        start_day: Date de début
-        end_day: Date de fin
-    
-    Returns:
-        Tuple (biais_moy, chartM, graphM)
-        - biais_moy: Dictionnaire avec les biais moyens par heure
-        - chartM: Dictionnaire vide (graphiques créés dans data_processing)
-        - graphM: Dictionnaire vide (graphiques créés dans data_processing)
     """
     #data, chart, graph = selection_data_brut_serieT(start_day, end_day)
     loader = data_loader.load_series(start_day, end_day)

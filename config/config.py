@@ -12,6 +12,10 @@ today = datetime.date.today()
 end_day = today + timedelta(days=end)
 start_day = today - timedelta(days=start)
 
+#start_day = datetime.date(2025, 6, 12)
+#end_day = datetime.date(2025, 6, 12)
+
+
 # Mapping
 
 arome_mapping = {
@@ -20,3 +24,5 @@ arome_mapping = {
         "Arome_J0_00h":  (RESEAUX[2], dict(color="#1f78b4")),
         "Arome_J0_12h":  (RESEAUX[3], dict(color="#1f78b4", dash="dot")),
     }
+
+surfex_arp_mapping = dict(color="darkorange")

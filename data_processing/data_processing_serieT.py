@@ -5,7 +5,7 @@ import plotly.graph_objects as go
 
 from config.variables import VARIABLES_PLOT, VARIABLES
 from config.models import RESEAUX
-from config.config import arome_mapping
+from config.config import arome_mapping, surfex_arp_mapping
 #import lecture_mesoNH
 #import lecture_surfex
 from data.data_loader import data_loader
@@ -19,6 +19,7 @@ def build_series_figures(
     #reseau_arp,
     #reseau_aro,
     reseau_arome,
+    show_surfex,
     #reseau_mnh,
     #reseau_surfex,
     #id_users,
@@ -29,9 +30,7 @@ def build_series_figures(
 
     figures = {param: go.Figure() for param in VARIABLES_PLOT}
 
-    # ------------------------------------------------------------------
-    # OBSERVATIONS
-    # ------------------------------------------------------------------
+    # --- OBSERVATIONS ---
     if reseau_obs and "Obs" in reseau_obs:
         for param in VARIABLES_PLOT:
             if isinstance(data[param]["Tf"]["values"], (list, np.ndarray)):
@@ -45,7 +44,7 @@ def build_series_figures(
                     )
                 )
 
-    # ARPÈGE
+    # --- ARPÈGE ---
     '''arp_mapping = {
         "Arp_J-1_00h": (RESEAUX[0], dict(color="navy", dash="dot"), True),
         "Arp_J-1_12h": (RESEAUX[1], dict(color="mediumslateblue", dash="dot"), "legendonly"),
@@ -68,7 +67,7 @@ def build_series_figures(
                         )
                     )'''
 
-    # AROME ANCIENNE VERSION
+    # --- AROME ANCIENNE VERSION ---
     '''aro_mapping = {
         "Aro_J-1_00h": (RESEAUX[0], dict(color="green", dash="dot")),
         "Aro_J-1_12h": (RESEAUX[1], dict(color="olive", dash="dot")),
@@ -90,7 +89,7 @@ def build_series_figures(
                         )
                     )'''
 
-    # AROME ENVELOPPE
+    # --- AROME ENVELOPPE ---
     for selection in reseau_arome or []:
 
         if selection not in arome_mapping:
@@ -121,11 +120,11 @@ def build_series_figures(
                 #("values_P3", "gold", "100% champs"),
                 #("values_P4", "brown", "50/50"),
             ]:'''
-            if isinstance(block.get("values_P1"), pd.Series):
+            if isinstance(block.get("values_P"), pd.Series):
                 figures[param].add_trace(
                     go.Scatter(
                         x=time,
-                        y=block["values_P1"],
+                        y=block["values_P"],
                         name=f"{selection} Point proche",
                         #line=dict(color=color),
                         line=style
@@ -173,6 +172,24 @@ def build_series_figures(
                         name=f"{selection} min/max",
                     )
                 )'''
+
+    # --- Surfex Arpège expérience ---
+    if show_surfex:
+        for param in VARIABLES_PLOT:
+
+            # Prendre le premier réseau disponible (données identiques pour tous)
+            block = data[param].get("Surfex_arpège", {}).get(RESEAUX[0], {})
+            time  = block.get("time")
+
+            if isinstance(block.get("values_P"), pd.Series):
+                figures[param].add_trace(
+                    go.Scatter(
+                        x=time,
+                        y=block["values_P"],
+                        name="SURFEX Arpège",
+                        line=surfex_arp_mapping,
+                    )
+                )
 
     '''# MÉSO-NH UTILISATEURS
     line_styles = ["solid", "dot", "dash", "longdash", "dashdot"]

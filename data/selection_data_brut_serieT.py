@@ -195,6 +195,7 @@ import plotly.graph_objects as go
 
 from . import read_aida 
 from . import read_arome
+from . import read_surfex
 
 from config.variables import VARIABLES_PLOT, VARIABLES
 from config.models import MODELS, RESEAUX
@@ -202,7 +203,7 @@ from config.models import MODELS, RESEAUX
 
 def selection_data_brut_serieT(start_day, end_day):
     """
-    Version optimisée de la récupération des données AIDA/AROME
+    Récupération des données
     """
     
     # Conversion des dates en jour de l'année
@@ -241,6 +242,13 @@ def selection_data_brut_serieT(start_day, end_day):
         if VARIABLES[param]['index_model_arome'] is not None
     }
 
+    # Paramètres SURFEX Arpège expérience
+    params_surfex = {
+       param: VARIABLES[param]['index_model_surfex']
+       for param in VARIABLES_PLOT
+       if VARIABLES[param].get('index_model_surfex') is not None
+    }
+
     #----------------------------------------------------------------------------------
     # Lecture batch des observations 
     obs_data_batch = read_aida.donnees_batch(
@@ -264,13 +272,18 @@ def selection_data_brut_serieT(start_day, end_day):
     
     # Lecture batch AROME enveloppe
     arome_params_to_load = [v for v in params_arome.values() if v is not None]
-    
     arome_data_batch = {}
     for reseau in RESEAUX:
         # Une seule lecture de tous les fichiers pour tous les paramètres
         arome_data_batch[reseau] = read_arome.donnees_batch(
             start_day, end_day, reseau, arome_params_to_load
         )
+
+    # Lecture batch SURFEX Arpège expérience
+    surfex_params_to_load = [v for v in params_surfex.values() if v is not None]
+    surfex_data_batch = read_surfex.donnees_surfex_batch(
+       start_day, end_day, surfex_params_to_load
+    )
     
     #----------------------------------------------------------------------------------
     # Structure données
@@ -323,7 +336,7 @@ def selection_data_brut_serieT(start_day, end_day):
                                 #'values_mean_moins_std': {},
                                 #'values_max': {},
                                 #'values_min': {},
-                                'values_P1': {},
+                                'values_P': {},
                                 #'values_P2': {},
                                 #'values_P3': {},
                                 #'values_P4': {},
@@ -337,7 +350,7 @@ def selection_data_brut_serieT(start_day, end_day):
                             #'values_mean_moins_std': {},
                             #'values_max': {},
                             #'values_min': {},
-                            'values_P1': {},
+                            'values_P': {},
                             #'values_P2': {},
                             #'values_P3': {},
                             #'values_P4': {},
@@ -370,5 +383,28 @@ def selection_data_brut_serieT(start_day, end_day):
                     else:
                         data[param][model][reseau]['values'] = None
                         data[param][model][reseau]['time'] = None'''
+
+                # SURFEX Arpège expérience
+                if model == 'Surfex_arpège':
+                    param_surfex = VARIABLES[param].get('index_model_surfex')
+
+                    if param_surfex is not None and param_surfex in surfex_data_batch:
+
+                        surfex_df = surfex_data_batch[param_surfex]
+
+                        if not surfex_df.empty:
+                            stats = read_surfex.compute_statistics_surfex(surfex_df, param_surfex)
+                            data[param][model][reseau].update(stats)
+                        else:
+                            data[param][model][reseau].update({
+                               'values_P': {},
+                               'time': {}
+                            })
+                    else:
+                        data[param][model][reseau].update({
+                           'values_P': {},
+                           'time': {}
+                        })
+
     
     return data

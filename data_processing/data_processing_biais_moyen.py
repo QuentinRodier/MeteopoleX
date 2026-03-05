@@ -13,11 +13,11 @@ import numpy as np
 from data.biais_moyen import biais_moyen
 from config.variables import VARIABLES, VARIABLES_PLOT
 from config.models import MODELS, RESEAUX
-from config.config import arome_mapping
+from config.config import arome_mapping, surfex_arp_mapping
 
 
 # Fonction principale appelée par le callback
-def build_biais_moyen_figures(reseau_arome, start_day, end_day):
+def build_biais_moyen_figures(reseau_arome, show_surfex, start_day, end_day):
     """
     Construit les figures du cycle diurne des biais moyens.
     
@@ -95,7 +95,7 @@ def build_biais_moyen_figures(reseau_arome, start_day, end_day):
                     fig.add_trace(go.Scatter(
                         x=time,
                         y=arr,
-                        #mode="lines+markers",
+                        mode="lines+markers",
                         name=selection,
                         line=style,
                         marker=dict(size=6),
@@ -104,26 +104,48 @@ def build_biais_moyen_figures(reseau_arome, start_day, end_day):
             except (KeyError, TypeError, AttributeError):
                 pass
 
-            # --- MésoNH ---
-            '''try:
-                values_mnh = biais_moy[param][model]['MNH']['values']
-                time_mnh = biais_moy[param][model]['MNH']['time']
-                
-                if values_mnh != 0. and len(values_mnh) > 1:
-                    fig.add_trace(go.Scatter(
-                        x=time_mnh,
-                        y=values_mnh,
-                        mode='lines+markers',
-                        name=f'MésoNH {model_style["name"]}',
-                        line=dict(
-                            color=model_style['color'],
-                            dash='dashdot',
-                            width=2
-                        ),
-                        marker=dict(size=8, symbol='diamond')
-                    ))
-            except (KeyError, TypeError):
-                pass'''
+        # --- SURFEX ---
+        if show_surfex:
+            try:
+                block = biais_moy.get(param, {}).get('Surfex_arpège', {}).get(RESEAUX[0], {})
+                values = block.get("values")
+                time = block.get("time")
+
+
+                arr = np.array(values, dtype=float)
+                if not np.all(np.isnan(arr)):
+                    if isinstance(time, (list, np.ndarray)):
+                        fig.add_trace(go.Scatter(
+                            x=time,
+                            y=arr,
+                            mode="lines+markers",
+                            name="SURFEX",
+                            line=surfex_arp_mapping,
+                            marker=dict(size=6),
+                        ))
+            except (KeyError, TypeError, AttributeError):
+                pass
+
+        # --- MésoNH ---
+        '''try:
+            values_mnh = biais_moy[param][model]['MNH']['values']
+            time_mnh = biais_moy[param][model]['MNH']['time']
+            
+            if values_mnh != 0. and len(values_mnh) > 1:
+                fig.add_trace(go.Scatter(
+                    x=time_mnh,
+                    y=values_mnh,
+                    mode='lines+markers',
+                    name=f'MésoNH {model_style["name"]}',
+                    line=dict(
+                        color=model_style['color'],
+                        dash='dashdot',
+                        width=2
+                    ),
+                    marker=dict(size=8, symbol='diamond')
+                ))
+        except (KeyError, TypeError):
+            pass'''
         
         # Mise en forme du graphique
         fig.update_layout(

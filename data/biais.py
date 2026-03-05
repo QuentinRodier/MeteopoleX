@@ -218,10 +218,10 @@ def calcul_biais(start_day, end_day):
 
                     mod_pack = base.get(param, {}).get(model, {}).get(reseau, {})
 
-                    s_p1 = mod_pack.get("values_P1", None)  # pandas Series attendue
+                    s_p1 = mod_pack.get("values_P", None)  # pandas Series attendue
                     t_mod = mod_pack.get("time", None)
 
-                    # values_P1 vide ou inexistant
+                    # values_P vide ou inexistant
                     if s_p1 is None or (hasattr(s_p1, "empty") and s_p1.empty):
                         biais[param][model][reseau]["values"] = np.nan
                         continue

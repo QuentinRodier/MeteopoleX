@@ -350,7 +350,7 @@ def compute_statistics(data_df, param):
             #'values_mean_moins_std': pd.Series(),
             #'values_max': pd.Series(),
             #'values_min': pd.Series(),
-            'values_P1': pd.Series(),
+            'values_P': pd.Series(),
             #'values_P2': pd.Series(),
             #'values_P3': pd.Series(),
             #'values_P4': pd.Series(),
@@ -375,7 +375,7 @@ def compute_statistics(data_df, param):
     
     # Points spécifiques
     point_map = {
-        'values_P1': 11,  # Point proche
+        'values_P': 11,  # Point proche
         #'values_P2': 15,  # 100% urbain
         #'values_P3': 6,   # 100% champs
         #'values_P4': 1,   # 50/50
@@ -389,8 +389,8 @@ def compute_statistics(data_df, param):
             result[key] = pd.Series()
     
     # Index temporel depuis P1
-    if not result['values_P1'].empty:
-        result['time'] = result['values_P1'].index
+    if not result['values_P'].empty:
+        result['time'] = result['values_P'].index
     #elif not result['values_mean'].empty:
     #    result['time'] = result['values_mean'].index
     else:

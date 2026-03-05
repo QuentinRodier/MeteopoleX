@@ -14,11 +14,11 @@ from dash import dcc
 from data.biais import calcul_biais
 from config.variables import VARIABLES, VARIABLES_PLOT
 from config.models import MODELS_PLOT, RESEAUX
-from config.config import arome_mapping
+from config.config import arome_mapping, surfex_arp_mapping
 
 
 def build_biais_figures(start_day, end_day, 
-                        reseau_arome): #, 
+                        reseau_arome, show_surfex): #, 
                         #id_user1=None, id_user2=None, id_user3=None, 
                         #id_user4=None, id_user5=None):
     """
@@ -168,6 +168,28 @@ def build_biais_figures(start_day, end_day,
                             y=values,
                             name=f"{selection} biais (P1)",
                             line=style,
+                        )
+                    )
+            except (KeyError, TypeError, AttributeError):
+                pass
+
+       # ------------------------------------------------------------------
+       # AJOUT DES COURBES SURFEX
+       # ------------------------------------------------------------------
+        if show_surfex:
+            try:
+                block = biais[param].get('Surfex_arpège', {}).get(RESEAUX[0], {})
+                time   = block.get("time")
+                values = block.get("values")
+
+
+                if isinstance(time, (list, np.ndarray)) and isinstance(values, (list, np.ndarray)):
+                    fig.add_trace(
+                        go.Scatter(
+                            x=time,
+                            y=values,
+                            name="SURFEX biais",
+                            line=surfex_arp_mapping,
                         )
                     )
             except (KeyError, TypeError, AttributeError):

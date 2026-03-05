@@ -1,7 +1,5 @@
 from config.models import MODELS
 from config.variables import VARIABLES_PLOT
-import lecture_mesoNH
-import lecture_surfex
 from data.selection_data_brut_serieT import selection_data_brut_serieT
 
 

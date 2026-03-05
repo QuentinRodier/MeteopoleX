@@ -4,9 +4,10 @@
 # Rt = AROME AIDA
 # Gt = ARPEGE AIDA
 # AROME = AROME NetCDF
+# Surfex = Expérience surfex Arpège
 
 # Liste des modèles (et observations) dans les séries temporelles
-MODELS = ["Arome"]
+MODELS = ["Arome", 'Surfex_arpège']
 #MODELS = ["Gt", "Rt", "Tf"]
 
 # Liste des modèles sur lesquels les biais et biais moyens sont calculés

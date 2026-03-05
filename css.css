@@ -425,6 +425,22 @@ there.
     padding: 20px;
 }
 
+#biais-graphs-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 20px;
+    padding: 20px;
+}
+
+#biais-moyen-graphs-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 20px;
+    padding: 20px;
+}
+
 .graph-container {
     flex: 1 1 auto;
     min-width: 300px;  /* Largeur minimale pour qu'un graphe soit lisible */

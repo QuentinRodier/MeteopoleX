@@ -155,6 +155,7 @@ def build_biais_moyen_figures(reseau_arome, show_surfex, start_day, end_day):
             hovermode="x unified",
             template="plotly_white",
             height=500,
+            width=800,
             legend=dict(
                 orientation="v",
                 yanchor="top",

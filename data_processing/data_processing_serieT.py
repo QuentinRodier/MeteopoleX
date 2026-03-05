@@ -278,7 +278,16 @@ def build_series_figures(
             xaxis_title="Date et heure",
             yaxis_title=VARIABLES[param]["unit"],
             title=VARIABLES[param]["title"],
-            showlegend=True
+            showlegend=True,
+            hovermode="x unified",
+            template="plotly_white",
+            legend=dict(
+                orientation="v",
+                yanchor="top",
+                y=1,
+                xanchor="left",
+                x=1.02
+            )
         )
 
     return figures

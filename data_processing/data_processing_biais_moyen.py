@@ -13,11 +13,11 @@ import numpy as np
 from data.biais_moyen import biais_moyen
 from config.variables import VARIABLES, VARIABLES_PLOT
 from config.models import MODELS, RESEAUX
-from config.config import arome_mapping, surfex_arp_mapping
+from config.config import arome_mapping, arpege_mapping, surfex_arp_mapping
 
 
 # Fonction principale appelée par le callback
-def build_biais_moyen_figures(reseau_arome, show_surfex, start_day, end_day):
+def build_biais_moyen_figures(reseau_arome, reseau_arpege, show_surfex, start_day, end_day):
     """
     Construit les figures du cycle diurne des biais moyens.
     
@@ -104,10 +104,40 @@ def build_biais_moyen_figures(reseau_arome, show_surfex, start_day, end_day):
             except (KeyError, TypeError, AttributeError):
                 pass
 
+        # --- Arpège opérationnel ---
+        for selection in (reseau_arpege or []):
+            if selection not in arpege_mapping:
+                continue
+
+            reseau, style = arpege_mapping[selection]
+
+            try:
+                block = biais_moy.get(param, {}).get('Arpege', {}).get(reseau, {})
+                values = block.get("values")
+                time = block.get("time")
+
+                arr = np.array(values, dtype=float)
+                if np.all(np.isnan(arr)):
+                    continue
+
+                if isinstance(time, (list, np.ndarray)) and isinstance(values, (list, np.ndarray)):
+                    fig.add_trace(go.Scatter(
+                        x=time,
+                        y=arr,
+                        mode="lines+markers",
+                        name=selection,
+                        line=style,
+                        marker=dict(size=6),
+                        connectgaps=True
+                    ))
+            
+            except (KeyError, TypeError, AttributeError):
+                pass
+
         # --- SURFEX ---
         if show_surfex:
             try:
-                block = biais_moy.get(param, {}).get('Surfex_arpège', {}).get(RESEAUX[0], {})
+                block = biais_moy.get(param, {}).get('Surfex_arpege', {}).get(RESEAUX[0], {})
                 values = block.get("values")
                 time = block.get("time")
 

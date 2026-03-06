@@ -7,14 +7,14 @@
 # Surfex = Expérience surfex Arpège
 
 # Liste des modèles (et observations) dans les séries temporelles
-MODELS = ["Arome", 'Surfex_arpège']
+MODELS = ["Arome", 'Arpege', 'Surfex_arpege']
 #MODELS = ["Gt", "Rt", "Tf"]
 
 # Liste des modèles sur lesquels les biais et biais moyens sont calculés
 #MODELS_BIAIS=['Tf', 'Rt', 'Gt'] #Avec ancienne version de Arome #!# Ajout enveloppe
 
 # Liste des réseaux pour les modèles
-RESEAUX = ["J-1:00_%3600", "J-1:12_%3600", "J0:00_%3600", "J0:12_%3600"]
+RESEAUX = ["J0:00_%3600", "J0:12_%3600", "J-1:00_%3600", "J-1:12_%3600"]
 
 # Couleur et légendes par modèles sur Série temporelle
 MODELS_PLOT = {"MésoNH_Arp":

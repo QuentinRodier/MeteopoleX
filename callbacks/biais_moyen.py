@@ -250,19 +250,20 @@ from data_processing.data_processing_biais_moyen import build_biais_moyen_figure
     Output("biais-moyen-graphs-container", "children"),
     [
         Input("multi_select_line_chart_AROME", "value"),
+        Input("multi_select_line_chart_ARPEGE", "value"),
         Input("multi_select_line_chart_SURFEX", "value"),
         Input("my-date-picker-range", "start_date"),
         Input("my-date-picker-range", "end_date"),
     ],
 )
     
-def update_biais_moyen(reseau_arome, show_surfex, start_day, end_day):
+def update_biais_moyen(reseau_arome, reseau_arpege, show_surfex, start_day, end_day):
     
     start_day = date.fromisoformat(start_day)
     end_day = date.fromisoformat(end_day)
     
     # Construction des figures via le module de traitement
-    chartM, graphM = build_biais_moyen_figures(reseau_arome, show_surfex, start_day, end_day)
+    chartM, graphM = build_biais_moyen_figures(reseau_arome, reseau_arpege, show_surfex, start_day, end_day)
     
     # Génération dynamique des graphes
     graphs = []

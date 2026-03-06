@@ -5,7 +5,7 @@ import plotly.graph_objects as go
 
 from config.variables import VARIABLES_PLOT, VARIABLES
 from config.models import RESEAUX
-from config.config import arome_mapping, surfex_arp_mapping
+from config.config import arome_mapping, arpege_mapping, surfex_arp_mapping
 #import lecture_mesoNH
 #import lecture_surfex
 from data.data_loader import data_loader
@@ -19,6 +19,7 @@ def build_series_figures(
     #reseau_arp,
     #reseau_aro,
     reseau_arome,
+    reseau_arpege,
     show_surfex,
     #reseau_mnh,
     #reseau_surfex,
@@ -173,12 +174,36 @@ def build_series_figures(
                     )
                 )'''
 
+    # --- Arpège Opérationnel ---
+    for selection in reseau_arpege or []:
+
+        if selection not in arpege_mapping:
+            continue
+
+        reseau, style = arpege_mapping[selection]
+
+        for param in VARIABLES_PLOT:
+
+            block = data[param]["Arpege"][reseau]
+            time = block["time"]
+
+            if isinstance(block.get("values_P"), pd.Series):
+                figures[param].add_trace(
+                    go.Scatter(
+                        x=time,
+                        y=block["values_P"],
+                        name=f"{selection}",
+                        line=style,
+                        connectgaps=True
+                    )
+                )
+
     # --- Surfex Arpège expérience ---
     if show_surfex:
         for param in VARIABLES_PLOT:
 
             # Prendre le premier réseau disponible (données identiques pour tous)
-            block = data[param].get("Surfex_arpège", {}).get(RESEAUX[0], {})
+            block = data[param].get("Surfex_arpege", {}).get(RESEAUX[0], {})
             time  = block.get("time")
 
             if isinstance(block.get("values_P"), pd.Series):

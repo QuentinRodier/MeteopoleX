@@ -196,6 +196,7 @@ import plotly.graph_objects as go
 from . import read_aida 
 from . import read_arome
 from . import read_surfex
+from . import read_operationnel
 
 from config.variables import VARIABLES_PLOT, VARIABLES
 from config.models import MODELS, RESEAUX
@@ -249,6 +250,13 @@ def selection_data_brut_serieT(start_day, end_day):
        if VARIABLES[param].get('index_model_surfex') is not None
     }
 
+    # Paramètres Arpège opérationnel
+    params_arpege = {
+       param: VARIABLES[param]['index_ope']
+       for param in VARIABLES_PLOT
+       if VARIABLES[param].get('index_ope') is not None
+    }
+
     #----------------------------------------------------------------------------------
     # Lecture batch des observations 
     obs_data_batch = read_aida.donnees_batch(
@@ -284,6 +292,20 @@ def selection_data_brut_serieT(start_day, end_day):
     surfex_data_batch = read_surfex.donnees_surfex_batch(
        start_day, end_day, surfex_params_to_load
     )
+
+    # Lecture batch Arpège opérationnel
+    arpege_params_to_load = [v for v in params_arpege.values() if v is not None]
+    arpege_data_batch = {}
+    for reseau in RESEAUX:
+        reseau_hr = reseau[-8:-6]  # '00' ou '12'
+        reseau_j = reseau[0:2]     # 'J-' ou 'J0'
+        if reseau_j == 'J0':
+            arpege_data_batch[reseau] = read_operationnel.donnees_operationnel_batch(
+                start_day, end_day, arpege_params_to_load
+            )
+        else:
+            arpege_data_batch[reseau] = {}
+
     
     #----------------------------------------------------------------------------------
     # Structure données
@@ -385,7 +407,7 @@ def selection_data_brut_serieT(start_day, end_day):
                         data[param][model][reseau]['time'] = None'''
 
                 # SURFEX Arpège expérience
-                if model == 'Surfex_arpège':
+                if model == 'Surfex_arpege':
                     param_surfex = VARIABLES[param].get('index_model_surfex')
 
                     if param_surfex is not None and param_surfex in surfex_data_batch:
@@ -405,6 +427,24 @@ def selection_data_brut_serieT(start_day, end_day):
                            'values_P': {},
                            'time': {}
                         })
+                
+                # ARPEGE operationnel
+                if model == 'Arpege':
+                    param_arpege_oper = VARIABLES[param].get('index_ope')
+ 
+                    if param_arpege_oper is not None and param_arpege_oper in arpege_data_batch[reseau]:
+ 
+                        arpege_oper_df = arpege_data_batch[reseau][param_arpege_oper]
+ 
+                        if not arpege_oper_df.empty:
+                            stats = read_operationnel.compute_statistics_operationnel(arpege_oper_df, param_arpege_oper)
+                            data[param][model][reseau].update(stats)
+                        else:
+                            data[param][model][reseau].update({'values_P': {}, 'time': {}})
+                    else:
+                        data[param][model][reseau].update({'values_P': {}, 'time': {}})
+
+                        data[param][model][reseau].update({'values_P': {}, 'time': {}})
 
     
     return data

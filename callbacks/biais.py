@@ -257,6 +257,7 @@ from data_processing.data_processing_biais import build_biais_figures
     Output("biais-graphs-container", "children"),
     [
         Input("multi_select_line_chart_AROME", "value"),
+        Input("multi_select_line_chart_ARPEGE", "value"),
         Input("multi_select_line_chart_SURFEX", "value"),
         #Input('multi_select_line_chart_MNH', 'value'),
         Input('my-date-picker-range', 'start_date'),
@@ -269,7 +270,7 @@ from data_processing.data_processing_biais import build_biais_figures
     ],
 )
 
-def update_biais(reseau_arome, show_surfex, 
+def update_biais(reseau_arome, reseau_arpege, show_surfex, 
                  start_day, end_day): #, id_user1, id_user2, id_user3, id_user4, id_user5):
     """
     Met à jour les graphiques des biais instantanés.
@@ -285,6 +286,7 @@ def update_biais(reseau_arome, show_surfex,
     chartB, graphB = build_biais_figures(
         start_day, end_day,
         reseau_arome=reseau_arome,
+        reseau_arpege=reseau_arpege,
         show_surfex=show_surfex,
         #id_user1=id_user1,
         #id_user2=id_user2,

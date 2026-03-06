@@ -14,11 +14,11 @@ from dash import dcc
 from data.biais import calcul_biais
 from config.variables import VARIABLES, VARIABLES_PLOT
 from config.models import MODELS_PLOT, RESEAUX
-from config.config import arome_mapping, surfex_arp_mapping
+from config.config import arome_mapping, arpege_mapping, surfex_arp_mapping
 
 
 def build_biais_figures(start_day, end_day, 
-                        reseau_arome, show_surfex): #, 
+                        reseau_arome, reseau_arpege, show_surfex): #, 
                         #id_user1=None, id_user2=None, id_user3=None, 
                         #id_user4=None, id_user5=None):
     """
@@ -166,7 +166,34 @@ def build_biais_figures(start_day, end_day,
                         go.Scatter(
                             x=time,
                             y=values,
-                            name=f"{selection} biais (P1)",
+                            name=f"{selection} (P1)",
+                            line=style,
+                        )
+                    )
+            except (KeyError, TypeError, AttributeError):
+                pass
+            
+        # ------------------------------------------------------------------
+        # AJOUT DES RÉSEAUX ARPEGE 
+        # ------------------------------------------------------------------
+        for selection in (reseau_arpege or []):
+            if selection not in arpege_mapping:
+                continue
+
+            reseau, style = arpege_mapping[selection]
+
+            try:
+                block = biais[param]['Arpege'][reseau]
+                time = block.get("time")
+                values = block.get("values")
+
+                if isinstance(time, (list, np.ndarray)) and isinstance(values, (list, np.ndarray)):
+                    fig.add_trace(
+                        go.Scatter(
+                            x=time,
+                            y=values,
+                            name=f"{selection}",
+                            connectgaps=True,
                             line=style,
                         )
                     )
@@ -178,17 +205,16 @@ def build_biais_figures(start_day, end_day,
        # ------------------------------------------------------------------
         if show_surfex:
             try:
-                block = biais[param].get('Surfex_arpège', {}).get(RESEAUX[0], {})
+                block = biais[param].get('Surfex_arpege', {}).get(RESEAUX[0], {})
                 time   = block.get("time")
                 values = block.get("values")
-
 
                 if isinstance(time, (list, np.ndarray)) and isinstance(values, (list, np.ndarray)):
                     fig.add_trace(
                         go.Scatter(
                             x=time,
                             y=values,
-                            name="SURFEX biais",
+                            name="SURFEX",
                             line=surfex_arp_mapping,
                         )
                     )

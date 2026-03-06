@@ -153,7 +153,7 @@ VARIABLES = {
         "index_model": "",
         "index_model_arome": None,
         "index_model_surfex": None,
-        "index_ope": "humidity_ground_1",
+        "index_ope": 'relative_humidity_ground_1',
         "title": "Humidité de la première couche",
         "unit": "kg/kg"
     },
@@ -162,7 +162,7 @@ VARIABLES = {
         "index_model": "",
         "index_model_arome": None,
         "index_model_surfex": None,
-        "index_ope": "humidity_ground_2",
+        "index_ope": None,
         "title": "Humidité de la première couche",
         "unit": "kg/kg"
     },
@@ -172,7 +172,7 @@ VARIABLES = {
         "index_model_arome": None,
         "index_model_surfex": None,
         "index_ope": "humidity_ground_3",
-        "title": "Humidité de la troisième couche",
+        "title": None,
         "unit": "kg/kg"
     },
     "cumul_RR": {

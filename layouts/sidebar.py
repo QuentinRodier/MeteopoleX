@@ -49,9 +49,9 @@ dropdown_obs = dcc.Dropdown(
 )
 
 dropdown_arp = dcc.Dropdown(
-    id="multi_select_line_chart_ARP",
+    id="multi_select_line_chart_ARPEGE",
     options=[{"value": label, "label": label} for label in
-             ["Arpège_J-1_00h", "Arpège_J-1_12h", "Arpège_J0_00h", "Arpège_J0_12h"]],
+             ["Arpège_J0_00h"]], #"Arpège_J0_12h", "Arpège_J-1_00h", "Arpège_J-1_12h"
     value=selection_arp,
     multi=True,
     clearable=False

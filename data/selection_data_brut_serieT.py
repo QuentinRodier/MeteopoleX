@@ -443,8 +443,5 @@ def selection_data_brut_serieT(start_day, end_day):
                             data[param][model][reseau].update({'values_P': {}, 'time': {}})
                     else:
                         data[param][model][reseau].update({'values_P': {}, 'time': {}})
-
-                        data[param][model][reseau].update({'values_P': {}, 'time': {}})
-
     
     return data

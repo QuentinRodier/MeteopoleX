@@ -166,7 +166,7 @@ def build_biais_figures(start_day, end_day,
                         go.Scatter(
                             x=time,
                             y=values,
-                            name=f"{selection} (P1)",
+                            name=f"{selection}",
                             line=style,
                         )
                     )

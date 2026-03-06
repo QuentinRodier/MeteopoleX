@@ -198,6 +198,30 @@ def build_series_figures(
                     )
                 )
 
+    # --- Arome Opérationnel ---
+    '''for selection in reseau_arome or []:
+
+        if selection not in arome_mapping:
+            continue
+
+        reseau, style = arome_mapping[selection]
+
+        for param in VARIABLES_PLOT:
+
+            block = data[param]["Arome"][reseau]
+            time = block["time"]
+
+            if isinstance(block.get("values_P"), pd.Series):
+                figures[param].add_trace(
+                    go.Scatter(
+                        x=time,
+                        y=block["values_P"],
+                        name=f"{selection}",
+                        line=style,
+                        connectgaps=True
+                    )
+                )'''
+
     # --- Surfex Arpège expérience ---
     if show_surfex:
         for param in VARIABLES_PLOT:

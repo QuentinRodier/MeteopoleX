@@ -251,7 +251,7 @@ def selection_data_brut_serieT(start_day, end_day):
     }
 
     # Paramètres Arpège opérationnel
-    params_arpege = {
+    params_ope = {
        param: VARIABLES[param]['index_ope']
        for param in VARIABLES_PLOT
        if VARIABLES[param].get('index_ope') is not None
@@ -294,18 +294,20 @@ def selection_data_brut_serieT(start_day, end_day):
     )
 
     # Lecture batch Arpège opérationnel
-    arpege_params_to_load = [v for v in params_arpege.values() if v is not None]
+    ope_params_to_load = [v for v in params_ope.values() if v is not None]
     arpege_data_batch = {}
+    #arome_data_batch = {}
     for reseau in RESEAUX:
         reseau_hr = reseau[-8:-6]  # '00' ou '12'
         reseau_j = reseau[0:2]     # 'J-' ou 'J0'
         if reseau_j == 'J0':
             arpege_data_batch[reseau] = read_operationnel.donnees_operationnel_batch(
-                start_day, end_day, arpege_params_to_load
-            )
+                start_day, end_day, ope_params_to_load)
+    #       arome_data_batch[reseau] = read_operationnel.donnees_operationnel_batch(
+    #           start_day, end_day, ope_params_to_load)
         else:
             arpege_data_batch[reseau] = {}
-
+    #        arome_data_batch[reseau] = {}
     
     #----------------------------------------------------------------------------------
     # Structure données
@@ -443,5 +445,21 @@ def selection_data_brut_serieT(start_day, end_day):
                             data[param][model][reseau].update({'values_P': {}, 'time': {}})
                     else:
                         data[param][model][reseau].update({'values_P': {}, 'time': {}})
+
+                # AROME operationnel
+                '''if model == 'Arome':
+                    param_arome_oper = VARIABLES[param].get('index_ope')
+ 
+                    if param_arome_oper is not None and param_arome_oper in arome_data_batch[reseau]:
+ 
+                        arome_oper_df = arome_data_batch[reseau][param_arome_oper]
+ 
+                        if not arome_oper_df.empty:
+                            stats = read_operationnel.compute_statistics_operationnel(arome_oper_df, param_arome_oper)
+                            data[param][model][reseau].update(stats)
+                        else:
+                            data[param][model][reseau].update({'values_P': {}, 'time': {}})
+                    else:
+                        data[param][model][reseau].update({'values_P': {}, 'time': {}})'''
     
     return data

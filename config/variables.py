@@ -9,7 +9,7 @@ VARIABLES = {
         "index_model": "tpr_air2m",
         "index_model_arome" : "t2m", 
         "index_model_surfex": "T2M_NAT",
-        "index_ope": None,
+        "index_ope": "tmp_2m",
         "title": "Température à 2m",
         "unit": "°C"
     },
@@ -18,7 +18,7 @@ VARIABLES = {
         "index_model": "tpr_air10m",
         "index_model_arome": None,
         "index_model_surfex": None,
-        "index_ope": None,
+        "index_ope": "tmp_10m",
         "title": "Température à 10m",
         "unit": "°C"
     },
@@ -27,7 +27,7 @@ VARIABLES = {
         "index_model": "hum_rel",
         "index_model_arome": "hu2m",
         "index_model_surfex": "HU2M", 
-        "index_ope": None,
+        "index_ope": "hum_rel",
         "title": "Humidité relative",
         "unit": "%"
     },
@@ -36,7 +36,7 @@ VARIABLES = {
         "index_model": "ven_ff10m",
         "index_model_arome": "Vamp10m", 
         "index_model_surfex": None,
-        "index_ope": None,
+        "index_ope": "vent_ff10m",
         "title": "Vent moyen à 10m",
         "unit": "m/s"
     },
@@ -45,7 +45,7 @@ VARIABLES = {
         "index_model": "flx_mvt",
         "index_model_arome": None,
         "index_model_surfex": None,
-        "index_ope": None,
+        "index_ope": "flx_mvt",
         "title": "Vitesse de friction",
         "unit": "m/s"
     },
@@ -54,7 +54,7 @@ VARIABLES = {
         "index_model": "",
         "index_model_arome": "tke",
         "index_model_surfex": None,
-        "index_ope": None,
+        "index_ope": "tke",
         "title": "Energie cinétique turbulente",
         "unit": "m²/s²"
         },
@@ -63,7 +63,7 @@ VARIABLES = {
         "index_model": "flx_hs",
         "index_model_arome": "sfc_sens_flx",
         "index_model_surfex": "H",
-        "index_ope": None,
+        "index_ope": "flx_chaleur_sens",
         "title": "Flux de chaleur sensible",
         "unit": "W/m²"
     },
@@ -72,7 +72,7 @@ VARIABLES = {
         "index_model": "flx_le",
         "index_model_arome": "sfc_lat_flx",
         "index_model_surfex": "LE",
-        "index_ope": None,
+        "index_ope": "flx_chaleur_lat",
         "title": "Flux de chaleur latente",
         "unit": "W/m²"
     },    
@@ -81,7 +81,7 @@ VARIABLES = {
         "index_model": "ray_rgd",
         "index_model_arome" : "SWd",
         "index_model_surfex": "SWD", 
-        "index_ope": None,
+        "index_ope": "SWD",
         "title": "Rayonnement global descendant (SW down)",
         "unit": "W/m²"
     },
@@ -90,7 +90,7 @@ VARIABLES = {
         "index_model": "ray_rgm",
         "index_model_arome" : "SWu",
         "index_model_surfex": "SWU", 
-        "index_ope": None,
+        "index_ope": "SWU",
         "title": "Rayonnement global montant (SW up)",
         "unit": "W/m²"
     },
@@ -99,7 +99,7 @@ VARIABLES = {
         "index_model": "ray_ird",
         "index_model_arome" : "LWd",
         "index_model_surfex": "LWD", 
-        "index_ope": None,
+        "index_ope": "LWD",
         "title": "Rayonnement IR descendant (LW down)",
         "unit": "W/m²"
     },
@@ -108,7 +108,7 @@ VARIABLES = {
         "index_model": "ray_irm",
         "index_model_arome": "LWu", 
         "index_model_surfex": "LWU", 
-        "index_ope": None,
+        "index_ope": "LWU",
         "title": "Rayonnement IR montant (LW up)",
         "unit": "W/m²"
     },    
@@ -117,7 +117,7 @@ VARIABLES = {
         "index_model": "",
         "index_model_arome": None,
         "index_model_surfex": None,
-        "index_ope": None,
+        "index_ope": "flx_chaleur_sol",
         "title": "Flux de conduction dans le sol",
         "unit": "W/m²"
     },
@@ -126,7 +126,7 @@ VARIABLES = {
         "index_model": "",
         "index_model_arome": None,
         "index_model_surfex": None,
-        "index_ope": None,
+        "index_ope": "t_surface",
         "title": "Température de surface",
         "unit": "°C"
     },
@@ -180,7 +180,7 @@ VARIABLES = {
         "index_model": "",
         "index_model_arome": None,
         "index_model_surfex": None,
-        "index_ope": None,
+        "index_ope": "cumul_RR",
         "title": "Cumuls de pluie (Obs: 30mn, ARO-ARP: 1h, MNH: 15mn)",
         "unit": "mm"
     },
@@ -189,7 +189,7 @@ VARIABLES = {
         "index_model": "",
         "index_model_arome": "pblh",
         "index_model_surfex": None,
-        "index_ope": None,
+        "index_ope": "altitude_CL",
         "title": "Altitude de la couche limite",
         "unit": "m"
     },
@@ -198,7 +198,7 @@ VARIABLES = {
         "index_model": None,
         "index_model_arome": None,
         "index_model_surfex": "HC",
-        "index_ope": None,   
+        "index_ope": "flx_chaleur_sens_cum",   
         "title": "Flux de chaleur sensible cumulé",
         "unit": "J/m²"
     },
@@ -207,7 +207,7 @@ VARIABLES = {
         "index_model": None,
         "index_model_arome": None,
         "index_model_surfex": "LEC",  
-        "index_ope": None,
+        "index_ope": "flx_chaleur_lat_cum",
         "title": "Flux de chaleur latente cumulé",
         "unit": "J/m²"
     },
@@ -216,7 +216,7 @@ VARIABLES = {
         "index_model": None,
         "index_model_arome": None,
         "index_model_surfex": "SWDC",  
-        "index_ope": None,
+        "index_ope": "SWD_cum",
         "title": "Rayonnement SW descendant cumulé",
         "unit": "J/m²"
     },
@@ -225,7 +225,7 @@ VARIABLES = {
         "index_model": None,
         "index_model_arome": None,
         "index_model_surfex": "SWUC", 
-        "index_ope": None, 
+        "index_ope": "SWU_cum", 
         "title": "Rayonnement SW montant cumulé",
         "unit": "J/m²"
     },
@@ -234,7 +234,7 @@ VARIABLES = {
         "index_model": None,
         "index_model_arome": None,
         "index_model_surfex": "LWDC", 
-        "index_ope": None, 
+        "index_ope": "LWD_cum", 
         "title": "Rayonnement LW descendant cumulé",
         "unit": "J/m²"
     },
@@ -243,7 +243,7 @@ VARIABLES = {
         "index_model": None,
         "index_model_arome": None,
         "index_model_surfex": "LWUC",  
-        "index_ope": None,
+        "index_ope": "LWU_cum",
         "title": "Rayonnement LW montant cumulé",
         "unit": "J/m²"
     },

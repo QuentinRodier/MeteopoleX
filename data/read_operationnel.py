@@ -77,27 +77,36 @@ def donnees_operationnel_batch(start_day, end_day, params_list,
             results[param] = pd.DataFrame()
             continue
 
-        if param not in nc_slice:
-            results[param] = pd.DataFrame()
-            continue
+        try:
+            if param not in nc_slice:
+                print(f"Variable '{param}' non trouvée dans le fichier ARPEGE opérationnel")
+                results[param] = pd.DataFrame()
+                continue
 
-        values = nc_slice[param].squeeze()
-        results[param] = pd.DataFrame({param: values.values}, index=datevar)
+            values = nc_slice[param].squeeze()
+            results[param] = pd.DataFrame({param: values.values}, index=datevar)
+        except Exception as e:
+            print(f"Erreur lors de la lecture de '{param}': {e}")
+            results[param] = pd.DataFrame()
 
     # --- Conversions d'unités ---
     for param in params_list:
         if param is None or param not in results or results[param].empty:
             continue
 
-        if param in ('tmp_2m', 'temperature_ground_1', 'temperature_ground_2'):
-            # Conversion K → °C seulement si nécessaire
-            if results[param][param].median() > 100:
-                results[param][param] -= 273.15
+        try:
+            if param in ('tmp_2m', 'temperature_ground_1', 'temperature_ground_2'):
+                # Conversion K → °C seulement si nécessaire
+                if results[param][param].median() > 100:
+                    results[param][param] -= 273.15
 
-        elif param == 'hum_rel':
-            # Conversion fraction → % seulement si nécessaire
-            if results[param][param].median() <= 1.0:
-                results[param][param] *= 100
+            elif param in ('hum_rel'):
+                # Conversion fraction → % seulement si nécessaire
+                if results[param][param].median() <= 1.0:
+                    results[param][param] *= 100
+        except Exception as e:
+            print(f"Erreur conversion d'unités pour '{param}': {e}")
+
 
     # --- Sauvegarde cache ---
     try:

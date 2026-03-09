@@ -1,4 +1,3 @@
-
 import matplotlib.dates as mdates
 import datetime as dt
 import pandas as pd
@@ -7,20 +6,34 @@ import xarray as xr
 from functools import lru_cache
 import pickle
 from pathlib import Path
-
-filepath = '/home/hennequina/OPERATIONNEL/pour_amir.nc'
-
-'''FOLDERNAME = '/home/hennequina/OPERATIONNEL/'
-
-# Mapping réseau → fichier
-RESEAU_FILES = {
-    '00': FOLDERNAME + 'arpege_J0_00.nc',
-    '12': FOLDERNAME + 'arpege_J0_12.nc',
-}'''
+import datetime
+from datetime import timedelta, date
+from config.config import today, yesterday
 
 
+OPERATIONNEL_DIR = Path("/home/hennequina/OPERATIONNEL")
 CACHE_DIR = Path("/home/manip/MeteopoleX/cache")
 CACHE_DIR.mkdir(parents=True, exist_ok=True)
+
+# Mapping model → préfixe dans le nom de fichier
+MODEL_FILE_PREFIX = {
+    'Arpege': 'arpege',   # ex: arpege_date_reseau.nc
+    'Arome':  'arome',    # ex: arome_date_reseau.nc
+}
+
+
+def _build_filepath(model, date, reseau):
+    """
+    Construit le chemin vers le fichier opérationnel
+    selon le modèle et le réseau.
+    """
+    
+    reseau_hr = reseau[-8:-6]   # '00' ou '12'
+
+    prefix = MODEL_FILE_PREFIX.get(model, model.lower())
+    filename = f"{prefix}_{date.strftime('%Y%m%d')}_{reseau_hr}.nc"
+    return OPERATIONNEL_DIR / filename
+
 
 @lru_cache(maxsize=5)
 def _open_operationnel_cached(filepath):
@@ -28,25 +41,27 @@ def _open_operationnel_cached(filepath):
     return xr.open_dataset(filepath, decode_times=True)
 
 def donnees_operationnel_batch(start_day, end_day, params_list,
-                               filepath=filepath):
+                               model, reseau):
     """
     Lecture des données opérationnelles pour tous les paramètres demandés,
-    filtrées sur la période [start_day, end_day].
+    en itérant sur chaque jour de la période [start_day, end_day]
+    (un fichier par jour, comme AROME).
 
     Args:
         start_day, end_day : datetime
         params_list        : liste des variables à charger
-                             ex: ['T2M', 'HU2M', 'H', 'LE', 'SWDC', 'LWDC']
-        filepath           : chemin vers le fichier opérationnel
+        model              : 'Arpege' ou 'Arome'
+        reseau             : ex 'J0:00_%3600', 'J0:12_%3600'
 
     Returns:
         dict {param: DataFrame avec colonne [param] et index = time}
     """
+
     # --- Cache disque ---
     cache_key = (
-        f"opérationnel_{start_day.strftime('%Y%m%d')}"
+        f"operationnel_{model}_{reseau.replace(':', '-').replace('%', '')}"
+        f"_{start_day.strftime('%Y%m%d')}"
         f"_{end_day.strftime('%Y%m%d')}"
-        f"_{'_'.join(p for p in params_list if p)}"
     )
     cache_path = CACHE_DIR / f"{cache_key}.pkl"
 
@@ -59,35 +74,66 @@ def donnees_operationnel_batch(start_day, end_day, params_list,
         except Exception:
             pass
 
-    # --- Ouverture du fichier ---
-    nc = _open_operationnel_cached(filepath)
+    # --- Préparation des délais ---
+    start_day = dt.datetime(start_day.year, start_day.month, start_day.day)
+    end_day   = dt.datetime(end_day.year,   end_day.month,   end_day.day)
 
-    # --- Filtrage temporel ---
-    start_dt = np.datetime64(dt.datetime(start_day.year, start_day.month, start_day.day))
-    end_dt   = np.datetime64(dt.datetime(end_day.year,   end_day.month,   end_day.day, 23, 59, 59))
+    reseau_hr = reseau[-8:-6]   # '00' ou '12'
+    reseau_j  = reseau[0:2]     # 'J-' ou 'J0'
 
-    nc_slice = nc.sel(time=slice(start_dt, end_dt))
-    datevar  = nc_slice['time'].values
+    if reseau_j == 'J-':
+        day_delay  = 1
+        hour_delay = 24 if reseau_hr == '00' else 12
+    else:
+        day_delay  = 0
+        hour_delay = 0
 
-    # --- Extraction des paramètres ---
-    results = {}
+    # --- Initialisation des résultats ---
+    results = {p: pd.DataFrame() for p in params_list if p is not None}
 
-    for param in params_list:
-        if param is None:
-            results[param] = pd.DataFrame()
+    # --- Itération sur les jours ---
+    dates_list = mdates.num2date(
+        mdates.drange(start_day, end_day, dt.timedelta(days=1)),
+        tz=None
+    )
+    days_nr = len(dates_list)
+
+    for day_idx, current_date in enumerate(dates_list, 1):
+
+        current_date -= dt.timedelta(days=day_delay)
+
+        filepath = _build_filepath(model, current_date, reseau)
+
+        if not filepath.exists():
+            print(f"Fichier opérationnel non trouvé : {filepath}")
             continue
 
         try:
-            if param not in nc_slice:
-                print(f"Variable '{param}' non trouvée dans le fichier ARPEGE opérationnel")
-                results[param] = pd.DataFrame()
+            nc = _open_operationnel_cached(str(filepath))
+        except Exception as e:
+            print(f"Erreur ouverture {filepath}: {e}")
+            continue
+
+        # Nombre d'heures à extraire (48 pour le dernier jour, 24 sinon)
+        hours = 48 if day_idx == days_nr else 24
+
+        datevar = nc['time'].values
+
+        for param in params_list:
+            if param is None:
+                continue
+            if param not in nc:
                 continue
 
-            values = nc_slice[param].squeeze()
-            results[param] = pd.DataFrame({param: values.values}, index=datevar)
-        except Exception as e:
-            print(f"Erreur lors de la lecture de '{param}': {e}")
-            results[param] = pd.DataFrame()
+            try:
+                values = nc[param].squeeze().values
+                temp_df = pd.DataFrame({param: values}, index=datevar)
+
+                selected_df = temp_df.iloc[hour_delay:hours + hour_delay].copy()
+                results[param] = pd.concat([results[param], selected_df])
+
+            except Exception as e:
+                print(f"Erreur lecture '{param}' ({filepath.name}): {e}")
 
     # --- Conversions d'unités ---
     for param in params_list:
@@ -96,17 +142,14 @@ def donnees_operationnel_batch(start_day, end_day, params_list,
 
         try:
             if param in ('tmp_2m', 'temperature_ground_1', 'temperature_ground_2'):
-                # Conversion K → °C seulement si nécessaire
                 if results[param][param].median() > 100:
                     results[param][param] -= 273.15
 
             elif param in ('hum_rel'):
-                # Conversion fraction → % seulement si nécessaire
                 if results[param][param].median() <= 1.0:
                     results[param][param] *= 100
         except Exception as e:
             print(f"Erreur conversion d'unités pour '{param}': {e}")
-
 
     # --- Sauvegarde cache ---
     try:
@@ -116,13 +159,6 @@ def donnees_operationnel_batch(start_day, end_day, params_list,
         print(f"Erreur sauvegarde cache opérationnel: {e}")
 
     return results
-
-
-def donnees_operationnel(start_day, end_day, param,
-                         filepath=filepath):
-    """Wrapper simple pour un seul paramètre opérationnel."""
-    results = donnees_operationnel_batch(start_day, end_day, [param], filepath=filepath)
-    return results.get(param, pd.DataFrame())
 
 
 def compute_statistics_operationnel(data_df, param):
@@ -139,6 +175,5 @@ def compute_statistics_operationnel(data_df, param):
         'values_P': series,
         'time':      series.index,
     }
-
 
 

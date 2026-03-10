@@ -91,7 +91,7 @@ def build_series_figures(
                     )'''
 
     # --- AROME ENVELOPPE ---
-    for selection in reseau_arome or []:
+    '''for selection in reseau_arome or []:
 
         if selection not in arome_mapping:
             continue
@@ -103,7 +103,7 @@ def build_series_figures(
             block = data[param]["Arome"][reseau]
             time = block["time"]
 
-            '''# Moyenne
+            # Moyenne
             if isinstance(block.get("values_mean"), pd.Series):
                 figures[param].add_trace(
                     go.Scatter(
@@ -112,15 +112,15 @@ def build_series_figures(
                         name=f"{selection} moyenne",
                         line=style,
                     )
-                )'''
+                )
 
             # Points spécifiques
-            '''for key, color, label in [
+            for key, color, label in [
                 ("values_P1", "pink", "Point proche") ,
                 #("values_P2", "grey", "100% urbain"),
                 #("values_P3", "gold", "100% champs"),
                 #("values_P4", "brown", "50/50"),
-            ]:'''
+            ]:
             if isinstance(block.get("values_P"), pd.Series):
                 figures[param].add_trace(
                     go.Scatter(
@@ -132,7 +132,7 @@ def build_series_figures(
                     )
                 )
 
-            '''# Enveloppe écart-type
+            # Enveloppe écart-type
             if isinstance(block.get("values_mean_plus_std"), pd.Series):
                 figures[param].add_trace(
                     go.Scatter(
@@ -199,7 +199,7 @@ def build_series_figures(
                 )
 
     # --- Arome Opérationnel ---
-    '''for selection in reseau_arome or []:
+    for selection in reseau_arome or []:
 
         if selection not in arome_mapping:
             continue
@@ -220,7 +220,7 @@ def build_series_figures(
                         line=style,
                         connectgaps=True
                     )
-                )'''
+                )
 
     # --- Surfex Arpège expérience ---
     if show_surfex:

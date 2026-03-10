@@ -75,7 +75,7 @@ def build_biais_moyen_figures(reseau_arome, reseau_arpege, show_surfex, start_da
                 except (KeyError, TypeError):
                     pass'''
 
-        # --- Arome netcdf ---
+        # --- Arome opérationnel ---
         for selection in (reseau_arome or []):
             if selection not in arome_mapping:
                 continue

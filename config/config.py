@@ -14,7 +14,7 @@ yesterday = today - datetime.timedelta(days=1)
 #start_day = today - timedelta(days=start)
 
 start_day = datetime.date(2025, 12, 31)
-end_day = datetime.date(2026, 1, 2)
+end_day = datetime.date(2026, 1, 3)
 
 
 # Mapping

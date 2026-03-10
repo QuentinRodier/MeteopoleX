@@ -51,7 +51,7 @@ dropdown_obs = dcc.Dropdown(
 dropdown_arp = dcc.Dropdown(
     id="multi_select_line_chart_ARPEGE",
     options=[{"value": label, "label": label} for label in
-             ["Arpège_J0_00h", "Arpège_J-1_00h"]], #"Arpège_J0_12h", "Arpège_J-1_00h", "Arpège_J-1_12h"
+             ["Arpège_J0_00h", "Arpège_J0_12h", "Arpège_J-1_00h", "Arpège_J-1_12h"]],
     value=selection_arp,
     multi=True,
     clearable=False
@@ -115,19 +115,14 @@ layout_sidebar = html.Div(
         html.H2("Menu", className="display-10"),
         html.Hr(),
 
-        dbc.Nav(
+        html.Div(
             [
-                dbc.NavLink("Séries temporelles", href="/MeteopoleX/"),
-                dbc.NavLink("Biais", href="/MeteopoleX/biais"),
-                dbc.NavLink("Biais moyens", href="/MeteopoleX/biaisM"),
-                #dbc.NavLink("Profils verticaux", href="/MeteopoleX/rs"),
-                #dbc.NavLink("Rejeu MésoNH", href="/MeteopoleX/mesoNH"),
-                #dbc.NavLink("Rejeu SURFEX", href="/MeteopoleX/surfex"),
-                #dbc.NavLink("Panneaux Photovoltaïques", href="/MeteopoleX/PV"),
-                dbc.NavLink("Notice", href="/MeteopoleX/notice"),
+                html.Div(dbc.NavLink("Séries temporelles", href="/MeteopoleX/")),
+                html.Div(dbc.NavLink("Biais", href="/MeteopoleX/biais")),
+                html.Div(dbc.NavLink("Biais moyens", href="/MeteopoleX/biaisM")),
+                html.Div(dbc.NavLink("Notice", href="/MeteopoleX/notice")),
             ],
-            vertical=True,
-            pills=True,
+            style={"display": "flex", "flexDirection": "column", "gap": "0.5rem"}
         ),
 
         html.Hr(),

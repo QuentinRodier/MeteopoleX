@@ -11,7 +11,7 @@ from datetime import timedelta, date
 from config.config import today, yesterday
 
 
-OPERATIONNEL_DIR = Path("/home/hennequina/OPERATIONNEL")
+OPERATIONNEL_DIR = Path("/cnrm/proc/projet_emi/sample_netcdf")
 CACHE_DIR = Path("/home/manip/MeteopoleX/cache")
 CACHE_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -98,6 +98,10 @@ def donnees_operationnel_batch(start_day, end_day, params_list,
     )
     days_nr = len(dates_list)
 
+    if model=='Arome':
+        dates_list_aro = dates_list[:2] #(J et J+1 seulement)
+        days_nr_aro = len(dates_list_aro)
+
     for day_idx, current_date in enumerate(dates_list, 1):
 
         current_date -= dt.timedelta(days=day_delay)
@@ -114,8 +118,11 @@ def donnees_operationnel_batch(start_day, end_day, params_list,
             print(f"Erreur ouverture {filepath}: {e}")
             continue
 
-        # Nombre d'heures à extraire (48 pour le dernier jour, 24 sinon)
-        hours = 48 if day_idx == days_nr else 24
+        # Nombre d'heures à extraire (102/48 pour le dernier jour (échéance max arpège/arome), 24 sinon)
+        if model=='Arome' :
+            hours=48 if day_idx == days_nr_aro else 24
+        elif model=='Arpege':
+            hours=102 if day_idx == days_nr else 24
 
         datevar = nc['time'].values
 

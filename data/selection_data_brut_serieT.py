@@ -237,11 +237,11 @@ def selection_data_brut_serieT(start_day, end_day):
             }'''
     
     # Paramètres AROME enveloppe
-    params_arome = {
+    '''params_arome = {
         param: VARIABLES[param]['index_model_arome']
         for param in VARIABLES_PLOT
         if VARIABLES[param]['index_model_arome'] is not None
-    }
+    }'''
 
     # Paramètres SURFEX Arpège expérience
     params_surfex = {
@@ -279,13 +279,13 @@ def selection_data_brut_serieT(start_day, end_day):
             )'''
     
     # Lecture batch AROME enveloppe
-    arome_params_to_load = [v for v in params_arome.values() if v is not None]
+    '''arome_params_to_load = [v for v in params_arome.values() if v is not None]
     arome_data_batch = {}
     for reseau in RESEAUX:
         # Une seule lecture de tous les fichiers pour tous les paramètres
         arome_data_batch[reseau] = read_arome.donnees_batch(
             start_day, end_day, reseau, arome_params_to_load
-        )
+        )'''
 
     # Lecture batch SURFEX Arpège expérience
     surfex_params_to_load = [v for v in params_surfex.values() if v is not None]
@@ -296,23 +296,20 @@ def selection_data_brut_serieT(start_day, end_day):
     # Lecture batch Arpège opérationnel
     ope_params_to_load = [v for v in params_ope.values() if v is not None]
     arpege_data_batch = {}
-    #arome_data_batch = {}
+    arome_data_batch = {}
     for reseau in RESEAUX:
         reseau_hr = reseau[-8:-6]  # '00' ou '12'
         reseau_j = reseau[0:2]     # 'J-' ou 'J0'
         if reseau.startswith('J0'):
             arpege_data_batch[reseau] = read_operationnel.donnees_operationnel_batch(
-                start_day, end_day, ope_params_to_load, model='Arpege', reseau=reseau) # date = today
-    #       arome_data_batch[reseau] = read_operationnel.donnees_operationnel_batch(
-    #           start_day, end_day, ope_params_to_load, model='Arome', reseau=reseau, date=today)
+                start_day, end_day, ope_params_to_load, model='Arpege', reseau=reseau) 
+            arome_data_batch[reseau] = read_operationnel.donnees_operationnel_batch(
+                start_day, end_day, ope_params_to_load, model='Arome', reseau=reseau)
         elif reseau.startswith('J-1'):
             arpege_data_batch[reseau] = read_operationnel.donnees_operationnel_batch(
-                start_day, end_day, ope_params_to_load, model='Arpege', reseau=reseau) # date = yesterday
-    #       arome_data_batch[reseau] = read_operationnel.donnees_operationnel_batch(
-    #           start_day, end_day, ope_params_to_load, model='Arome', reseau=reseau, date=yesterday)
-        #else:
-        #    arpege_data_batch[reseau] = {}
-    #   #     arome_data_batch[reseau] = {}
+                start_day, end_day, ope_params_to_load, model='Arpege', reseau=reseau) 
+            arome_data_batch[reseau] = read_operationnel.donnees_operationnel_batch(
+                start_day, end_day, ope_params_to_load, model='Arome', reseau=reseau)
     
     #----------------------------------------------------------------------------------
     # Structure données
@@ -342,7 +339,7 @@ def selection_data_brut_serieT(start_day, end_day):
                 data[param][model].setdefault(reseau, {})
                 
                 # AROME enveloppes
-                if model == "Arome":
+                '''if model == "Arome":
                     
                     param_arome = VARIABLES[param]['index_model_arome']
                     
@@ -384,7 +381,7 @@ def selection_data_brut_serieT(start_day, end_day):
                             #'values_P3': {},
                             #'values_P4': {},
                             'time': {}
-                        })
+                        })'''
                 
                 # AROME / ARPEGE (AIDA) 
                 '''else:
@@ -452,7 +449,7 @@ def selection_data_brut_serieT(start_day, end_day):
                         data[param][model][reseau].update({'values_P': {}, 'time': {}})
 
                 # AROME operationnel
-                '''if model == 'Arome':
+                if model == 'Arome':
                     param_oper = VARIABLES[param].get('index_ope')
  
                     if param_oper is not None and param_oper in arome_data_batch[reseau]:
@@ -465,6 +462,6 @@ def selection_data_brut_serieT(start_day, end_day):
                         else:
                             data[param][model][reseau].update({'values_P': {}, 'time': {}})
                     else:
-                        data[param][model][reseau].update({'values_P': {}, 'time': {}})'''
+                        data[param][model][reseau].update({'values_P': {}, 'time': {}})
     
     return data

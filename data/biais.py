@@ -7,8 +7,8 @@ import plotly.graph_objects as go
 #from . import read_arome
 #import lecture_mesoNH
 
-from config.variables import VARIABLES_PLOT
-from config.models import MODELS, RESEAUX
+from config.variables import VARIABLES_PLOT, VARIABLES
+from config.config import MODELS, RESEAUX
 from data.data_loader import data_loader
 
 import numpy as np
@@ -218,22 +218,14 @@ def calcul_biais(start_day, end_day):
 
                     mod_pack = base.get(param, {}).get(model, {}).get(reseau, {})
 
-                    s_p1 = mod_pack.get("values_P", None)  # pandas Series attendue
-                    t_mod = mod_pack.get("time", None)
-
-                    # values_P vide ou inexistant
-                    if s_p1 is None or (hasattr(s_p1, "empty") and s_p1.empty):
-                        biais[param][model][reseau]["values"] = np.nan
-                        continue
-
-                    # Normalisation en série avec index datetime
-                    if not isinstance(s_p1, pd.Series):
-                        # au cas où ça arrive en dict/array
-                        try:
-                            s_p1 = pd.Series(s_p1)
-                        except Exception:
-                            biais[param][model][reseau]["values"] = np.nan
-                            continue
+                    runs = mod_pack.get("runs", {}) 
+                    if not runs: 
+                        biais[param][model][reseau]["values"] = np.nan 
+                        continue 
+                        
+                    # Concaténer tous les runs en une seule série 
+                    s_p1 = pd.concat(list(runs.values()))
+                    s_p1 = s_p1[~s_p1.index.duplicated(keep='last')].sort_index()
 
                     s_mod = s_p1.copy()
                     s_mod.index = pd.to_datetime(s_mod.index)

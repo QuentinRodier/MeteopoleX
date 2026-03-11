@@ -157,7 +157,7 @@ import pandas as pd
 from datetime import timedelta
 
 from config.variables import VARIABLES_PLOT
-from config.models import MODELS, RESEAUX
+from config.config import MODELS, RESEAUX
 
 from data.biais import calcul_biais
 #from data.selection_data_brut_serieT import selection_data_brut_serieT
@@ -286,32 +286,32 @@ def biais_moyen(start_day, end_day):
         for model in MODELS:
             if model not in biais_moy[param]:
                 biais_moy[param][model] = {}
-            if model != 'Tf':
-                # Ajout des données opérationnelles
-                '''for reseau in RESEAUX:
-                    if reseau not in biais_moy[param][model]:
-                        biais_moy[param][model][reseau] = {}
-                    colname = str(param + '_' + model + '_' + reseau)
+                
+            # Ajout des données opérationnelles
+            '''for reseau in RESEAUX:
+                if reseau not in biais_moy[param][model]:
+                    biais_moy[param][model][reseau] = {}
+                colname = str(param + '_' + model + '_' + reseau)
 
-                    try:
-                        biais_moy[param][model][reseau]['values'] = list(DF_CyDi[colname])
-                        biais_moy[param][model][reseau]['time'] = list(DF_CyDi.index)
-                    except BaseException:
-                        biais_moy[param][model][reseau]['values'] = 0.
-                        biais_moy[param][model][reseau]['time'] = list(DF_CyDi.index)
-                        pass'''
+                try:
+                    biais_moy[param][model][reseau]['values'] = list(DF_CyDi[colname])
+                    biais_moy[param][model][reseau]['time'] = list(DF_CyDi.index)
+                except BaseException:
+                    biais_moy[param][model][reseau]['values'] = 0.
+                    biais_moy[param][model][reseau]['time'] = list(DF_CyDi.index)
+                    pass'''
 
-                for reseau in RESEAUX:
-                    biais_moy[param][model].setdefault(reseau, {})
-                    colname = f"{param}_{model}_{reseau}"
+            for reseau in RESEAUX:
+                biais_moy[param][model].setdefault(reseau, {})
+                colname = f"{param}_{model}_{reseau}"
 
-                    if colname in DF_CyDi.columns:
-                        biais_moy[param][model][reseau]["values"] = list(DF_CyDi[colname].values)
-                        biais_moy[param][model][reseau]["time"] = list(DF_CyDi.index)
-                    else:
-                        # laisse vide/NaN plutôt que 0 
-                        biais_moy[param][model][reseau]["values"] = [np.nan] * len(DF_CyDi.index)
-                        biais_moy[param][model][reseau]["time"] = list(DF_CyDi.index)
+                if colname in DF_CyDi.columns:
+                    biais_moy[param][model][reseau]["values"] = list(DF_CyDi[colname].values)
+                    biais_moy[param][model][reseau]["time"] = list(DF_CyDi.index)
+                else:
+                    # laisse vide/NaN plutôt que 0 
+                    biais_moy[param][model][reseau]["values"] = [np.nan] * len(DF_CyDi.index)
+                    biais_moy[param][model][reseau]["time"] = list(DF_CyDi.index)
 
 
             '''if 'MNH' not in biais_moy[param][model]:

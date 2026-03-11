@@ -6,8 +6,7 @@ import dash_bootstrap_components as dbc
 
 import datetime
 from datetime import timedelta, date
-from config.config import start_day, end_day, today
-from config.models import selection_obs, selection_arp, selection_aro, selection_arome, selection_mnh, selection_surfex
+from config.config import start_day, end_day, today, selection_obs, selection_arpege, selection_arome, selection_surfex_mascot
 
 SIDEBAR_STYLE = {
     "position": "fixed",
@@ -48,28 +47,19 @@ dropdown_obs = dcc.Dropdown(
     clearable=False
 )
 
-dropdown_arp = dcc.Dropdown(
+dropdown_arpege = dcc.Dropdown(
     id="multi_select_line_chart_ARPEGE",
     options=[{"value": label, "label": label} for label in
-             ["Arpège_J0_00h", "Arpège_J0_12h", "Arpège_J-1_00h", "Arpège_J-1_12h"]],
-    value=selection_arp,
+             ["Arpege_00h"]],
+    value=selection_arpege,
     multi=True,
     clearable=False
 )
 
-'''dropdown_aro = dcc.Dropdown(
-    id="multi_select_line_chart_ARO",
-    options=[{"value": label, "label": label} for label in
-             ["Aro_J-1_00h", "Aro_J-1_12h", "Aro_J0_00h", "Aro_J0_12h"]],
-    value=selection_aro,
-    multi=True,
-    clearable=False
-)'''
-
 dropdown_arome = dcc.Dropdown(
     id="multi_select_line_chart_AROME",
     options=[{"value": label, "label": label} for label in
-             ["Arome_J-1_00h", "Arome_J-1_12h", "Arome_J0_00h", "Arome_J0_12h"]],
+             ["Arome_00h"]],
     value=selection_arome, 
     multi=True,
     clearable=False
@@ -84,14 +74,23 @@ dropdown_arome = dcc.Dropdown(
     clearable=False
 )'''
 
-dropdown_surfex = dcc.Dropdown(
-    id="multi_select_line_chart_SURFEX",
+dropdown_surfex_mascot = dcc.Dropdown(
+    id="multi_select_line_chart_SURFEX_Mascot",
     options=[{"value": label, "label": label} for label in
-             ["SURFEX_Arpège"]], #, "SURFEX_Aro", "SURFEX_Obs"]],
-    value=selection_surfex,
+             ["Surfex_Mascot_00h"]],
+    value=selection_surfex_mascot,
     multi=True,
     clearable=False
 )
+
+'''dropdown_surfex_offline = dcc.Dropdown(
+    id="multi_select_line_chart_SURFEX_Offline",
+    options=[{"value": label, "label": label} for label in
+             ["SURFEX_Offline"]],
+    value=selection_surfex_offline,
+    multi=True,
+    clearable=False
+)'''
 
 
 # --- Inputs utilisateur (rejeu) -----------------------------------------------
@@ -134,11 +133,11 @@ layout_sidebar = html.Div(
         html.Div(
             [
                 dropdown_obs,
-                dropdown_arp,
+                dropdown_arpege,
                 #dropdown_aro,
                 dropdown_arome,
                 #dropdown_mnh,
-                dropdown_surfex,
+                dropdown_surfex_mascot,
             ],
             className="six columns",
             style={"text-align": "center", "justifyContent": "center"},

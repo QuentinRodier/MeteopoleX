@@ -250,52 +250,35 @@ from dash import Input, Output, html, dcc
 from app import app
 from datetime import date, timedelta, datetime
 from config.variables import VARIABLES_PLOT
+from config.config import MODELS_CONFIG
 from data_processing.data_processing_biais import build_biais_figures
+
+
+dynamic_inputs = [
+    Input(cfg['dropdown_id'], "value")
+    for cfg in MODELS_CONFIG.values()
+]
 
 
 @app.callback(
     Output("biais-graphs-container", "children"),
     [
-        Input("multi_select_line_chart_AROME", "value"),
-        Input("multi_select_line_chart_ARPEGE", "value"),
-        Input("multi_select_line_chart_SURFEX", "value"),
-        #Input('multi_select_line_chart_MNH', 'value'),
-        Input('my-date-picker-range', 'start_date'),
-        Input('my-date-picker-range', 'end_date'),
-        #Input('id_user1', 'value'),
-        #Input('id_user2', 'value'),
-        #Input('id_user3', 'value'),
-        #Input('id_user4', 'value'),
-        #Input('id_user5', 'value')
-    ],
+        Input("my-date-picker-range", "start_date"),
+        Input("my-date-picker-range", "end_date"),
+    ] + dynamic_inputs,
 )
-
-def update_biais(reseau_arome, reseau_arpege, show_surfex, 
-                 start_day, end_day): #, id_user1, id_user2, id_user3, id_user4, id_user5):
-    """
-    Met à jour les graphiques des biais instantanés.
-    
-    Ce callback est simple : il délègue tout le traitement
-    à la fonction build_biais_figures() du module data_processing.
-    """
+def update_biais(start_day, end_day, *args): 
     
     start_day = date.fromisoformat(start_day)
     end_day = date.fromisoformat(end_day)
+
+    kwargs = {
+        cfg['callback_param']: val
+        for cfg, val in zip(MODELS_CONFIG.values(), args)
+    }
+
+    chartB, graphB = build_biais_figures(start_day, end_day, **kwargs)
     
-    # Construction des figures via le module de traitement
-    chartB, graphB = build_biais_figures(
-        start_day, end_day,
-        reseau_arome=reseau_arome,
-        reseau_arpege=reseau_arpege,
-        show_surfex=show_surfex,
-        #id_user1=id_user1,
-        #id_user2=id_user2,
-        #id_user3=id_user3,
-        #id_user4=id_user4,
-        #id_user5=id_user5
-    )
-    
-    # Génération dynamique des graphes
     graphs = []
     
     for param in VARIABLES_PLOT:

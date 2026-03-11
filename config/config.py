@@ -4,33 +4,58 @@ from datetime import timedelta, date
 from config.models import RESEAUX
 
 start = 7
-end = 5
+end = 2
 
-today = datetime.date.today()
+today = datetime.date(2026, 1, 1) #datetime.date.today()
 yesterday = today - datetime.timedelta(days=1)
 
 # Période par défaut
-#end_day = today + timedelta(days=end)
-#start_day = today - timedelta(days=start)
-
-start_day = datetime.date(2025, 12, 31)
-end_day = datetime.date(2026, 1, 3)
+end_day = today + timedelta(days=end)
+start_day = today - timedelta(days=start)
 
 
-# Mapping
+# Modèles
 
-arome_mapping = {
-        "Arome_J0_00h":  (RESEAUX[0], dict(color="#1f78b4")),
-        "Arome_J0_12h":  (RESEAUX[1], dict(color="#1f78b4", dash="dot")),
-        "Arome_J-1_00h": (RESEAUX[2], dict(color="#a6cee3")),
-        "Arome_J-1_12h": (RESEAUX[3], dict(color="#a6cee3", dash="dot")),
-    }
+MODELS = ["Arome", 'Arpege', 'Mascot']
 
-arpege_mapping = {
-        "Arpège_J0_00h": (RESEAUX[0], dict(color="#33a02c")),
-        "Arpège_J0_12h": (RESEAUX[1], dict(color="#33a02c", dash="dot")),
-        "Arpège_J-1_00h": (RESEAUX[2], dict(color="#b2df8a")),
-        "Arpège_J-1_12h": (RESEAUX[3], dict(color="#b2df8a", dash="dot")),
-    }
+RESEAUX = ["J0:00_%3600"] 
 
-surfex_arp_mapping = dict(color="darkorange")
+# Configuration complète par modèle
+# Ajouter un nouveau modèle = ajouter une entrée ici
+MODELS_CONFIG = {
+    'Arpege': {
+        'reader':         'operationnel',
+        'param_key':      'index_model',
+        'callback_param': 'reseau_arpege',
+        'dropdown_id':    'multi_select_line_chart_ARPEGE',
+        'mapping': {
+            "Arpege_00h":  (RESEAUX[0], dict(color="#33a02c")),
+        },
+    },
+    'Arome': {
+        'reader':         'operationnel',
+        'param_key':      'index_model',
+        'callback_param': 'reseau_arome',
+        'dropdown_id':    'multi_select_line_chart_AROME',
+        'mapping': {
+            "Arome_00h":  (RESEAUX[0], dict(color="#1f78b4")),
+        },
+    },
+    'Surfex_Mascot': {
+        'reader':         'operationnel',
+        'param_key':      'index_model',
+        'callback_param': 'reseau_mascot',
+        'dropdown_id':    'multi_select_line_chart_SURFEX_Mascot',
+        'mapping': {
+            "Surfex_Mascot_00h":  (RESEAUX[0], dict(color="#d95f02")),
+        },
+    },
+}
+
+
+#Sélection des modèles et réseaux affichés par défaut 
+selection_obs = ["Obs"]
+selection_arpege = ["Arpege_00h"]
+selection_arome = ["Arome_00h"]
+selection_surfex_mascot = ["Surfex_Mascot_00h"]
+#selection_surfex_offline = [] 

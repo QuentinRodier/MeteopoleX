@@ -124,18 +124,13 @@ def donnees_surfex(start_day, end_day, param,
     results = donnees_surfex_batch(start_day, end_day, [param], filepath=filepath)
     return results.get(param, pd.DataFrame())
 
-
 def compute_statistics_surfex(data_df, param):
-    """
-    Statistiques pour un paramètre SURFEX (point unique, pas de groupby).
-    Retourne le même format que compute_statistics() AROME pour compatibilité.
-    """
-    if data_df.empty or param not in data_df.columns:
-        return {'values_P': pd.Series(), 'time': pd.Series()}
+    if data_df is None or data_df.empty or param not in data_df.columns:
+        return {'runs': {}, 'time': {}}
 
     series = data_df[param].copy()
 
     return {
-        'values_P': series,
-        'time':      series.index,
+        'runs': {'offline': series},
+        'time': {'offline': series.index},
     }

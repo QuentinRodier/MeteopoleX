@@ -4,45 +4,18 @@
 # Rt = AROME AIDA
 # Gt = ARPEGE AIDA
 # AROME = AROME NetCDF
-# Surfex = Expérience surfex Arpège
 
-# Liste des modèles (et observations) dans les séries temporelles
-MODELS = ["Arome", 'Arpege', 'Surfex_arpege']
-#MODELS = ["Gt", "Rt", "Tf"]
-
-# Liste des modèles sur lesquels les biais et biais moyens sont calculés
-#MODELS_BIAIS=['Tf', 'Rt', 'Gt'] #Avec ancienne version de Arome #!# Ajout enveloppe
+# Liste des modèles 
+MODELS = ["Arome", 'Arpege']
 
 # Liste des réseaux pour les modèles
 RESEAUX = ["J0:00_%3600", "J0:12_%3600", "J-1:00_%3600", "J-1:12_%3600"]
 
-# Couleur et légendes par modèles sur Série temporelle
-MODELS_PLOT = {"MésoNH_Arp":
-              {'name': 'Gt',
-               'color': 'purple'},
-              "MésoNH_Aro":
-              {'name': 'Rt',
-               'color': "limegreen"},
-              "MésoNH_Obs":
-              {'name': 'Tf',
-               'color': 'orange'},
-              "SURFEX_Arp":
-              {'name': 'Gt',
-               'color': 'darkgreen'},
-              "SURFEX_Aro":
-              {'name': 'Rt',
-               'color': 'pink'},
-              "SURFEX_Obs":
-              {'name': 'Tf',
-               'color': 'gold'}}
-
-#Sélection des modèles et réseaux affichés par défaut (sur les séries temporelles)
+#Sélection des modèles et réseaux affichés par défaut 
 selection_obs = ["Obs"]
-selection_arp = []
-selection_aro = []
+selection_arpege = ["Arpège_J0_00h"]
 selection_arome = ["Arome_J0_00h"]
-selection_mnh = []
-selection_surfex = [] 
+
 
 # Couleur et légendes par modèles sur Profils Verticaux
 MODELS_PLOT_RS = {"Gt": {

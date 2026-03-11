@@ -194,17 +194,21 @@ from dash import dcc
 import plotly.graph_objects as go
 
 from . import read_aida 
-from . import read_arome
+#from . import read_arome
 from . import read_surfex
 from . import read_operationnel
 
 from config.variables import VARIABLES_PLOT, VARIABLES
-from config.models import MODELS, RESEAUX
+from config.config import MODELS, RESEAUX, MODELS_CONFIG
+
+
+EMPTY_BLOCK = {'runs': {}, 'time': {}}
 
 
 def selection_data_brut_serieT(start_day, end_day):
     """
-    Récupération des données
+    Récupération des données pour tous les modèles et paramètres.
+    Aucune condition sur le nom du modèle : tout est piloté par MODELS_CONFIG.
     """
     
     # Conversion des dates en jour de l'année
@@ -244,18 +248,33 @@ def selection_data_brut_serieT(start_day, end_day):
     }'''
 
     # Paramètres SURFEX Arpège expérience
-    params_surfex = {
+    '''params_surfex = {
        param: VARIABLES[param]['index_model_surfex']
        for param in VARIABLES_PLOT
        if VARIABLES[param].get('index_model_surfex') is not None
-    }
+    }'''
 
     # Paramètres Arpège opérationnel
-    params_ope = {
+    '''params_ope = {
        param: VARIABLES[param]['index_ope']
        for param in VARIABLES_PLOT
        if VARIABLES[param].get('index_ope') is not None
-    }
+    }'''
+
+    # Regrouper les paramètres par reader pour éviter les doublons de lecture
+    params_by_reader = {}
+    for model, cfg in MODELS_CONFIG.items():
+        reader    = cfg['reader']
+        param_key = cfg['param_key']
+
+        params_by_reader.setdefault(reader, set())
+        for param in VARIABLES_PLOT:
+            p = VARIABLES[param].get(param_key)
+            if p is not None:
+                params_by_reader[reader].add(p)
+
+    params_by_reader = {r: list(v) for r, v in params_by_reader.items()}
+
 
     #----------------------------------------------------------------------------------
     # Lecture batch des observations 
@@ -287,14 +306,14 @@ def selection_data_brut_serieT(start_day, end_day):
             start_day, end_day, reseau, arome_params_to_load
         )'''
 
-    # Lecture batch SURFEX Arpège expérience
-    surfex_params_to_load = [v for v in params_surfex.values() if v is not None]
+    # Lecture batch SURFEX Offline
+    '''surfex_params = params_by_reader.get('surfex_offline', [])
     surfex_data_batch = read_surfex.donnees_surfex_batch(
-       start_day, end_day, surfex_params_to_load
-    )
+        start_day, end_day, surfex_params
+    ) if surfex_params else {}'''
 
-    # Lecture batch Arpège opérationnel
-    ope_params_to_load = [v for v in params_ope.values() if v is not None]
+    # Lecture batch Arpège/Arome opérationnel
+    '''ope_params_to_load = [v for v in params_ope.values() if v is not None]
     arpege_data_batch = {}
     arome_data_batch = {}
     for reseau in RESEAUX:
@@ -309,15 +328,30 @@ def selection_data_brut_serieT(start_day, end_day):
             arpege_data_batch[reseau] = read_operationnel.donnees_operationnel_batch(
                 start_day, end_day, ope_params_to_load, model='Arpege', reseau=reseau) 
             arome_data_batch[reseau] = read_operationnel.donnees_operationnel_batch(
-                start_day, end_day, ope_params_to_load, model='Arome', reseau=reseau)
+                start_day, end_day, ope_params_to_load, model='Arome', reseau=reseau)'''
     
+    # Opérationnel : chargé par modèle × réseau
+    ope_params = params_by_reader.get('operationnel', [])
+    model_data_batch = {}
+
+    for model, cfg in MODELS_CONFIG.items():
+        if cfg['reader'] != 'operationnel':
+            continue
+
+        model_data_batch[model] = {}
+        for reseau in RESEAUX:
+            model_data_batch[model][reseau] = read_operationnel.donnees_operationnel_batch(
+                start_day, end_day, ope_params,
+                model=model, reseau=reseau
+            )
+
     #----------------------------------------------------------------------------------
     # Structure données
     for param in VARIABLES_PLOT:
         
         data.setdefault(param, {})
         
-        # Observations
+        # --- Observations ---
         obs_model = 'Tf'
         data[param][obs_model] = {}
         
@@ -328,9 +362,9 @@ def selection_data_brut_serieT(start_day, end_day):
         else:
             data[param][obs_model]['values'] = None
             data[param][obs_model]['time'] = None
-        
+
         # Modèles numériques
-        for model in MODELS:
+        '''for model in MODELS:
             
             data[param].setdefault(model, {})
             
@@ -339,7 +373,7 @@ def selection_data_brut_serieT(start_day, end_day):
                 data[param][model].setdefault(reseau, {})
                 
                 # AROME enveloppes
-                '''if model == "Arome":
+                if model == "Arome":
                     
                     param_arome = VARIABLES[param]['index_model_arome']
                     
@@ -381,10 +415,10 @@ def selection_data_brut_serieT(start_day, end_day):
                             #'values_P3': {},
                             #'values_P4': {},
                             'time': {}
-                        })'''
+                        })
                 
                 # AROME / ARPEGE (AIDA) 
-                '''else:
+                else:
                     
                     if param in models_data_batch[model][reseau]:
                         values_mod, time_mod, _ = models_data_batch[model][reseau][param]
@@ -408,9 +442,9 @@ def selection_data_brut_serieT(start_day, end_day):
                                     time_mod[i] = ts - datetime.timedelta(minutes=30)
                     else:
                         data[param][model][reseau]['values'] = None
-                        data[param][model][reseau]['time'] = None'''
+                        data[param][model][reseau]['time'] = None
 
-                # SURFEX Arpège expérience
+                # SURFEX offline
                 if model == 'Surfex_arpege':
                     param_surfex = VARIABLES[param].get('index_model_surfex')
 
@@ -462,6 +496,36 @@ def selection_data_brut_serieT(start_day, end_day):
                         else:
                             data[param][model][reseau].update({'values_P': {}, 'time': {}})
                     else:
-                        data[param][model][reseau].update({'values_P': {}, 'time': {}})
-    
+                        data[param][model][reseau].update({'values_P': {}, 'time': {}})'''
+
+        # --- Modèles ---
+        for model, cfg in MODELS_CONFIG.items():
+
+            data[param].setdefault(model, {})
+
+            reader    = cfg['reader']
+            param_key = cfg['param_key']
+            p         = VARIABLES[param].get(param_key)
+
+            for reseau in RESEAUX:
+
+                data[param][model].setdefault(reseau, {})
+
+                if p is None:
+                    data[param][model][reseau].update({'values_P': {}, 'time': {}})
+                    continue
+
+                # ---------------------------------------------------------
+                # Reader opérationnel : {param: {date_str: DataFrame}}
+                # compute_statistics_operationnel retourne {'runs': ..., 'time': ...}
+                # ---------------------------------------------------------
+                if reader == 'operationnel':
+                    data_dict = model_data_batch.get(model, {}).get(reseau, {}).get(p, {})
+
+                    if isinstance(data_dict, dict) and data_dict:
+                        stats = read_operationnel.compute_statistics_operationnel(data_dict, p)
+                        data[param][model][reseau].update(stats)
+                    else:
+                        data[param][model][reseau].update(EMPTY_BLOCK.copy())
+
     return data

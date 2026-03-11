@@ -44,9 +44,9 @@ from dash import html
 # Layouts
 from layouts.sidebar import layout_sidebar
 from layouts.notice import layout_notice
-from layouts.paneaux_solaire import layout_pv
-from layouts.surfex import layout_surfex
-from layouts.radiosoundings import layout_radiosoundings
+#from layouts.paneaux_solaire import layout_pv
+#from layouts.surfex import layout_surfex
+#from layouts.radiosoundings import layout_radiosoundings
 from layouts.serie_temporelle import layout_serie_temporelle
 from layouts.biais import layout_biais
 from layouts.biais_moyen import layout_biais_moyen

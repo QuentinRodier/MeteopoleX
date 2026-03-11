@@ -12,12 +12,11 @@ import numpy as np
 
 from data.biais_moyen import biais_moyen
 from config.variables import VARIABLES, VARIABLES_PLOT
-from config.models import MODELS, RESEAUX
-from config.config import arome_mapping, arpege_mapping, surfex_arp_mapping
+from config.config import MODELS, RESEAUX, MODELS_CONFIG
 
 
 # Fonction principale appelée par le callback
-def build_biais_moyen_figures(reseau_arome, reseau_arpege, show_surfex, start_day, end_day):
+def build_biais_moyen_figures(start_day, end_day, **kwargs):
     """
     Construit les figures du cycle diurne des biais moyens.
     
@@ -76,7 +75,7 @@ def build_biais_moyen_figures(reseau_arome, reseau_arpege, show_surfex, start_da
                     pass'''
 
         # --- Arome opérationnel ---
-        for selection in (reseau_arome or []):
+        '''for selection in (reseau_arome or []):
             if selection not in arome_mapping:
                 continue
 
@@ -102,10 +101,10 @@ def build_biais_moyen_figures(reseau_arome, reseau_arpege, show_surfex, start_da
                     ))
             
             except (KeyError, TypeError, AttributeError):
-                pass
+                pass'''
 
         # --- Arpège opérationnel ---
-        for selection in (reseau_arpege or []):
+        '''for selection in (reseau_arpege or []):
             if selection not in arpege_mapping:
                 continue
 
@@ -132,10 +131,10 @@ def build_biais_moyen_figures(reseau_arome, reseau_arpege, show_surfex, start_da
                     ))
             
             except (KeyError, TypeError, AttributeError):
-                pass
+                pass'''
 
         # --- SURFEX ---
-        if show_surfex:
+        '''if show_surfex:
             try:
                 block = biais_moy.get(param, {}).get('Surfex_arpege', {}).get(RESEAUX[0], {})
                 values = block.get("values")
@@ -154,7 +153,7 @@ def build_biais_moyen_figures(reseau_arome, reseau_arpege, show_surfex, start_da
                             marker=dict(size=6),
                         ))
             except (KeyError, TypeError, AttributeError):
-                pass
+                pass'''
 
         # --- MésoNH ---
         '''try:
@@ -176,7 +175,45 @@ def build_biais_moyen_figures(reseau_arome, reseau_arpege, show_surfex, start_da
                 ))
         except (KeyError, TypeError):
             pass'''
-        
+
+        # Ajout des courbes
+        active_selections = {
+            model: kwargs.get(cfg['callback_param'], []) or []
+            for model, cfg in MODELS_CONFIG.items()
+        }
+
+        for model, selections in active_selections.items():
+            ui_mapping = MODELS_CONFIG[model]['mapping'] 
+
+            for selection in selections:
+                if selection not in ui_mapping:
+                    continue
+
+                reseau, style = ui_mapping[selection]
+
+                try:
+                    block  = biais_moy.get(param, {}).get(model, {}).get(reseau, {})
+                    values = block.get("values")
+                    time   = block.get("time")
+
+                    arr = np.array(values, dtype=float)
+                    if np.all(np.isnan(arr)):
+                        continue
+
+                    if isinstance(time, (list, np.ndarray)):
+                        fig.add_trace(go.Scatter(
+                            x=time,
+                            y=arr,
+                            mode="lines+markers",
+                            name=selection,
+                            line=style,
+                            marker=dict(size=6),
+                            connectgaps=True,
+                        ))
+
+                except (KeyError, TypeError, AttributeError):
+                    pass
+            
         # Mise en forme du graphique
         fig.update_layout(
             title=f"{VARIABLES[param]['title']}",

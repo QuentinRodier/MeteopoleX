@@ -13,14 +13,10 @@ from dash import dcc
 
 from data.biais import calcul_biais
 from config.variables import VARIABLES, VARIABLES_PLOT
-from config.models import MODELS_PLOT, RESEAUX
-from config.config import arome_mapping, arpege_mapping, surfex_arp_mapping
+from config.config import RESEAUX, MODELS_CONFIG
 
 
-def build_biais_figures(start_day, end_day, 
-                        reseau_arome, reseau_arpege, show_surfex): #, 
-                        #id_user1=None, id_user2=None, id_user3=None, 
-                        #id_user4=None, id_user5=None):
+def build_biais_figures(start_day, end_day, **kwargs): 
     """
     Construit les figures des biais instantanés.
     
@@ -150,7 +146,7 @@ def build_biais_figures(start_day, end_day,
         # ------------------------------------------------------------------
         # AJOUT DES RÉSEAUX AROME 
         # ------------------------------------------------------------------
-        for selection in (reseau_arome or []):
+        '''for selection in (reseau_arome or []):
             if selection not in arome_mapping:
                 continue
 
@@ -171,12 +167,12 @@ def build_biais_figures(start_day, end_day,
                         )
                     )
             except (KeyError, TypeError, AttributeError):
-                pass
+                pass'''
             
         # ------------------------------------------------------------------
         # AJOUT DES RÉSEAUX ARPEGE 
         # ------------------------------------------------------------------
-        for selection in (reseau_arpege or []):
+        '''for selection in (reseau_arpege or []):
             if selection not in arpege_mapping:
                 continue
 
@@ -198,12 +194,12 @@ def build_biais_figures(start_day, end_day,
                         )
                     )
             except (KeyError, TypeError, AttributeError):
-                pass
+                pass'''
 
        # ------------------------------------------------------------------
        # AJOUT DES COURBES SURFEX
        # ------------------------------------------------------------------
-        if show_surfex:
+        '''if show_surfex:
             try:
                 block = biais[param].get('Surfex_arpege', {}).get(RESEAUX[0], {})
                 time   = block.get("time")
@@ -219,7 +215,7 @@ def build_biais_figures(start_day, end_day,
                         )
                     )
             except (KeyError, TypeError, AttributeError):
-                pass
+                pass'''
 
         # ------------------------------------------------------------------
         # AJOUT DES COURBES MESO-NH
@@ -290,10 +286,43 @@ def build_biais_figures(start_day, end_day,
                         )
                 except (KeyError, TypeError):
                     pass'''
+
+        # AJOUT DES COURBES
         
-        # ------------------------------------------------------------------
+        active_selections = {
+            model: kwargs.get(cfg['callback_param'], []) or []
+            for model, cfg in MODELS_CONFIG.items()
+        }
+
+        for model, selections in active_selections.items():
+            ui_mapping = MODELS_CONFIG[model]['mapping']
+
+            for selection in selections:
+                if selection not in ui_mapping:
+                    continue
+
+                reseau, style = ui_mapping[selection]
+
+                try:
+                    block  = biais[param][model][reseau]
+                    time   = block.get("time")
+                    values = block.get("values")
+
+                    if isinstance(time, (list, np.ndarray)) and isinstance(values, (list, np.ndarray)):
+                        fig.add_trace(
+                            go.Scatter(
+                                x=time,
+                                y=values,
+                                name=selection,
+                                line=style,
+                                connectgaps=True,
+                            )
+                        )
+                except (KeyError, TypeError, AttributeError):
+                    pass
+
         # MISE EN FORME DU GRAPHIQUE
-        # ------------------------------------------------------------------
+
         fig.update_layout(
             title=VARIABLES[param]['title'],
             xaxis_title="Date et heure",

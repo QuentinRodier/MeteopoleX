@@ -4,8 +4,7 @@ import pandas as pd
 import plotly.graph_objects as go
 
 from config.variables import VARIABLES_PLOT, VARIABLES
-from config.models import RESEAUX
-from config.config import arome_mapping, arpege_mapping, surfex_arp_mapping
+from config.config import RESEAUX, MODELS_CONFIG
 #import lecture_mesoNH
 #import lecture_surfex
 from data.data_loader import data_loader
@@ -16,14 +15,7 @@ def build_series_figures(
     start_day,
     end_day,
     reseau_obs,
-    #reseau_arp,
-    #reseau_aro,
-    reseau_arome,
-    reseau_arpege,
-    show_surfex,
-    #reseau_mnh,
-    #reseau_surfex,
-    #id_users,
+    **kwargs,
 ):
 
     loaded = data_loader.load_series(start_day, end_day)
@@ -175,7 +167,7 @@ def build_series_figures(
                 )'''
 
     # --- Arpège Opérationnel ---
-    for selection in reseau_arpege or []:
+    '''for selection in reseau_arpege or []:
 
         if selection not in arpege_mapping:
             continue
@@ -196,10 +188,10 @@ def build_series_figures(
                         line=style,
                         connectgaps=True
                     )
-                )
+                )'''
 
     # --- Arome Opérationnel ---
-    for selection in reseau_arome or []:
+    '''for selection in reseau_arome or []:
 
         if selection not in arome_mapping:
             continue
@@ -220,10 +212,10 @@ def build_series_figures(
                         line=style,
                         connectgaps=True
                     )
-                )
+                )'''
 
     # --- Surfex Arpège expérience ---
-    if show_surfex:
+    '''if show_surfex:
         for param in VARIABLES_PLOT:
 
             # Prendre le premier réseau disponible (données identiques pour tous)
@@ -238,7 +230,7 @@ def build_series_figures(
                         name="SURFEX Arpège",
                         line=surfex_arp_mapping,
                     )
-                )
+                )'''
 
     '''# MÉSO-NH UTILISATEURS
     line_styles = ["solid", "dot", "dash", "longdash", "dashdot"]
@@ -317,10 +309,51 @@ def build_series_figures(
                         )
                 except KeyError:
                     pass'''
+    
+    # Modèles opérationnels : boucle générique sur MODELS_CONFIG
+    # Chaque modèle expose ses sélections UI via MODEL_UI_MAPPING.
+    # Pour chaque sélection active, on trace une courbe par run disponible.
 
-    # ------------------------------------------------------------------
+    # Sélections actives par modèle, transmises par le callback
+    active_selections = {
+        model: kwargs.get(cfg['callback_param'], []) or []
+        for model, cfg in MODELS_CONFIG.items()
+    }
+
+    for model, cfg in MODELS_CONFIG.items():
+
+        ui_mapping  = MODELS_CONFIG[model]['mapping']
+        selections  = active_selections.get(model, [])
+
+        for selection in selections:
+
+            if selection not in ui_mapping:
+                continue
+
+            reseau, base_style = ui_mapping[selection]
+
+            for param in VARIABLES_PLOT:
+
+                block = data[param].get(model, {}).get(reseau, {})
+                runs  = block.get("runs", {})
+
+                # Une trace par run (= par fichier lu, identifié par sa date)
+                for date_str, series in runs.items():
+                    if not isinstance(series, pd.Series) or series.empty:
+                        continue
+
+                    figures[param].add_trace(
+                        go.Scatter(
+                            x=series.index,
+                            y=series.values,
+                            name=f"{selection}",
+                            line=base_style,
+                            connectgaps=True,
+                        )
+                    )
+
+
     # Layout final
-    # ------------------------------------------------------------------
     for param in VARIABLES_PLOT:
         figures[param].update_layout(
             height=450, width=800,

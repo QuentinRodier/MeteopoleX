@@ -8,7 +8,7 @@ import plotly.graph_objects as go
 #import lecture_mesoNH
 
 from config.variables import VARIABLES_PLOT, VARIABLES
-from config.config import MODELS, RESEAUX
+from config.config import MODELS_CONFIG, RESEAUX
 from data.data_loader import data_loader
 
 import numpy as np
@@ -199,7 +199,7 @@ def calcul_biais(start_day, end_day):
 
             if values_obs is None or time_obs is None:
                 # pas d'obs => NaN partout
-                for model in MODELS:
+                for model in MODELS_CONFIG.keys():
                     biais[param].setdefault(model, {})
                     for reseau in RESEAUX:
                         biais[param][model][reseau] = {"values": np.nan}
@@ -210,38 +210,63 @@ def calcul_biais(start_day, end_day):
             df_obs.index = pd.to_datetime(df_obs.index)
 
             # --- MODELES ---
-            for model in MODELS:  
+            for model in MODELS_CONFIG.keys():  
                 biais[param].setdefault(model, {})
 
                 for reseau in RESEAUX:
                     biais[param][model].setdefault(reseau, {})
 
                     mod_pack = base.get(param, {}).get(model, {}).get(reseau, {})
-
                     runs = mod_pack.get("runs", {}) 
                     if not runs: 
                         biais[param][model][reseau]["values"] = np.nan 
                         continue 
                         
-                    # Concaténer tous les runs en une seule série 
-                    s_p1 = pd.concat(list(runs.values()))
-                    s_p1 = s_p1[~s_p1.index.duplicated(keep='last')].sort_index()
-
-                    s_mod = s_p1.copy()
-                    s_mod.index = pd.to_datetime(s_mod.index)
-
-                    df_mod = pd.DataFrame(s_mod)
-                    df_mod = dataframe_sanstrou.join(df_mod).dropna()
-                    df_mod.index = pd.to_datetime(df_mod.index)
-
-                    joined = df_mod.join(df_obs, how="inner", lsuffix="_mod", rsuffix="_obs").dropna()
-                    if joined.empty:
+            
+                    # Biais global (concaténé) — conservé si besoin ailleurs
+                    s_all = pd.concat(list(runs.values()))
+                    s_all = s_all[~s_all.index.duplicated(keep='last')].sort_index()
+                    s_all.index = pd.to_datetime(s_all.index)
+                    df_mod_all = dataframe_sanstrou.join(pd.DataFrame(s_all)).dropna()
+                    df_mod_all.index = pd.to_datetime(df_mod_all.index)
+                    joined_all = df_mod_all.join(df_obs, how="inner", lsuffix="_mod", rsuffix="_obs").dropna()
+                    if not joined_all.empty:
+                        b_all = joined_all.iloc[:, 0] - joined_all.iloc[:, 1]
+                        biais[param][model][reseau]["values"] = list(b_all.values)
+                        biais[param][model][reseau]["time"]   = list(b_all.index)
+                    else:
                         biais[param][model][reseau]["values"] = np.nan
-                        continue
 
-                    b = joined.iloc[:, 0] - joined.iloc[:, 1]  # mod - obs
-                    biais[param][model][reseau]["values"] = list(b.values)
-                    biais[param][model][reseau]["time"] = list(b.index)
+
+                    # ---- biais par run (day_str) ----
+                    biais[param][model][reseau]["runs"] = {}
+
+                    for day_str, series in runs.items():
+                        if not isinstance(series, pd.Series) or series.empty:
+                            continue
+
+                        s_run = series.copy()
+                        s_run.index = pd.to_datetime(s_run.index)
+                        s_run = s_run.sort_index().dropna()
+
+                        df_mod_run = pd.DataFrame({"mod": s_run.values}, index=s_run.index)
+                        df_obs_local = df_obs.copy()
+                        df_obs_local.columns = ["obs"]
+
+                        tolerance = pd.Timedelta(minutes=15) 
+
+                        merged = pd.merge_asof(
+                            df_mod_run.reset_index().rename(columns={"index": "time"}),
+                            df_obs_local.reset_index().rename(columns={"index": "time"}),
+                            on="time",
+                            tolerance=tolerance,
+                            direction="nearest"
+                        ).set_index("time").dropna()
+
+                        if merged.empty:
+                            continue
+
+                        b_run = merged["mod"] - merged["obs"]
+                        biais[param][model][reseau]["runs"][day_str] = b_run
 
     return biais
-

@@ -103,24 +103,6 @@ VARIABLES = {
         "title": "Flux de conduction dans le sol",
         "unit": "W/m²"
     },
-    "bilan_energétique":{
-        "index_obs":"",
-        "index_model":"",
-        "title": "Fermeture du bilan d'énergie",
-        "unit": "W/m²",
-    },
-    "flx_chaleur_sens_corr":{
-        "index_obs":"",
-        "index_model":"",
-        "title": "Flux de chaleur sensible corrigé",
-        "unit": "W/m²",
-    },
-    "flx_chaleur_lat_corr":{
-        "index_obs":"",
-        "index_model":"",
-        "title": "Flux de chaleur latente corrigé",
-        "unit": "W/m²"
-    },
     "t_surface": {
         "index_obs": "tpr_solIR_c1_%60",
         #"index_model": "",
@@ -135,7 +117,7 @@ VARIABLES = {
         #"index_model": "",
         #"index_model_arome": None, 
         "index_model_surfex": None,
-        "index_model": "temperature_ground_1",
+        "index_model": "t-1",
         "title": "Température du sol à -0.5 cm",
         "unit": "°C"
     },
@@ -144,7 +126,7 @@ VARIABLES = {
         #"index_model": "",
         #"index_model_arome": None, 
         "index_model_surfex": None,
-        "index_model": "temperature_ground_2",
+        "index_model": "t_couche2",
         "title": "Température du sol à -2.5 cm",
         "unit": "°C"
     },
@@ -207,7 +189,7 @@ VARIABLES = {
         #"index_model": "",
         #"index_model_arome": None,
         "index_model_surfex": None,
-        "index_model": 'relative_humidity_ground_1',
+        "index_model": 'hu_couche1',
         "title": "Humidité du sol à -0.5 cm",
         "unit": "kg/kg"
     },
@@ -216,7 +198,7 @@ VARIABLES = {
         #"index_model": "",
         #"index_model_arome": None,
         "index_model_surfex": None,
-        "index_model": 'relative_humidity_ground_2',
+        "index_model": 'hu_couche2',
         "title": "Humidité du sol à -2.5 cm",
         "unit": "kg/kg"
     },
@@ -225,7 +207,7 @@ VARIABLES = {
         #"index_model": "",
         #"index_model_arome": None,
         "index_model_surfex": None,
-        "index_model": 'WG7cm',
+        "index_model": 'hu_couche3',
         "title": "Humidité du sol à -7 cm",
         "unit": "kg/kg"
     },

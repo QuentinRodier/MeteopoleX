@@ -2,12 +2,55 @@ import datetime
 import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
+import re
 
 from config.variables import VARIABLES_PLOT, VARIABLES
-from config.config import RESEAUX, MODELS_CONFIG
+from config.config import RESEAUX, MODELS_CONFIG, today, end
 #import lecture_mesoNH
 #import lecture_surfex
 from data.data_loader import data_loader
+
+
+def _apply_opacity(color: str, opacity: float) -> str:
+    """
+    Convertit une couleur en rgba() avec l'opacité donnée.
+    Formats supportés : #RRGGBB, #RGB, rgb(), rgba()
+    (couvre tous les formats utilisés dans MODELS_CONFIG)
+    """
+    opacity = round(max(0.0, min(1.0, opacity)), 3)
+    color = color.strip()
+
+
+    # rgba() existant → remplace juste l'alpha
+    m = re.match(r"rgba\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*[\d.]+\s*\)", color)
+    if m:
+        return f"rgba({m.group(1)},{m.group(2)},{m.group(3)},{opacity})"
+
+
+    # rgb()
+    m = re.match(r"rgb\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)", color)
+    if m:
+        return f"rgba({m.group(1)},{m.group(2)},{m.group(3)},{opacity})"
+
+
+    # #RRGGBB  ← format utilisé dans ton mapping
+    m = re.match(r"#([0-9a-fA-F]{6})", color)
+    if m:
+        h = m.group(1)
+        r, g, b = int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16)
+        return f"rgba({r},{g},{b},{opacity})"
+
+
+    # #RGB
+    m = re.match(r"#([0-9a-fA-F]{3})", color)
+    if m:
+        h = m.group(1)
+        r, g, b = int(h[0]*2, 16), int(h[1]*2, 16), int(h[2]*2, 16)
+        return f"rgba({r},{g},{b},{opacity})"
+
+
+    # Fallback : couleur inconnue, retournée telle quelle
+    return color
 
 
 # Fonction principale appelée par le callback
@@ -337,21 +380,62 @@ def build_series_figures(
                 block = data[param].get(model, {}).get(reseau, {})
                 runs  = block.get("runs", {})
 
-                # Une trace par run (= par fichier lu, identifié par sa date)
-                for date_str, series in runs.items():
+                if not runs:
+                    continue
+
+                sorted_dates = sorted(runs.keys())
+                legend_shown = False
+
+                for date_str in sorted_dates:
+                    series = runs[date_str]
                     if not isinstance(series, pd.Series) or series.empty:
                         continue
 
-                    figures[param].add_trace(
-                        go.Scatter(
-                            x=series.index,
-                            y=series.values,
-                            name=f"{selection}",
-                            line=base_style,
-                            connectgaps=True,
-                        )
-                    )
+                    run_date = datetime.datetime.strptime(date_str, "%Y%m%d").date()
+                    MAX_FORECAST_DAYS = end
+                    OPACITY_MIN = 0.15
+                    OPACITY_MAX = 1.0
+                    line_color = base_style.get("color", "blue")
 
+                    from itertools import groupby
+
+                    def get_age(t):
+                        forecast_date = t.date() if hasattr(t, 'date') else t
+                        return max(0, (forecast_date - run_date).days)
+
+                    points = list(zip(series.index, series.values))
+                    grouped = groupby(points, key=lambda p: get_age(p[0]))
+
+                    prev_last_point = None
+                    first_segment = True
+
+                    for age_days, group in grouped:
+                        segment = list(group)
+                        if prev_last_point:
+                            segment = [prev_last_point] + segment
+
+                        opacity = OPACITY_MAX - (OPACITY_MAX - OPACITY_MIN) * min(age_days / MAX_FORECAST_DAYS, 1.0)
+                        color_str = _apply_opacity(line_color, opacity) 
+
+                        seg_x = [p[0] for p in segment]
+                        seg_y = [p[1] for p in segment]
+                        prev_last_point = segment[-1]
+
+                        figures[param].add_trace(
+                            go.Scatter(
+                                x=seg_x,
+                                y=seg_y,
+                                name=f"{selection}",
+                                mode="lines",
+                                line={**{k: v for k, v in base_style.items() if k != "color"}, "color": color_str},
+                                legendgroup=f"{model}_{selection}",
+                                showlegend=(not legend_shown and first_segment),
+                                connectgaps=True,
+                            )
+                        )
+                        first_segment = False
+
+                    legend_shown = True
 
     # Layout final
     for param in VARIABLES_PLOT:
@@ -373,3 +457,4 @@ def build_series_figures(
         )
 
     return figures
+

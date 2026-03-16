@@ -6,7 +6,7 @@ from config.models import RESEAUX
 start = 7
 end = 2
 
-today = datetime.date(2026, 1, 1) #datetime.date.today()
+today = datetime.date.today()
 yesterday = today - datetime.timedelta(days=1)
 
 # Période par défaut
@@ -16,7 +16,7 @@ start_day = today - timedelta(days=start)
 
 # Modèles
 
-MODELS = ["Arome", 'Arpege', 'Mascot']
+MODELS = ["Arome", 'Arpege', 'Surfex_Mascot']
 
 RESEAUX = ["J0:00_%3600"] 
 
@@ -28,6 +28,7 @@ MODELS_CONFIG = {
         'param_key':      'index_model',
         'callback_param': 'reseau_arpege',
         'dropdown_id':    'multi_select_line_chart_ARPEGE',
+        'file_prefix':    'arpege',
         'mapping': {
             "Arpege_00h":  (RESEAUX[0], dict(color="#33a02c")),
         },
@@ -37,6 +38,7 @@ MODELS_CONFIG = {
         'param_key':      'index_model',
         'callback_param': 'reseau_arome',
         'dropdown_id':    'multi_select_line_chart_AROME',
+        'file_prefix':    'arome',
         'mapping': {
             "Arome_00h":  (RESEAUX[0], dict(color="#1f78b4")),
         },
@@ -46,6 +48,7 @@ MODELS_CONFIG = {
         'param_key':      'index_model',
         'callback_param': 'reseau_mascot',
         'dropdown_id':    'multi_select_line_chart_SURFEX_Mascot',
+        'file_prefix':    'mascot',
         'mapping': {
             "Surfex_Mascot_00h":  (RESEAUX[0], dict(color="#d95f02")),
         },

@@ -10,10 +10,55 @@ from datetime import timedelta
 import numpy as np
 import plotly.graph_objects as go
 from dash import dcc
+import pandas as pd
+import re
+from itertools import groupby
 
 from data.biais import calcul_biais
 from config.variables import VARIABLES, VARIABLES_PLOT
-from config.config import RESEAUX, MODELS_CONFIG
+from config.config import RESEAUX, MODELS_CONFIG, today, end
+
+
+def _apply_opacity(color: str, opacity: float) -> str:
+    """
+    Convertit une couleur en rgba() avec l'opacité donnée.
+    Formats supportés : #RRGGBB, #RGB, rgb(), rgba()
+    (couvre tous les formats utilisés dans MODELS_CONFIG)
+    """
+    opacity = round(max(0.0, min(1.0, opacity)), 3)
+    color = color.strip()
+
+
+    # rgba() existant → remplace juste l'alpha
+    m = re.match(r"rgba\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*[\d.]+\s*\)", color)
+    if m:
+        return f"rgba({m.group(1)},{m.group(2)},{m.group(3)},{opacity})"
+
+
+    # rgb()
+    m = re.match(r"rgb\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)", color)
+    if m:
+        return f"rgba({m.group(1)},{m.group(2)},{m.group(3)},{opacity})"
+
+
+    # #RRGGBB  ← format utilisé dans ton mapping
+    m = re.match(r"#([0-9a-fA-F]{6})", color)
+    if m:
+        h = m.group(1)
+        r, g, b = int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16)
+        return f"rgba({r},{g},{b},{opacity})"
+
+
+    # #RGB
+    m = re.match(r"#([0-9a-fA-F]{3})", color)
+    if m:
+        h = m.group(1)
+        r, g, b = int(h[0]*2, 16), int(h[1]*2, 16), int(h[2]*2, 16)
+        return f"rgba({r},{g},{b},{opacity})"
+
+
+    # Fallback : couleur inconnue, retournée telle quelle
+    return color
 
 
 def build_biais_figures(start_day, end_day, **kwargs): 
@@ -294,6 +339,10 @@ def build_biais_figures(start_day, end_day, **kwargs):
             for model, cfg in MODELS_CONFIG.items()
         }
 
+        MAX_FORECAST_DAYS = end
+        OPACITY_MIN = 0.15
+        OPACITY_MAX = 1.0
+
         for model, selections in active_selections.items():
             ui_mapping = MODELS_CONFIG[model]['mapping']
 
@@ -301,25 +350,73 @@ def build_biais_figures(start_day, end_day, **kwargs):
                 if selection not in ui_mapping:
                     continue
 
-                reseau, style = ui_mapping[selection]
+                reseau, base_style = ui_mapping[selection]
 
                 try:
-                    block  = biais[param][model][reseau]
-                    time   = block.get("time")
-                    values = block.get("values")
+                    runs = biais[param][model][reseau].get("runs", {})
+                except (KeyError, TypeError, AttributeError):
+                    continue
 
-                    if isinstance(time, (list, np.ndarray)) and isinstance(values, (list, np.ndarray)):
+                if not runs:
+                    continue
+
+                sorted_dates = sorted(runs.keys())
+                line_color = base_style.get("color", "blue")
+                legend_shown = False
+
+                for date_str in sorted_dates:
+                    series = runs[date_str]
+                    if not isinstance(series, pd.Series) or series.empty:
+                        continue
+
+                    run_date = datetime.datetime.strptime(date_str, "%Y%m%d").date()
+
+                    cutoff = pd.Timestamp(run_date) + pd.Timedelta(days=MAX_FORECAST_DAYS)
+                    series = series[series.index <= cutoff]
+
+                    if series.empty:
+                        continue
+
+                    def get_age(t):
+                        forecast_date = t.date() if hasattr(t, 'date') else t
+                        return max(0, (forecast_date - run_date).days)
+
+                    points = list(zip(series.index, series.values))
+                    grouped = groupby(points, key=lambda p: get_age(p[0]))
+
+                    prev_last_point = None
+                    first_segment = True
+
+                    for age_days, group in grouped:
+                        segment = list(group)
+                        if prev_last_point:
+                            segment = [prev_last_point] + segment
+
+                        opacity = OPACITY_MAX - (OPACITY_MAX - OPACITY_MIN) * min(age_days / MAX_FORECAST_DAYS, 1.0)
+                        color_str = _apply_opacity(line_color, opacity)
+
+                        seg_x = [p[0] for p in segment]
+                        seg_y = [p[1] for p in segment]
+                        prev_last_point = segment[-1]
+
+                        if len(seg_x) < 2:
+                            continue
+
                         fig.add_trace(
                             go.Scatter(
-                                x=time,
-                                y=values,
-                                name=selection,
-                                line=style,
+                                x=seg_x,
+                                y=seg_y,
+                                name=f"{selection}",
+                                mode="lines",
+                                line={**{k: v for k, v in base_style.items() if k != "color"}, "color": color_str},
+                                legendgroup=f"{model}_{selection}",
+                                showlegend=(not legend_shown and first_segment),
                                 connectgaps=True,
                             )
                         )
-                except (KeyError, TypeError, AttributeError):
-                    pass
+                        first_segment = False
+
+                    legend_shown = True
 
         # MISE EN FORME DU GRAPHIQUE
 

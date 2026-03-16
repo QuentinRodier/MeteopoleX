@@ -422,7 +422,10 @@ def build_biais_figures(start_day, end_day, **kwargs):
 
         fig.update_layout(
             title=VARIABLES[param]['title'],
-            xaxis_title="Date et heure",
+            xaxis=dict(
+                title="Date et heure",
+                tickformat='%a %d',
+            ),
             yaxis_title=VARIABLES[param]['unit'],
             hovermode="x unified",
             template="plotly_white",

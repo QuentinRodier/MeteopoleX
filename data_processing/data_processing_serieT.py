@@ -76,9 +76,127 @@ def build_series_figures(
                         y=data[param]["Tf"]["values"].data,
                         mode="lines",
                         name="Obs",
-                        line=dict(color="red"),
+                        line=dict(color="#d7191c"),
                     )
                 )
+    
+    # --- CORRECTION BILAN D'ÉNERGIE (méthode ratio de Bowen) ---
+    # Rn = SWD - SWU + LWD - LWU
+    # Bo = H / LE  (ratio de Bowen obs)
+    # H_corr  = (Rn - G) * Bo / (1 + Bo)
+    # LE_corr = (Rn - G)      / (1 + Bo)
+
+    def _get_obs_series(data, param):
+        """Extrait la série obs d'un paramètre sous forme pd.Series, ou None."""
+        try:
+            vals  = data[param]["Tf"]["values"]
+            times = data[param]["Tf"]["time"]
+            if not isinstance(vals, (list, np.ndarray)) or len(vals) == 0:
+                return None
+            return pd.Series(
+                vals.data if hasattr(vals, "data") else np.asarray(vals),
+                index=pd.DatetimeIndex(times),
+                name=param,
+            )
+        except (KeyError, TypeError):
+            return None
+
+    _required_bowen = {"SWD", "SWU", "LWD", "LWU", "flx_chaleur_sens", "flx_chaleur_lat"}
+    _obs_series = {p: _get_obs_series(data, p) for p in _required_bowen | {"flx_chaleur_sol"}}
+
+    if all(_obs_series[p] is not None for p in _required_bowen):
+
+        # Index commun à toutes les séries obligatoires
+        common_idx = _obs_series["SWD"].index
+
+        for p in _required_bowen:
+            common_idx = common_idx.intersection(_obs_series[p].index)
+
+        def _align(s):
+            return s.reindex(common_idx).astype(float)
+
+        SWD = _align(_obs_series["SWD"])
+        SWU = _align(_obs_series["SWU"])
+        LWD = _align(_obs_series["LWD"])
+        LWU = _align(_obs_series["LWU"])
+        H   = _align(_obs_series["flx_chaleur_sens"])
+        LE  = _align(_obs_series["flx_chaleur_lat"])
+        # G optionnel — 0 si absent
+        G   = _align(_obs_series["flx_chaleur_sol"]) if _obs_series["flx_chaleur_sol"] is not None \
+            else pd.Series(0.0, index=common_idx)
+
+        Rn = SWD - SWU + LWD - LWU
+
+        Bo = H / LE
+
+        denom = 1.0 + Bo
+
+        # Masque : denom trop proche de 0 
+        denom[np.abs(denom) < 0.15] = np.nan   # seuil ajustable
+
+        H_corr  = (Rn - G) * Bo  / denom
+        LE_corr = (Rn - G)       / denom
+
+        #Tracé
+        for fig_param, obs_series, corr_series, label_corr, color in [
+            ("flx_chaleur_sens", H,   H_corr,  "Obs corrigées", "#8B0000"),
+            ("flx_chaleur_lat",  LE,  LE_corr, "Obs corrigées", "#8B0000"),
+        ]:
+            if fig_param not in figures:
+                continue
+
+            # Masque : points valides dans les deux séries
+            mask_valid = obs_series.notna() & corr_series.notna()
+
+            # Découpage en segments continus
+            # On identifie les blocs de True consécutifs dans mask_valid
+            segments = []
+            in_seg = False
+            start_i = None
+
+            for i, valid in enumerate(mask_valid):
+                if valid and not in_seg:
+                    start_i = i
+                    in_seg = True
+                elif not valid and in_seg:
+                    segments.append(slice(start_i, i))
+                    in_seg = False
+            if in_seg:
+                segments.append(slice(start_i, len(mask_valid)))
+
+            # Un polygone toself par segment continu
+            for seg in segments:
+                x_seg   = common_idx[seg]
+                obs_seg  = obs_series.iloc[seg].values
+                corr_seg = corr_series.iloc[seg].values
+
+                x_fill = np.concatenate([x_seg, x_seg[::-1]])
+                y_fill = np.concatenate([obs_seg, corr_seg[::-1]])
+
+                figures[fig_param].add_trace(
+                    go.Scatter(
+                        x=x_fill,
+                        y=y_fill,
+                        fill="toself",
+                        fillcolor=_apply_opacity(color, 0.15),
+                        line=dict(color="rgba(0,0,0,0)"),
+                        showlegend=False,
+                        hoverinfo="skip",
+                    )
+                )
+
+            # Courbe corrigée par-dessus (un seul tracé)
+            corr_clean = corr_series.where(mask_valid)
+            figures[fig_param].add_trace(
+                go.Scatter(
+                    x=common_idx,
+                    y=corr_clean.values,
+                    mode="lines",
+                    name=label_corr,
+                    line=dict(color=color, dash="dash", width=2),
+                    connectgaps=False,
+                )
+            )
 
     # --- ARPÈGE ---
     '''arp_mapping = {
@@ -392,6 +510,10 @@ def build_series_figures(
                         continue
 
                     run_date = datetime.datetime.strptime(date_str, "%Y%m%d").date()
+
+                    cutoff=datetime.datetime.combine(run_date + datetime.timedelta(days=end), datetime.time.max)
+                    series = series[series.index <= cutoff]
+
                     MAX_FORECAST_DAYS = end
                     OPACITY_MIN = 0.15
                     OPACITY_MAX = 1.0
@@ -441,7 +563,10 @@ def build_series_figures(
     for param in VARIABLES_PLOT:
         figures[param].update_layout(
             height=450, width=800,
-            xaxis_title="Date et heure",
+            xaxis=dict(
+                title="Date et heure",
+                tickformat='%a %d',
+            ),
             yaxis_title=VARIABLES[param]["unit"],
             title=VARIABLES[param]["title"],
             showlegend=True,

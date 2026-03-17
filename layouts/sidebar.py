@@ -6,7 +6,7 @@ import dash_bootstrap_components as dbc
 
 import datetime
 from datetime import timedelta, date
-from config.config import start_day, end_day, today, selection_obs, selection_arpege, selection_arome, selection_surfex_mascot
+from config.config import start_day, end_day, today,MODELS_CONFIG,selection_obs 
 
 SIDEBAR_STYLE = {
     "position": "fixed",
@@ -36,8 +36,25 @@ date_picker = html.Div([
     html.Div(id='output-container-date-picker-range')
 ])
 
-
 # --- Dropdowns ----------------------------------------------------------------
+
+# Les sélections par défaut sont extraites dynamiquement depuis MODELS_CONFIG
+def get_default_selection(model_name):
+    """Retourne la liste de sélection des modèles affichés par défaut."""
+    return list(MODELS_CONFIG[model_name]['default_selection'].keys())
+
+
+def make_dropdown(model_name, config):
+    """Crée un dropdown Dash à partir d'une entrée de MODELS_CONFIG."""
+    labels = list(config['mapping'].keys())
+    default = config.get('default_selection', labels)
+    return dcc.Dropdown(
+        id=config['dropdown_id'],
+        options=[{"value": l, "label": l} for l in labels],
+        value=default,          
+        multi=True,
+        clearable=False
+    )
 
 dropdown_obs = dcc.Dropdown(
     id="multi_select_line_chart_obs",
@@ -47,7 +64,13 @@ dropdown_obs = dcc.Dropdown(
     clearable=False
 )
 
-dropdown_arpege = dcc.Dropdown(
+dropdowns_models = [
+    make_dropdown(name, cfg)
+    for name, cfg in MODELS_CONFIG.items()
+]
+
+
+'''dropdown_arpege = dcc.Dropdown(
     id="multi_select_line_chart_ARPEGE",
     options=[{"value": label, "label": label} for label in
              ["Arpege_00h"]],
@@ -63,7 +86,7 @@ dropdown_arome = dcc.Dropdown(
     value=selection_arome, 
     multi=True,
     clearable=False
-)
+)'''
 
 '''dropdown_mnh = dcc.Dropdown(
     id="multi_select_line_chart_MNH",
@@ -74,14 +97,14 @@ dropdown_arome = dcc.Dropdown(
     clearable=False
 )'''
 
-dropdown_surfex_mascot = dcc.Dropdown(
+'''dropdown_surfex_mascot = dcc.Dropdown(
     id="multi_select_line_chart_SURFEX_Mascot",
     options=[{"value": label, "label": label} for label in
              ["Surfex_Mascot_00h"]],
     value=selection_surfex_mascot,
     multi=True,
     clearable=False
-)
+)'''
 
 '''dropdown_surfex_offline = dcc.Dropdown(
     id="multi_select_line_chart_SURFEX_Offline",
@@ -131,6 +154,17 @@ layout_sidebar = html.Div(
         date_picker,
 
         html.Div(
+            [dropdown_obs] + dropdowns_models,  
+            className="six columns",
+            style={"text-align": "center", "justifyContent": "center"},
+        ),
+
+        #user_id_inputs,
+    ],
+    style=SIDEBAR_STYLE,
+)
+
+'''        html.Div(
             [
                 dropdown_obs,
                 dropdown_arpege,
@@ -141,9 +175,4 @@ layout_sidebar = html.Div(
             ],
             className="six columns",
             style={"text-align": "center", "justifyContent": "center"},
-        ),
-
-        #user_id_inputs,
-    ],
-    style=SIDEBAR_STYLE,
-)
+        ),'''

@@ -29,6 +29,7 @@ MODELS_CONFIG = {
         'callback_param': 'reseau_arpege',
         'dropdown_id':    'multi_select_line_chart_ARPEGE',
         'file_prefix':    'arpege',
+        'default_selection': ['Arpege_00h'],
         'mapping': {
             "Arpege_00h":  (RESEAUX[0], dict(color="#33a02c")),
         },
@@ -39,6 +40,7 @@ MODELS_CONFIG = {
         'callback_param': 'reseau_arome',
         'dropdown_id':    'multi_select_line_chart_AROME',
         'file_prefix':    'arome',
+        'default_selection': ['Arome_00h'],
         'mapping': {
             "Arome_00h":  (RESEAUX[0], dict(color="#1f78b4")),
         },
@@ -49,6 +51,7 @@ MODELS_CONFIG = {
         'callback_param': 'reseau_mascot',
         'dropdown_id':    'multi_select_line_chart_SURFEX_Mascot',
         'file_prefix':    'mascot',
+        'default_selection': ['Surfex_Mascot_00h'],
         'mapping': {
             "Surfex_Mascot_00h":  (RESEAUX[0], dict(color="#d95f02")),
         },
@@ -58,7 +61,3 @@ MODELS_CONFIG = {
 
 #Sélection des modèles et réseaux affichés par défaut 
 selection_obs = ["Obs"]
-selection_arpege = ["Arpege_00h"]
-selection_arome = ["Arome_00h"]
-selection_surfex_mascot = ["Surfex_Mascot_00h"]
-#selection_surfex_offline = [] 

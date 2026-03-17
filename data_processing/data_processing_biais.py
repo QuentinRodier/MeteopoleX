@@ -384,20 +384,20 @@ def build_biais_figures(start_day, end_day, **kwargs):
                     points = list(zip(series.index, series.values))
                     grouped = groupby(points, key=lambda p: get_age(p[0]))
 
-                    prev_last_point = None
+                    #prev_last_point = None
                     first_segment = True
 
                     for age_days, group in grouped:
                         segment = list(group)
-                        if prev_last_point:
-                            segment = [prev_last_point] + segment
+                        #if prev_last_point:
+                        #    segment = [prev_last_point] + segment
 
                         opacity = OPACITY_MAX - (OPACITY_MAX - OPACITY_MIN) * min(age_days / MAX_FORECAST_DAYS, 1.0)
                         color_str = _apply_opacity(line_color, opacity)
 
                         seg_x = [p[0] for p in segment]
                         seg_y = [p[1] for p in segment]
-                        prev_last_point = segment[-1]
+                        #prev_last_point = segment[-1]
 
                         if len(seg_x) < 2:
                             continue
@@ -411,7 +411,7 @@ def build_biais_figures(start_day, end_day, **kwargs):
                                 line={**{k: v for k, v in base_style.items() if k != "color"}, "color": color_str},
                                 legendgroup=f"{model}_{selection}",
                                 showlegend=(not legend_shown and first_segment),
-                                connectgaps=True,
+                                connectgaps=False,
                             )
                         )
                         first_segment = False

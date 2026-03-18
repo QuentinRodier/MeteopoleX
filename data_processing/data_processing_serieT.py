@@ -481,10 +481,10 @@ def build_series_figures(
 
                     run_date = datetime.datetime.strptime(date_str, "%Y%m%d").date()
 
-                    cutoff=datetime.datetime.combine(run_date + datetime.timedelta(days=end), datetime.time.max)
+                    cutoff=datetime.datetime.combine(today + datetime.timedelta(days=end), datetime.time.max)
                     series = series[series.index <= cutoff]
 
-                    MAX_FORECAST_DAYS = end
+                    MAX_FORECAST_DAYS = 4
                     line_color = base_style.get("color", "blue")
 
                     from itertools import groupby

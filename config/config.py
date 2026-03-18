@@ -74,5 +74,5 @@ selection_obs = ["Obs"]
 
 
 #Opacité des courbes
-OPACITY_MIN = 0.3
+OPACITY_MIN = 0.1
 OPACITY_MAX = 1.0

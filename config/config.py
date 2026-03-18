@@ -4,7 +4,7 @@ from datetime import timedelta, date
 from config.models import RESEAUX
 
 start = 7
-end = 2
+end = 1     #today + 1
 
 today = datetime.date.today()
 yesterday = today - datetime.timedelta(days=1)
@@ -21,6 +21,16 @@ MODELS = ["Arome", 'Arpege', 'Surfex_Mascot']
 RESEAUX = ["J0:00_%3600"] 
 
 # Configuration complète par modèle
+CONFIG_OBS = {
+    'Obs' : {
+        'mapping': dict(color='#252525')
+    },
+    'Obs_corr' : {
+        'mapping': dict(color='grey'),
+        'opacity': 0.3,
+    }
+}
+
 # Ajouter un nouveau modèle = ajouter une entrée ici
 MODELS_CONFIG = {
     'Arpege': {
@@ -31,7 +41,7 @@ MODELS_CONFIG = {
         'file_prefix':    'arpege',
         'default_selection': ['Arpege_00h'],
         'mapping': {
-            "Arpege_00h":  (RESEAUX[0], dict(color="#33a02c")),
+            "Arpege_00h":  (RESEAUX[0], dict(color="red")),
         },
     },
     'Arome': {
@@ -42,7 +52,7 @@ MODELS_CONFIG = {
         'file_prefix':    'arome',
         'default_selection': ['Arome_00h'],
         'mapping': {
-            "Arome_00h":  (RESEAUX[0], dict(color="#1f78b4")),
+            "Arome_00h":  (RESEAUX[0], dict(color="blue")),
         },
     },
     'Surfex_Mascot': {
@@ -51,9 +61,9 @@ MODELS_CONFIG = {
         'callback_param': 'reseau_mascot',
         'dropdown_id':    'multi_select_line_chart_SURFEX_Mascot',
         'file_prefix':    'mascot',
-        'default_selection': ['Surfex_Mascot_00h'],
+        'default_selection': [],
         'mapping': {
-            "Surfex_Mascot_00h":  (RESEAUX[0], dict(color="#d95f02")),
+            "Surfex_Mascot_00h":  (RESEAUX[0], dict(color="darkorange", dash='dash')),
         },
     },
 }
@@ -61,3 +71,8 @@ MODELS_CONFIG = {
 
 #Sélection des modèles et réseaux affichés par défaut 
 selection_obs = ["Obs"]
+
+
+#Opacité des courbes
+OPACITY_MIN = 0.3
+OPACITY_MAX = 1.0

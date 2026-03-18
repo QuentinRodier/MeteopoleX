@@ -3,54 +3,36 @@ import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
 import re
+import matplotlib.colors as mcolors
 
 from config.variables import VARIABLES_PLOT, VARIABLES
-from config.config import RESEAUX, MODELS_CONFIG, today, end
+from config.config import RESEAUX, MODELS_CONFIG, CONFIG_OBS, today, end, OPACITY_MAX, OPACITY_MIN
 #import lecture_mesoNH
 #import lecture_surfex
 from data.data_loader import data_loader
 
 
 def _apply_opacity(color: str, opacity: float) -> str:
-    """
-    Convertit une couleur en rgba() avec l'opacité donnée.
-    Formats supportés : #RRGGBB, #RGB, rgb(), rgba()
-    (couvre tous les formats utilisés dans MODELS_CONFIG)
-    """
     opacity = round(max(0.0, min(1.0, opacity)), 3)
     color = color.strip()
 
-
-    # rgba() existant → remplace juste l'alpha
-    m = re.match(r"rgba\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*[\d.]+\s*\)", color)
+    # rgba() e
+    m = re.match(r"rgba\(\s*(\d+)\s*,\s*(\d+)\s*,\s*[\d.]+\s*\)", color)
     if m:
         return f"rgba({m.group(1)},{m.group(2)},{m.group(3)},{opacity})"
-
 
     # rgb()
     m = re.match(r"rgb\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)", color)
     if m:
         return f"rgba({m.group(1)},{m.group(2)},{m.group(3)},{opacity})"
 
-
-    # #RRGGBB  ← format utilisé dans ton mapping
-    m = re.match(r"#([0-9a-fA-F]{6})", color)
-    if m:
-        h = m.group(1)
-        r, g, b = int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16)
+    try:
+        r, g, b = mcolors.to_rgb(color)  
+        r, g, b = int(r * 255), int(g * 255), int(b * 255)
         return f"rgba({r},{g},{b},{opacity})"
+    except ValueError:
+        return color  # fallback : couleur inconnue, retournée telle quelle
 
-
-    # #RGB
-    m = re.match(r"#([0-9a-fA-F]{3})", color)
-    if m:
-        h = m.group(1)
-        r, g, b = int(h[0]*2, 16), int(h[1]*2, 16), int(h[2]*2, 16)
-        return f"rgba({r},{g},{b},{opacity})"
-
-
-    # Fallback : couleur inconnue, retournée telle quelle
-    return color
 
 
 # Fonction principale appelée par le callback
@@ -76,7 +58,7 @@ def build_series_figures(
                         y=data[param]["Tf"]["values"].data,
                         mode="lines",
                         name="Obs",
-                        line=dict(color="#d7191c"),
+                        line=CONFIG_OBS['Obs']['mapping'],
                     )
                 )
     
@@ -132,24 +114,26 @@ def build_series_figures(
         denom = 1.0 + Bo
 
         # Masque : denom trop proche de 0 
-        denom[np.abs(denom) < 0.15] = np.nan   # seuil ajustable
+        denom[np.abs(denom) < 0.3] = np.nan   # seuil ajustable
 
         H_corr  = (Rn - G) * Bo  / denom
         LE_corr = (Rn - G)       / denom
 
         #Tracé
-        for fig_param, obs_series, corr_series, label_corr, color in [
-            ("flx_chaleur_sens", H,   H_corr,  "Obs corrigées", "#8B0000"),
-            ("flx_chaleur_lat",  LE,  LE_corr, "Obs corrigées", "#8B0000"),
+        for fig_param, obs_series, corr_series, label_corr in [
+            ("flx_chaleur_sens", H,   H_corr,  "Obs corrigées"),
+            ("flx_chaleur_lat",  LE,  LE_corr, "Obs corrigées"),
         ]:
             if fig_param not in figures:
                 continue
+
+            color = CONFIG_OBS['Obs_corr']['mapping']['color']
+            opacity_corr = CONFIG_OBS['Obs_corr']['opacity']
 
             # Masque : points valides dans les deux séries
             mask_valid = obs_series.notna() & corr_series.notna()
 
             # Découpage en segments continus
-            # On identifie les blocs de True consécutifs dans mask_valid
             segments = []
             in_seg = False
             start_i = None
@@ -164,8 +148,7 @@ def build_series_figures(
             if in_seg:
                 segments.append(slice(start_i, len(mask_valid)))
 
-            # Un polygone toself par segment continu
-            for seg in segments:
+            for seg_idx, seg in enumerate(segments):
                 x_seg   = common_idx[seg]
                 obs_seg  = obs_series.iloc[seg].values
                 corr_seg = corr_series.iloc[seg].values
@@ -178,25 +161,12 @@ def build_series_figures(
                         x=x_fill,
                         y=y_fill,
                         fill="toself",
-                        fillcolor=_apply_opacity(color, 0.15),
+                        fillcolor=_apply_opacity(color, opacity_corr),
                         line=dict(color="rgba(0,0,0,0)"),
-                        showlegend=False,
-                        hoverinfo="skip",
+                        name=label_corr,
+                        showlegend=(seg_idx==0),
                     )
                 )
-
-            # Courbe corrigée par-dessus (un seul tracé)
-            corr_clean = corr_series.where(mask_valid)
-            figures[fig_param].add_trace(
-                go.Scatter(
-                    x=common_idx,
-                    y=corr_clean.values,
-                    mode="lines",
-                    name=label_corr,
-                    line=dict(color=color, dash="dash", width=2),
-                    connectgaps=False,
-                )
-            )
 
     # --- ARPÈGE ---
     '''arp_mapping = {
@@ -515,8 +485,6 @@ def build_series_figures(
                     series = series[series.index <= cutoff]
 
                     MAX_FORECAST_DAYS = end
-                    OPACITY_MIN = 0.15
-                    OPACITY_MAX = 1.0
                     line_color = base_style.get("color", "blue")
 
                     from itertools import groupby
@@ -559,17 +527,40 @@ def build_series_figures(
 
                     legend_shown = True
 
+
+    # Max commun pour flx_chaleur_sens et flx_chaleur_lat
+    flux_params = ("flx_chaleur_sens", "flx_chaleur_lat")
+    global_y_max = -np.inf
+
+    for param in flux_params:
+        if param in figures:
+            for trace in figures[param].data:
+                if trace.y is not None:
+                    vals = [v for v in trace.y if v is not None and not np.isnan(float(v))]
+                    if vals:
+                        global_y_max = max(global_y_max, max(vals))
+
+    global_y_max = global_y_max 
     # Layout final
     for param in VARIABLES_PLOT:
+
+        if param in flux_params:
+            yaxis_cfg = dict(range=[-50, global_y_max])
+        else:
+            yaxis_cfg = {}
+
         figures[param].update_layout(
-            height=450, width=800,
+            height=500, width=872,
             xaxis=dict(
                 title="Date et heure",
                 tickformat='%a %d',
             ),
-            yaxis_title=VARIABLES[param]["unit"],
+            yaxis=dict(
+                title=VARIABLES[param]["unit"],
+                **yaxis_cfg,
+            ),
             title=VARIABLES[param]["title"],
-            showlegend=True,
+            showlegend=False,
             hovermode="x unified",
             template="plotly_white",
             legend=dict(

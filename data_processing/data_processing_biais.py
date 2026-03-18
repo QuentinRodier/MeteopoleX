@@ -13,52 +13,34 @@ from dash import dcc
 import pandas as pd
 import re
 from itertools import groupby
+import matplotlib.colors as mcolors
 
 from data.biais import calcul_biais
 from config.variables import VARIABLES, VARIABLES_PLOT
-from config.config import RESEAUX, MODELS_CONFIG, today, end
+from config.config import RESEAUX, MODELS_CONFIG, today, end, OPACITY_MAX, OPACITY_MIN
 
 
 def _apply_opacity(color: str, opacity: float) -> str:
-    """
-    Convertit une couleur en rgba() avec l'opacité donnée.
-    Formats supportés : #RRGGBB, #RGB, rgb(), rgba()
-    (couvre tous les formats utilisés dans MODELS_CONFIG)
-    """
     opacity = round(max(0.0, min(1.0, opacity)), 3)
     color = color.strip()
 
-
-    # rgba() existant → remplace juste l'alpha
-    m = re.match(r"rgba\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*[\d.]+\s*\)", color)
+    # rgba() e
+    m = re.match(r"rgba\(\s*(\d+)\s*,\s*(\d+)\s*,\s*[\d.]+\s*\)", color)
     if m:
         return f"rgba({m.group(1)},{m.group(2)},{m.group(3)},{opacity})"
-
 
     # rgb()
     m = re.match(r"rgb\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)", color)
     if m:
         return f"rgba({m.group(1)},{m.group(2)},{m.group(3)},{opacity})"
 
-
-    # #RRGGBB  ← format utilisé dans ton mapping
-    m = re.match(r"#([0-9a-fA-F]{6})", color)
-    if m:
-        h = m.group(1)
-        r, g, b = int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16)
+    try:
+        r, g, b = mcolors.to_rgb(color)  
+        r, g, b = int(r * 255), int(g * 255), int(b * 255)
         return f"rgba({r},{g},{b},{opacity})"
+    except ValueError:
+        return color  # fallback : couleur inconnue, retournée telle quelle
 
-
-    # #RGB
-    m = re.match(r"#([0-9a-fA-F]{3})", color)
-    if m:
-        h = m.group(1)
-        r, g, b = int(h[0]*2, 16), int(h[1]*2, 16), int(h[2]*2, 16)
-        return f"rgba({r},{g},{b},{opacity})"
-
-
-    # Fallback : couleur inconnue, retournée telle quelle
-    return color
 
 
 def build_biais_figures(start_day, end_day, **kwargs): 
@@ -339,9 +321,7 @@ def build_biais_figures(start_day, end_day, **kwargs):
             for model, cfg in MODELS_CONFIG.items()
         }
 
-        MAX_FORECAST_DAYS = end
-        OPACITY_MIN = 0.15
-        OPACITY_MAX = 1.0
+        MAX_FORECAST_DAYS = end+1
 
         for model, selections in active_selections.items():
             ui_mapping = MODELS_CONFIG[model]['mapping']
@@ -429,8 +409,8 @@ def build_biais_figures(start_day, end_day, **kwargs):
             yaxis_title=VARIABLES[param]['unit'],
             hovermode="x unified",
             template="plotly_white",
-            height=450,
-            width=800,
+            height=500,
+            width=872,
             legend=dict(
                 orientation="v",
                 yanchor="top",

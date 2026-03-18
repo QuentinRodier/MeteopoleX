@@ -129,6 +129,8 @@ dropdown_arome = dcc.Dropdown(
 #   1.3 LAYOUT
 # -----------------------------------------------------------------------------
 
+common_legend = html.Div(id='common-legend', style={'marginTop': '1rem'})
+
 layout_sidebar = html.Div(
     [
         html.H1("MeteopoleX", className="display-10"),
@@ -159,7 +161,11 @@ layout_sidebar = html.Div(
             style={"text-align": "center", "justifyContent": "center"},
         ),
 
-        #user_id_inputs,
+        html.Hr(),
+        html.H2("Légende", className="display-10"),
+        html.Hr(),
+
+        common_legend,
     ],
     style=SIDEBAR_STYLE,
 )

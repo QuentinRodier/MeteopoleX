@@ -3,3 +3,4 @@
 from . import serie_temporelle
 from . import biais
 from . import biais_moyen
+from . import legend

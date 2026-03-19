@@ -1,6 +1,6 @@
 from config.models import MODELS
 from config.variables import VARIABLES_PLOT
-from data.selection_data_brut_serieT import selection_data_brut_serieT
+from data.selection_data import selection_data
 
 
 class DataLoader:
@@ -12,7 +12,7 @@ class DataLoader:
         key = (start, end)
 
         if key not in self.cache_series:
-            data = selection_data_brut_serieT(start, end)
+            data = selection_data(start, end)
 
             self.cache_series[key] = {
                 "base": data,

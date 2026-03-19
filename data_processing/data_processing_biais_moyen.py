@@ -45,137 +45,6 @@ def build_biais_moyen_figures(start_day, end_day, **kwargs):
         # Créer la figure Plotly
         fig = go.Figure()
         
-        '''for model in MODELS:
-            if model == 'Tf':  # Skip observations
-                continue
-            
-            model_style = model_styles.get(model, {'color': 'gray', 'name': model})
-            
-            # Ajouter les modèles opérationnels 
-            for reseau in RESEAUX:
-                try:
-                    values = biais_moy[param][model][reseau]['values']
-                    time = biais_moy[param][model][reseau]['time']
-                    
-                    if values != 0. and len(values) > 1:
-                        reseau_style = reseau_styles.get(reseau, {'dash': 'solid', 'suffix': ''})
-                        
-                        fig.add_trace(go.Scatter(
-                            x=time,
-                            y=values,
-                            mode='lines+markers',
-                            name=model_style['name'] + reseau_style['suffix'],
-                            line=dict(
-                                color=model_style['color'],
-                                dash=reseau_style['dash']
-                            ),
-                            marker=dict(size=6)
-                        ))
-                except (KeyError, TypeError):
-                    pass'''
-
-        # --- Arome opérationnel ---
-        '''for selection in (reseau_arome or []):
-            if selection not in arome_mapping:
-                continue
-
-            reseau, style = arome_mapping[selection]
-
-            try:
-                block = biais_moy.get(param, {}).get('Arome', {}).get(reseau, {})
-                values = block.get("values")
-                time = block.get("time")
-
-                arr = np.array(values, dtype=float)
-                if np.all(np.isnan(arr)):
-                    continue
-
-                if isinstance(time, (list, np.ndarray)) and isinstance(values, (list, np.ndarray)):
-                    fig.add_trace(go.Scatter(
-                        x=time,
-                        y=arr,
-                        mode="lines+markers",
-                        name=selection,
-                        line=style,
-                        marker=dict(size=6),
-                    ))
-            
-            except (KeyError, TypeError, AttributeError):
-                pass'''
-
-        # --- Arpège opérationnel ---
-        '''for selection in (reseau_arpege or []):
-            if selection not in arpege_mapping:
-                continue
-
-            reseau, style = arpege_mapping[selection]
-
-            try:
-                block = biais_moy.get(param, {}).get('Arpege', {}).get(reseau, {})
-                values = block.get("values")
-                time = block.get("time")
-
-                arr = np.array(values, dtype=float)
-                if np.all(np.isnan(arr)):
-                    continue
-
-                if isinstance(time, (list, np.ndarray)) and isinstance(values, (list, np.ndarray)):
-                    fig.add_trace(go.Scatter(
-                        x=time,
-                        y=arr,
-                        mode="lines+markers",
-                        name=selection,
-                        line=style,
-                        marker=dict(size=6),
-                        connectgaps=True
-                    ))
-            
-            except (KeyError, TypeError, AttributeError):
-                pass'''
-
-        # --- SURFEX ---
-        '''if show_surfex:
-            try:
-                block = biais_moy.get(param, {}).get('Surfex_arpege', {}).get(RESEAUX[0], {})
-                values = block.get("values")
-                time = block.get("time")
-
-
-                arr = np.array(values, dtype=float)
-                if not np.all(np.isnan(arr)):
-                    if isinstance(time, (list, np.ndarray)):
-                        fig.add_trace(go.Scatter(
-                            x=time,
-                            y=arr,
-                            mode="lines+markers",
-                            name="SURFEX",
-                            line=surfex_arp_mapping,
-                            marker=dict(size=6),
-                        ))
-            except (KeyError, TypeError, AttributeError):
-                pass'''
-
-        # --- MésoNH ---
-        '''try:
-            values_mnh = biais_moy[param][model]['MNH']['values']
-            time_mnh = biais_moy[param][model]['MNH']['time']
-            
-            if values_mnh != 0. and len(values_mnh) > 1:
-                fig.add_trace(go.Scatter(
-                    x=time_mnh,
-                    y=values_mnh,
-                    mode='lines+markers',
-                    name=f'MésoNH {model_style["name"]}',
-                    line=dict(
-                        color=model_style['color'],
-                        dash='dashdot',
-                        width=2
-                    ),
-                    marker=dict(size=8, symbol='diamond')
-                ))
-        except (KeyError, TypeError):
-            pass'''
-
         # Ajout des courbes
         active_selections = {
             model: kwargs.get(cfg['callback_param'], []) or []
@@ -217,7 +86,7 @@ def build_biais_moyen_figures(start_day, end_day, **kwargs):
         # Mise en forme du graphique
         fig.update_layout(
             title=f"{VARIABLES[param]['title']}",
-            xaxis_title="Heure (UTC)",
+            xaxis_title="Echéance",
             yaxis_title=f"Biais ({VARIABLES[param]['unit']})",
             hovermode="x unified",
             template="plotly_white",
@@ -234,10 +103,10 @@ def build_biais_moyen_figures(start_day, end_day, **kwargs):
         
         # Configuration de l'axe X (heures de 0 à 23)
         fig.update_xaxes(
-            tickmode='linear',
-            tick0=0,
-            dtick=3,
-            range=[-0.5, 23.5]
+            tickmode='array',
+            tickvals=[0, 24, 48, 72],
+            ticktext=["J", "J+1", "J+2", "J+3"],
+            range=[-0.5, 102.5]
         )
         
         chartM[param] = fig

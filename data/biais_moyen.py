@@ -54,7 +54,7 @@ def biais_moyen(start_day, end_day):
 
                 # Construire la courbe continue : 4 jours x 24h
                 all_values = []
-                all_times = []  # en heures depuis le début (0, 1, ..., 95)
+                all_times = []  # en heures depuis le début (0, 1, ..., 102)
 
                 for age_days in sorted(lead_data.keys()):
                     hours_dict = lead_data[age_days]

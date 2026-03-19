@@ -113,7 +113,7 @@ VARIABLES = {
         "unit": "°C"
     },
     "TG0_5cm": {
-        "index_obs": "tpr_sol1cm_c4_%900_Met_%1800",
+        "index_obs": "tpr_sol1cm_f2_tn1_valid_%900", 
         #"index_model": "",
         #"index_model_arome": None, 
         "index_model_surfex": None,
@@ -122,7 +122,7 @@ VARIABLES = {
         "unit": "°C"
     },
     "TG2_5cm": {
-        "index_obs": "",
+        "index_obs": "tpr_sol3cm_f2_tn1_valid_%900", 
         #"index_model": "",
         #"index_model_arome": None, 
         "index_model_surfex": None,
@@ -131,7 +131,7 @@ VARIABLES = {
         "unit": "°C"
     },
     "TG7cm": {
-        "index_obs": "",
+        "index_obs": "tpr_sol10cm_f2_tn1_valid_%900",
         #"index_model": "",
         #"index_model_arome": None, 
         "index_model_surfex": None,
@@ -140,7 +140,7 @@ VARIABLES = {
         "unit": "°C"
     },
     "TG15cm": {
-        "index_obs": "",
+        "index_obs": "tpr_sol20cm_f2_tn1_valid_%900",
         #"index_model": "",
         #"index_model_arome": None, 
         "index_model_surfex": None,
@@ -149,7 +149,7 @@ VARIABLES = {
         "unit": "°C"
     },
     "TG30cm": {
-        "index_obs": "",
+        "index_obs": "tpr_sol30cm_f2_tn1_valid_%900",
         #"index_model": "",
         #"index_model_arome": None, 
         "index_model_surfex": None,
@@ -158,7 +158,7 @@ VARIABLES = {
         "unit": "°C"
     },
     "TG50cm": {
-        "index_obs": "",
+        "index_obs": "tpr_sol50cm_f2_tn1_valid_%900",
         #"index_model": "",
         #"index_model_arome": None, 
         "index_model_surfex": None,
@@ -167,7 +167,7 @@ VARIABLES = {
         "unit": "°C"
     },
     "TG70cm": {
-        "index_obs": "",
+        "index_obs": "tpr_sol70cm_f2_tn1_valid_%900",
         #"index_model": "",
         #"index_model_arome": None, 
         "index_model_surfex": None,
@@ -176,7 +176,7 @@ VARIABLES = {
         "unit": "°C"
     },
     "TG90cm": {
-        "index_obs": "",
+        "index_obs": "tpr_sol90cm_f2_tn1_valid_%900",
         #"index_model": "",
         #"index_model_arome": None, 
         "index_model_surfex": None,
@@ -185,7 +185,7 @@ VARIABLES = {
         "unit": "°C"
     },
     "WG0_5cm": {
-        "index_obs": "hum_sol1cm_ec5_c3_%900_Met_%1800",
+        "index_obs": "",
         #"index_model": "",
         #"index_model_arome": None,
         "index_model_surfex": None,
@@ -194,7 +194,7 @@ VARIABLES = {
         "unit": "kg/kg"
     },
     "WG2_5cm": {
-        "index_obs": "hum_sol1cm_ec5_c3_%900_Met_%1800",
+        "index_obs": "hum_sol5cm_f2_tpn1_valid_%900",
         #"index_model": "",
         #"index_model_arome": None,
         "index_model_surfex": None,
@@ -203,7 +203,7 @@ VARIABLES = {
         "unit": "kg/kg"
     },
     "WG7cm": {
-        "index_obs": "hum_sol1cm_ec5_c3_%900_Met_%1800",
+        "index_obs": "hum_sol10cm_f2_tpn1_valid_%900",
         #"index_model": "",
         #"index_model_arome": None,
         "index_model_surfex": None,
@@ -212,7 +212,7 @@ VARIABLES = {
         "unit": "kg/kg"
     },
     "WG15cm": {
-        "index_obs": "hum_sol1cm_ec5_c3_%900_Met_%1800",
+        "index_obs": "hum_sol20cm_f2_tpn1_valid_%900",
         #"index_model": "",
         #"index_model_arome": None,
         "index_model_surfex": None,
@@ -221,7 +221,7 @@ VARIABLES = {
         "unit": "kg/kg"
     },
     "WG30cm": {
-        "index_obs": "hum_sol1cm_ec5_c3_%900_Met_%1800",
+        "index_obs": "hum_sol30cm_f2_tpn1_valid_%900",
         #"index_model": "",
         #"index_model_arome": None,
         "index_model_surfex": None,
@@ -230,7 +230,7 @@ VARIABLES = {
         "unit": "kg/kg"
     },
     "WG50cm": {
-        "index_obs": "hum_sol1cm_ec5_c3_%900_Met_%1800",
+        "index_obs": "hum_sol50cm_f2_tpn1_valid_%900",
         #"index_model": "",
         #"index_model_arome": None,
         "index_model_surfex": None,
@@ -239,7 +239,7 @@ VARIABLES = {
         "unit": "kg/kg"
     },
     "WG70cm": {
-        "index_obs": "hum_sol1cm_ec5_c3_%900_Met_%1800",
+        "index_obs": "hum_sol70cm_f2_tpn1_valid_%900",
         #"index_model": "",
         #"index_model_arome": None,
         "index_model_surfex": None,
@@ -248,7 +248,7 @@ VARIABLES = {
         "unit": "kg/kg"
     },
     "WG90cm": {
-        "index_obs": "hum_sol1cm_ec5_c3_%900_Met_%1800",
+        "index_obs": "hum_sol100cm_f2_tpn1_valid_%900",
         #"index_model": "",
         #"index_model_arome": None,
         "index_model_surfex": None,

@@ -77,7 +77,7 @@ def build_biais_moyen_figures(start_day, end_day, **kwargs):
                             name=selection,
                             line=style,
                             marker=dict(size=6),
-                            connectgaps=True,
+                            connectgaps=False,
                         ))
 
                 except (KeyError, TypeError, AttributeError):
@@ -91,22 +91,22 @@ def build_biais_moyen_figures(start_day, end_day, **kwargs):
             hovermode="x unified",
             template="plotly_white",
             height=500,
-            width=800,
-            legend=dict(
-                orientation="v",
-                yanchor="top",
-                y=1,
-                xanchor="left",
-                x=1.02
-            )
+            width=872,
+            showlegend=False,
+            shapes=[
+                dict(type="line", xref="x", yref="paper", x0=24, x1=24, y0=0, y1=1, line=dict(color="lightgrey", width=1)),
+                dict(type="line", xref="x", yref="paper", x0=48, x1=48, y0=0, y1=1, line=dict(color="lightgrey", width=1)), 
+                dict(type="line", xref="x", yref="paper", x0=72, x1=72, y0=0, y1=1, line=dict(color="lightgrey", width=1)), 
+                dict(type="line", xref="x", yref="paper", x0=96, x1=96, y0=0, y1=1, line=dict(color="lightgrey", width=1)), ]
         )
         
         # Configuration de l'axe X (heures de 0 à 23)
         fig.update_xaxes(
             tickmode='array',
-            tickvals=[0, 24, 48, 72],
-            ticktext=["J", "J+1", "J+2", "J+3"],
-            range=[-0.5, 102.5]
+            tickvals=[0, 24, 48, 72, 96],
+            ticktext=["J", "J+1", "J+2", "J+3", "J+4"],
+            range=[-0.5, 102.5],
+            showgrid = False
         )
         
         chartM[param] = fig

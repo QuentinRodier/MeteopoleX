@@ -411,13 +411,7 @@ def build_biais_figures(start_day, end_day, **kwargs):
             template="plotly_white",
             height=500,
             width=872,
-            legend=dict(
-                orientation="v",
-                yanchor="top",
-                y=1,
-                xanchor="left",
-                x=1.02
-            )
+            showlegend=False
         )
         
         chartB[param] = fig

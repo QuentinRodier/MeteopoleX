@@ -6,7 +6,7 @@ from config.models import RESEAUX
 start = 7
 end = 1     #today + 1
 
-today = datetime.date.today()
+today = datetime.date(2026, 3, 15) #.date.today()
 yesterday = today - datetime.timedelta(days=1)
 
 # Période par défaut
@@ -16,7 +16,7 @@ start_day = today - timedelta(days=start)
 
 # Modèles
 
-MODELS = ["Arome", 'Arpege', 'Surfex_Mascot']
+MODELS = ["Arome", 'Arpege', 'Surfex_Mascot', 'Surfex_Offline']
 
 RESEAUX = ["J0:00_%3600"] 
 
@@ -64,6 +64,17 @@ MODELS_CONFIG = {
         'default_selection': [],
         'mapping': {
             "Surfex_Mascot_00h":  (RESEAUX[0], dict(color="darkorange", dash='dash')),
+        },
+    },
+    'Surfex_Offline': {
+        'reader':         'operationnel',
+        'param_key':      'index_model',
+        'callback_param': 'reseau_offline',
+        'dropdown_id':    'multi_select_line_chart_SURFEX_Offline',
+        'file_prefix':    'offline',
+        'default_selection': [],
+        'mapping': {
+            "Surfex_Offline":  (RESEAUX[0], dict(color="purple", dash='dash')),
         },
     },
 }

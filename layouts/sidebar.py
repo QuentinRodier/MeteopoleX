@@ -116,15 +116,6 @@ dropdown_arome = dcc.Dropdown(
 )'''
 
 
-# --- Inputs utilisateur (rejeu) -----------------------------------------------
-
-'''user_id_inputs = html.Div([
-    dcc.Input(id=f'id_user{i}', type='text', placeholder='Rejeu ID',
-              style={'width': '50%'})
-    for i in range(1, 6)
-])'''
-
-
 # -----------------------------------------------------------------------------
 #   1.3 LAYOUT
 # -----------------------------------------------------------------------------
@@ -144,6 +135,8 @@ layout_sidebar = html.Div(
                 html.Div(dbc.NavLink("Séries temporelles", href="/MeteopoleX/")),
                 html.Div(dbc.NavLink("Biais", href="/MeteopoleX/biais")),
                 html.Div(dbc.NavLink("Biais moyens", href="/MeteopoleX/biaisM")),
+                html.Div(dbc.NavLink("Panneaux Photovoltaïques", href="/MeteopoleX/PV")),
+                html.Div(dbc.NavLink("Profils verticaux", href="/MeteopoleX/rs")),
                 html.Div(dbc.NavLink("Notice", href="/MeteopoleX/notice")),
             ],
             style={"display": "flex", "flexDirection": "column", "gap": "0.5rem"}
@@ -169,16 +162,3 @@ layout_sidebar = html.Div(
     ],
     style=SIDEBAR_STYLE,
 )
-
-'''        html.Div(
-            [
-                dropdown_obs,
-                dropdown_arpege,
-                #dropdown_aro,
-                dropdown_arome,
-                #dropdown_mnh,
-                dropdown_surfex_mascot,
-            ],
-            className="six columns",
-            style={"text-align": "center", "justifyContent": "center"},
-        ),'''

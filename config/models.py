@@ -6,7 +6,7 @@
 # AROME = AROME NetCDF
 
 # Liste des modèles 
-MODELS = ["Arome", 'Arpege']
+MODELS = ["Rt", 'Gt']
 
 # Liste des réseaux pour les modèles
 RESEAUX = ["J0:00_%3600", "J0:12_%3600", "J-1:00_%3600", "J-1:12_%3600"]

@@ -1,4 +1,4 @@
-from dash import html
+"""from dash import html
 import datetime
 from datetime import date, timedelta
 from data.selection_data_pv import selection_donnees_PV
@@ -22,4 +22,23 @@ row = html.Div(children=all_graphs_PV, className="six columns")
 # Ces dernières lignes sont la mise en forme finale de la page
 layout_pv = html.Div([html.H1('Panneaux photovoltaïques'), row], 
                      className="row",
-                     style={"text-align": "center", "justifyContent": "center"})
+                     style={"text-align": "center", "justifyContent": "center"})"""
+
+
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+from dash import html
+
+layout_pv = html.Div(
+    [
+        html.H1("Panneaux photovoltaïques"),
+
+        html.Div(
+            id="pv-graphs-container",
+        ),
+    ],
+    style={
+        "textAlign": "center",
+        "justifyContent": "center",
+    },
+)

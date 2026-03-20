@@ -41,6 +41,64 @@ MODELS_PLOT_RS = {"Gt": {
 # Liste des modèles (courbes) pour la vue Panneaux photovoltaïques
 MODELS_PV = ["Obs_moy", "Obs_1", "Obs_2", "Obs_3", "Obs_cnr4", "Obs_bf5", "arome_J0", "arome_J-1"]
 
+MODELS_PV_CONFIG = {
+    "Obs_moy": {
+        "param_key":  "index_obs_moy",   # clé dans VARIABLES[param]
+        "color":      "black",
+        "dash":       None,              
+        "label":      "Obs moyenne",
+        "plateforme": "Tf",
+    },
+    "Obs_1": {
+        "param_key":  "index_obs_1",
+        "color":      "red",
+        "dash":       None,
+        "label":      "Obs capteur 1",
+        "plateforme": "Tf",
+    },
+    "Obs_2": {
+        "param_key":  "index_obs_2",
+        "color":      "green",
+        "dash":       None,
+        "label":      "Obs capteur 2",
+        "plateforme": "Tf",
+    },
+    "Obs_3": {
+        "param_key":  "index_obs_3",
+        "color":      "purple",
+        "dash":       None,
+        "label":      "Obs capteur 3",
+        "plateforme": "Tf",
+    },
+    "Obs_cnr4": {
+        "param_key":  "index_cnr4",
+        "color":      "orange",
+        "dash":       None,
+        "label":      "Obs CNR4",
+        "plateforme": "Tf",
+    },
+    "Obs_bf5": {
+        "param_key":  "index_bf5",
+        "color":      "brown",
+        "dash":       None,
+        "label":      "Obs BF5",
+        "plateforme": "Tf",
+    },
+    "arome_J0": {
+        "param_key":  "index_arome_J0",
+        "color":      "blue",
+        "dash":       None,
+        "label":      "Arome J0",
+        "plateforme": "Tf",
+    },
+    "arome_J-1": {
+        "param_key":  "index_arome_J-1",
+        "color":      "blue",
+        "dash":       "dot",
+        "label":      "Arome J-1",
+        "plateforme": "Tf",
+    },
+}
 
 
 LEGENDE_HEURES_PROFILS = {"00h": {

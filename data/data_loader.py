@@ -1,6 +1,7 @@
 from config.models import MODELS
 from config.variables import VARIABLES_PLOT
 from data.selection_data import selection_data
+from data.selection_data_pv import selection_donnees_PV
 
 
 class DataLoader:
@@ -22,4 +23,21 @@ class DataLoader:
 
         return self.cache_series[key]
 
+
+class DataLoaderPV:
+
+    def __init__(self):
+        self._cache = {}
+
+    def load(self, start_day, end_day):
+        key = (start_day, end_day)
+
+        if key not in self._cache:
+            self._cache[key] = selection_donnees_PV(start_day, end_day)
+
+        return self._cache[key]
+
+
+
 data_loader = DataLoader()
+data_loader_pv = DataLoaderPV()

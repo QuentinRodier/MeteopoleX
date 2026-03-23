@@ -1,4 +1,4 @@
-from dash import html
+"""from dash import html
 from dash import dcc
 import plotly.graph_objects as go
 
@@ -85,4 +85,82 @@ layout_radiosoundings = html.Div([
     multi_select_line_chart_model,
     row2,
     html.Br(),
-], className="twelve columns", style={"text-align": "center", "justifyContent": "center"})
+], className="twelve columns", style={"text-align": "center", "justifyContent": "center"})"""
+
+
+
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+import datetime
+from datetime import date, timedelta
+
+from dash import html, dcc
+
+from config.models import MODELS_PLOT_RS, LEGENDE_HEURES_PROFILS
+from config.config import today
+
+yesterday = today - timedelta(days=1)
+
+# Sélecteur de date
+calendrier = html.Div(
+    [
+        dcc.DatePickerSingle(
+            id='my-date-picker-single',
+            first_day_of_week=1,
+            min_date_allowed=date(2015, 1, 1),
+            max_date_allowed=date(yesterday.year, yesterday.month, yesterday.day),
+            date=yesterday,
+            display_format="DD/MM/YYYY",
+            initial_visible_month=date(yesterday.year, yesterday.month, yesterday.day),
+        ),
+        html.Div(id='output-container-date-picker-single'),
+    ],
+    className="twelve columns",
+    style={"textAlign": "center", "justifyContent": "center"},
+)
+
+# Checklist des heures
+wich_heure = html.Div(
+    [
+        dcc.Checklist(
+            options=[{'label': x, 'value': x} for x in LEGENDE_HEURES_PROFILS],
+            value=["6h"],
+            id='wich_heure',
+        )
+    ]
+)
+
+# Dropdown des modèles
+multi_select_line_chart_model = html.Div(
+    [
+        dcc.Dropdown(
+            id="multi_select_line_chart_model",
+            options=[
+                {"value": key, "label": cfg["name"]}
+                for key, cfg in MODELS_PLOT_RS.items()
+            ],
+            value=["Ab"],
+            multi=True,
+            clearable=False,
+            style={'width': '100%'},
+        )
+    ],
+    className="six columns",
+    style={"textAlign": "center", "justifyContent": "center"},
+)
+
+layout_radiosoundings = html.Div(
+    [
+        html.H1('Profils verticaux'),
+        calendrier,
+        html.Br(),
+        html.Br(),
+        wich_heure,
+        multi_select_line_chart_model,
+        html.Div(id="rs-graphs-container"),
+        html.Br(),
+    ],
+    className="twelve columns",
+    style={"textAlign": "center", "justifyContent": "center"},
+)

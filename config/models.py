@@ -6,7 +6,7 @@
 # AROME = AROME NetCDF
 
 # Liste des modèles 
-MODELS = ["Rt", 'Gt']
+MODELS = ["Tf", "Rt", 'Gt']
 
 # Liste des réseaux pour les modèles
 RESEAUX = ["J0:00_%3600", "J0:12_%3600", "J-1:00_%3600", "J-1:12_%3600"]
@@ -18,15 +18,7 @@ selection_arome = ["Arome_J0_00h"]
 
 
 # Couleur et légendes par modèles sur Profils Verticaux
-MODELS_PLOT_RS = {"Gt": {
-    "name": "MNH-ARPEGE",
-    "line": "dash"},
-    "Rt": {
-    "name": "MNH-AROME",
-    "line": "longdash"},
-    "Tf": {
-    "name": "MNH-OBS",
-    "line": "solid"},
+MODELS_PLOT_RS = {
     "ARP": {
     "name": "ARP-OPER",
     "line": "dashdot"},
@@ -37,6 +29,16 @@ MODELS_PLOT_RS = {"Gt": {
     "name": "OBS-AMDAR",
     "line": "solid"}
     }
+
+'''"Gt": {
+    "name": "MNH-ARPEGE",
+    "line": "dash"},
+    "Rt": {
+    "name": "MNH-AROME",
+    "line": "longdash"},
+    "Tf": {
+    "name": "MNH-OBS",
+    "line": "solid"},'''
 
 # Liste des modèles (courbes) pour la vue Panneaux photovoltaïques
 MODELS_PV = ["Obs_moy", "Obs_1", "Obs_2", "Obs_3", "Obs_cnr4", "Obs_bf5", "arome_J0", "arome_J-1"]

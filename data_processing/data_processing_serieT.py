@@ -227,18 +227,22 @@ def build_series_figures(
                         if prev_last_point:
                             segment = [prev_last_point] + segment
 
-                        opacity = OPACITY_MAX - (OPACITY_MAX - OPACITY_MIN) * min(age_days / MAX_FORECAST_DAYS, 1.0)
-                        color_str = _apply_opacity(line_color, opacity) 
-
                         seg_x = [p[0] for p in segment]
                         seg_y = [p[1] for p in segment]
                         prev_last_point = segment[-1]
 
-                        CUSTOM_KEY = {'color', "mode", "marker_size"}
+                        CUSTOM_KEY = {'color', "mode", "marker_size", 'constant_opacity'}
                         
                         trace_mode = base_style.get("mode", "lines") 
                         marker_size = base_style.get("marker_size", 6)
+                        constant_opacity = base_style.get('constant_opacity', False)
                         line_style = {k: v for k, v in base_style.items() if k not in CUSTOM_KEY} 
+
+                        if constant_opacity:
+                            opacity = OPACITY_MAX
+                        else:
+                            opacity = OPACITY_MAX - (OPACITY_MAX - OPACITY_MIN) * min(age_days / MAX_FORECAST_DAYS, 1.0)
+                        color_str = _apply_opacity(line_color, opacity) 
 
                         figures[param].add_trace(
                             go.Scatter(

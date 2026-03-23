@@ -98,8 +98,8 @@ def donnees_operationnel_batch(start_day, end_day, params_list, model, reseau):
             if df.empty:
                 continue
             try:
-                if param in ('tmp_2m', 'temperature_ground_1', 'temperature_ground_2',
-                             'TG0_5cm', 'TG2_5cm', 'TG70cm', 'TG15cm', 'TG30cm',
+                if param in ('tmp_2m',
+                             'TG0_5cm', 'TG2_5cm', 'TG7cm', 'TG15cm', 'TG30cm',
                              'TG50cm', 'TG70cm', 'TG90cm'):
                     if df[param].median() > 100:
                         results[param][date_str][param] -= 273.15

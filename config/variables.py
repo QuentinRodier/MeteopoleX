@@ -131,43 +131,43 @@ VARIABLES = {
         "unit": "kg/kg"
     },
     "WG2_5cm": {
-        "index_obs": "hum_sol5cm_f2_tpn1_valid_%900",
+        "index_obs": "hum_sol5cm_f2_tpw1_Chs_%900",
         "index_model": 'hu_couche2',
         "title": "Humidité du sol à -2.5 cm",
         "unit": "kg/kg"
     },
     "WG7cm": {
-        "index_obs": "hum_sol10cm_f2_tpn1_valid_%900",
+        "index_obs": "hum_sol10cm_f2_tpw1_Chs_%900",
         "index_model": 'hu_couche3',
         "title": "Humidité du sol à -7 cm",
         "unit": "kg/kg"
     },
     "WG15cm": {
-        "index_obs": "hum_sol20cm_f2_tpn1_valid_%900",
+        "index_obs": "hum_sol20cm_f2_tpw1_Chs_%900",  
         "index_model": 'WG15cm',
         "title": "Humidité du sol à -15 cm",
         "unit": "kg/kg"
     },
     "WG30cm": {
-        "index_obs": "hum_sol30cm_f2_tpn1_valid_%900",
+        "index_obs": "hum_sol30cm_f2_tpw1_Chs_%900",
         "index_model": 'WG30cm',
         "title": "Humidité du sol à -30 cm",
         "unit": "kg/kg"
     },
     "WG50cm": {
-        "index_obs": "hum_sol50cm_f2_tpn1_valid_%900",
+        "index_obs": "hum_sol50cm_f2_tpw1_Chs_%900",
         "index_model": 'WG50cm',
         "title": "Humidité du sol à -50 cm",
         "unit": "kg/kg"
     },
     "WG70cm": {
-        "index_obs": "hum_sol70cm_f2_tpn1_valid_%900",
+        "index_obs": "hum_sol70cm_f2_tpw1_Chs_%900",
         "index_model": 'WG70cm',
         "title": "Humidité du sol à -70 cm",
         "unit": "kg/kg"
     },
     "WG90cm": {
-        "index_obs": "hum_sol100cm_f2_tpn1_valid_%900",
+        "index_obs": "hum_sol100cm_f2_tpw1_Chs_%900",
         "index_model": 'WG90cm',
         "title": "Humidité du sol à -90 cm",
         "unit": "kg/kg"

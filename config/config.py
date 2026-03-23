@@ -74,7 +74,7 @@ MODELS_CONFIG = {
         'file_prefix':    'offline',
         'default_selection': [],
         'mapping': {
-            "Surfex_Offline":  (RESEAUX[0], dict(color="purple", dash='dash')),
+            "Surfex_Offline":  (RESEAUX[0], dict(color="purple", dash='dash', constant_opacity=True)),
         },
     },
 }

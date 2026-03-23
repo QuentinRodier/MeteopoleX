@@ -63,7 +63,7 @@ MODELS_CONFIG = {
         'file_prefix':    'mascot',
         'default_selection': [],
         'mapping': {
-            "Surfex_Mascot_00h":  (RESEAUX[0], dict(color="darkorange", dash='dash')),
+            "Surfex_Mascot_00h":  (RESEAUX[0], dict(color="darkorange", mode='markers', marker_size=4)),
         },
     },
     'Surfex_Offline': {

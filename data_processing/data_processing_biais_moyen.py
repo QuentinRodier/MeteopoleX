@@ -69,14 +69,20 @@ def build_biais_moyen_figures(start_day, end_day, **kwargs):
                     if np.all(np.isnan(arr)):
                         continue
 
+                    CUSTOM_KEY = {"mode", "marker_size"}
+
+                    trace_mode = style.get("mode", "lines+markers") 
+                    marker_size = 6
+                    line_style = {k: v for k, v in style.items() if k not in CUSTOM_KEY} 
+
                     if isinstance(time, (list, np.ndarray)):
                         fig.add_trace(go.Scatter(
                             x=time,
                             y=arr,
-                            mode="lines+markers",
+                            mode=trace_mode,
                             name=selection,
-                            line=style,
-                            marker=dict(size=6),
+                            line=line_style,
+                            marker=dict(size=marker_size),
                             connectgaps=False,
                         ))
 

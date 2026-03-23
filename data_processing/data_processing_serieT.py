@@ -234,13 +234,20 @@ def build_series_figures(
                         seg_y = [p[1] for p in segment]
                         prev_last_point = segment[-1]
 
+                        CUSTOM_KEY = {'color', "mode", "marker_size"}
+                        
+                        trace_mode = base_style.get("mode", "lines") 
+                        marker_size = base_style.get("marker_size", 6)
+                        line_style = {k: v for k, v in base_style.items() if k not in CUSTOM_KEY} 
+
                         figures[param].add_trace(
                             go.Scatter(
                                 x=seg_x,
                                 y=seg_y,
                                 name=f"{selection}",
-                                mode="lines",
-                                line={**{k: v for k, v in base_style.items() if k != "color"}, "color": color_str},
+                                mode=trace_mode,
+                                line={"color": color_str, **line_style},
+                                marker=dict(color=color_str, size=marker_size),
                                 legendgroup=f"{model}_{selection}",
                                 showlegend=(not legend_shown and first_segment),
                                 connectgaps=True,

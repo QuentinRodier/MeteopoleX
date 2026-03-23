@@ -9,6 +9,9 @@ class DataLoader:
     def __init__(self):
         self.cache_series = {}
 
+    def clear(self):
+        self.cache_series.clear()
+
     def load_series(self, start, end):
         key = (start, end)
 

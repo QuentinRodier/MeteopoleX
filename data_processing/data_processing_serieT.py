@@ -43,6 +43,8 @@ def build_series_figures(
     **kwargs,
 ):
 
+    #data_loader.clear()
+
     loaded = data_loader.load_series(start_day, end_day)
     data = loaded["base"]
 

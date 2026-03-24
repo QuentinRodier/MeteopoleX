@@ -206,8 +206,9 @@ def build_series_figures(
 
                     run_date = datetime.datetime.strptime(date_str, "%Y%m%d").date()
 
-                    cutoff=datetime.datetime.combine(today + datetime.timedelta(days=end), datetime.time.max)
-                    series = series[series.index <= cutoff]
+                    start_dt = datetime.datetime.combine(start_day, datetime.time.min)
+                    end_dt = datetime.datetime.combine(end_day, datetime.time.max)
+                    series = series[(series.index >= start_dt) & (series.index <= end_dt)]
 
                     MAX_FORECAST_DAYS = 4
                     line_color = base_style.get("color", "blue")
@@ -288,7 +289,7 @@ def build_series_figures(
         figures[param].update_layout(
             height=500, width=872,
             xaxis=dict(
-                title="Date et heure",
+                title="Date",
                 tickformat='%a %d',
             ),
             yaxis=dict(

@@ -169,7 +169,7 @@ def build_biais_figures(start_day, end_day, **kwargs):
         fig.update_layout(
             title=VARIABLES[param]['title'],
             xaxis=dict(
-                title="Date et heure",
+                title="Date",
                 tickformat='%a %d',
             ),
             yaxis_title=VARIABLES[param]['unit'],

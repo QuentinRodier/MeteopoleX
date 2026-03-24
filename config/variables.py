@@ -78,25 +78,25 @@ VARIABLES = {
     },
     "TG1cm": {
         "index_obs": "tpr_sol1cm_f2_tn1_valid_%900", 
-        "index_model": "t-1",
+        "index_model": "TG1cm",
         "title": "Température du sol à -1 cm",
         "unit": "°C"
     },
     "TG3cm": {
         "index_obs": "tpr_sol3cm_f2_tn1_valid_%900", 
-        "index_model": "t_couche2",
+        "index_model": "TG3cm",
         "title": "Température du sol à -3 cm",
         "unit": "°C"
     },
     "TG10cm": {
         "index_obs": "tpr_sol10cm_f2_tn1_valid_%900",
-        "index_model": "TG7cm",
+        "index_model": "TG10cm",
         "title": "Température du sol à -10 cm",
         "unit": "°C"
     },
     "TG20cm": {
         "index_obs": "tpr_sol20cm_f2_tn1_valid_%900",
-        "index_model": "TG15cm",
+        "index_model": "TG20cm",
         "title": "Température du sol à -20 cm",
         "unit": "°C"
     },
@@ -120,31 +120,31 @@ VARIABLES = {
     },
     "TG100cm": {
         "index_obs": "tpr_sol100cm_f2_tn1_valid_%900",
-        "index_model": "TG90cm",
+        "index_model": "TG100cm",
         "title": "Température du sol à -1 m",
         "unit": "°C"
     },
     "WG1cm": {
         "index_obs": "",
-        "index_model": 'hu_couche1',
+        "index_model": 'WG1cm',
         "title": "Humidité du sol à -1 cm",
         "unit": "m³/m³"
     },
     "WG5cm": {
         "index_obs": "hum_sol5cm_f2_tpw1_Chs_%900",
-        "index_model": 'hu_couche2',
+        "index_model": 'WG5cm',
         "title": "Humidité du sol à -5 cm",
         "unit": "m³/m³"
     },
     "WG10cm": {
         "index_obs": "hum_sol10cm_f2_tpw1_Chs_%900",
-        "index_model": 'hu_couche3',
+        "index_model": 'WG10cm',
         "title": "Humidité du sol à -10 cm",
         "unit": "m³/m³"
     },
     "WG20cm": {
         "index_obs": "hum_sol20cm_f2_tpw1_Chs_%900",  
-        "index_model": 'WG15cm',
+        "index_model": 'WG20cm',
         "title": "Humidité du sol à -20 cm",
         "unit": "m³/m³"
     },
@@ -168,7 +168,7 @@ VARIABLES = {
     },
     "WG100cm": {
         "index_obs": "hum_sol100cm_f2_tpw1_Chs_%900",
-        "index_model": 'WG90cm',
+        "index_model": 'WG100cm',
         "title": "Humidité du sol à -1 m",
         "unit": "m³/m³"
     },

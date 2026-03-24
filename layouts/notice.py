@@ -3,240 +3,234 @@
 from dash import html
 import base64
 
-# -----------------------------------------------------------------------------
-#   2. NOTICE
-# -----------------------------------------------------------------------------
 
-# Chargement de l'image explicative
-notice_image_path = 'assets/fig1.png'
-notice_image_base64 = base64.b64encode(
-    open(notice_image_path, 'rb').read()
-).decode('ascii')
+def _h(text):
+    return html.H3(text, style={"margin": "1.5rem 0 0.5rem", "font-size": "15px", "font-weight": "bold"})
 
+def _p(text):
+    return html.P(text, style={"margin": "0 0 0.5rem", "font-size": "14px"})
+
+def _code(text):
+    return html.Code(text, style={
+        "font-family": "monospace",
+        "font-size": "13px",
+        "background": "#f0f0f0",
+        "padding": "1px 6px",
+        "border-radius": "4px",
+    })
+
+def _note(text):
+    return html.Div(text, style={
+        "border-left": "3px solid #b5d4f4",
+        "padding": "0.5rem 0.9rem",
+        "font-size": "13px",
+        "color": "#5f5e5a",
+        "margin": "0.75rem 0",
+    })
+
+def _sep():
+    return html.Hr(style={"border": "none", "border-top": "0.5px solid #d3d1c7", "margin": "1.5rem 0"})
+
+def _cfg(key, desc):
+    return html.Div([
+        html.Span(_code(key), style={"min-width": "160px", "display": "inline-block"}),
+        html.Span(desc, style={"color": "#888780", "font-size": "13px"}),
+    ], style={"margin": "0.3rem 0"})
+
+def _vtable(rows):
+    return html.Table(
+        [html.Tr([
+            html.Td(_code(r[0]), style={"padding": "4px 8px", "color": "#888780", "white-space": "nowrap", "font-size": "13px", "border-top": "0.5px solid #e5e5e0", "vertical-align": "top", "width": "140px"}),
+            html.Td(r[1], style={"padding": "4px 8px", "font-size": "13px", "border-top": "0.5px solid #e5e5e0"}),
+            html.Td(r[2], style={"padding": "4px 8px", "font-size": "13px", "color": "#888780", "text-align": "right", "border-top": "0.5px solid #e5e5e0", "width": "60px"}),
+        ]) for r in rows],
+        style={"width": "100%", "border-collapse": "collapse"},
+    )
+
+def _vgroup(title, rows):
+    return html.Div([
+        html.Div(title, style={
+            "font-size": "13px", "font-weight": "bold", "color": "#888780",
+            "text-transform": "uppercase", "letter-spacing": "0.05em",
+            "margin-bottom": "6px", "padding-bottom": "4px",
+            "border-bottom": "0.5px solid #d3d1c7",
+        }),
+        _vtable(rows),
+    ], style={"margin": "0.75rem 0"})
+
+def _file_block(type_label, pattern, example):
+    return html.Div([
+        html.Div(type_label, style={"font-weight": "bold", "margin-bottom": "4px", "font-size": "13px"}),
+        html.Div(_code(pattern)),
+        html.Div(example, style={"font-size": "13px", "color": "#888780", "margin-top": "2px"}),
+    ], style={
+        "background": "#f0f0f0",
+        "border-radius": "6px",
+        "padding": "0.6rem 1rem",
+        "margin": "0.5rem 0",
+    })
+
+
+# ── Pages disponibles ────────────────────────────────────────────────────────
+
+pages_grid = html.Div([
+    html.Div([
+        html.Div(title, style={"font-size": "13px", "font-weight": "bold", "margin-bottom": "3px"}),
+        html.Div(desc, style={"font-size": "13px", "color": "#888780"}),
+    ], style={
+        "background": "#f5f5f3",
+        "border-radius": "6px",
+        "padding": "0.6rem 0.8rem",
+    }) for title, desc in [
+        ("Séries temporelles",   "Évolution des paramètres sur la période sélectionnée"),
+        ("Biais instantanés",    "Écart modèles / observations à chaque instant"),
+        ("Biais moyens",         "Biais journaliers moyens par échéance"),
+        ("Panneaux PV",          "Séries temporelles spécifiques au solaire"),
+        ("Profils verticaux",    "Observations AMDAR et sorties opérationnelles en altitude"),
+    ]
+], style={
+    "display": "grid",
+    "grid-template-columns": "repeat(auto-fit, minmax(160px, 1fr))",
+    "gap": "8px",
+    "margin": "0.75rem 0 1rem",
+})
+
+
+# ── Tableau MODELS_CONFIG ────────────────────────────────────────────────────
+
+models_config_table = _vtable([
+    ("reader",           "Fichier de lecture de données", ""),
+    ("param_key",        "Nom des variables dans les fichiers NetCDF - index à ajouter dans le fichier 'variables.py' si besoin", ""),
+    ("has_analysis",     "True si le modèle est associé à un réseau", ""),
+    ("file_prefix",      "Nom du modèle dans le nom de fichier", ""),
+    ("default_selection","Modèles affichés par défaut au chargement", ""),
+    ("mapping",          "Style graphique du modèle", ""),
+])
+
+
+# ── Contenu principal ────────────────────────────────────────────────────────
 
 notice_content = html.Div(
     [
+        # Pages
+        html.H2("Pages disponibles", style={"font-size": "17px", "font-weight": "bold", "margin": "1.5rem 0 0.75rem"}),
+        pages_grid,
+        _sep(),
 
-        html.H3('Abréviations pour les tracés'),
-        html.Br(),
+        # Variables
+        html.H2("Paramètres disponibles", style={"font-size": "17px", "font-weight": "bold", "margin": "1.5rem 0 0.5rem"}),
 
-        html.Span(
-            'Les différentes courbes de la page "Séries temporelles" sont nommées de la manière suivante :'
+        _vgroup("Atmosphère", [
+            ("tmp_2m",       "Température à 2 m",                                                        "°C"),
+            ("tmp_10m",      "Température à 10 m",                                                       "°C"),
+            ("hum_rel",      "Humidité relative",                                                        "%"),
+            ("vent_ff10m",   "Vent moyen à 10 m",                                                        "m/s"),
+            ("cumul_RR",     "Cumuls de pluie (Obs : 30 min — Aro/Arp : 1 h — MNH : 15 min)",           "mm"),
+        ]),
+        _vgroup("Rayonnement", [
+            ("SWD",  "Rayonnement global descendant (SW down)",  "W/m²"),
+            ("SWU",  "Rayonnement global montant (SW up)",       "W/m²"),
+            ("LWD",  "Rayonnement IR descendant (LW down)",      "W/m²"),
+            ("LWU",  "Rayonnement IR montant (LW up)",           "W/m²"),
+        ]),
+        _vgroup("Flux de surface", [
+            ("flx_chaleur_sens", "Flux de chaleur sensible",          "W/m²"),
+            ("flx_chaleur_lat",  "Flux de chaleur latente",           "W/m²"),
+            ("flx_chaleur_sol",  "Flux de conduction dans le sol",    "W/m²"),
+            ("flx_mvt",          "Vitesse de friction",               "m/s"),
+            ("tke",              "Énergie cinétique turbulente",      "m²/s²"),
+        ]),
+        _vgroup("Sol — températures", [
+            ("t_surface",         "Température de surface",                                                "°C"),
+            ("TG1cm … TG100cm",   "Température du sol à -1, -3, -10, -20, -30, -50, -70 cm et -1 m",     "°C"),
+        ]),
+        _vgroup("Sol — humidité", [
+            ("WG1cm … WG100cm",   "Humidité du sol à -1, -5, -10, -20, -30, -50, -70 cm et -1 m",        "m³/m³"),
+        ]),
+        _vgroup("Panneaux photovoltaïques (page dédiée)", [
+            ("PV",    "Puissance émise par les panneaux solaires",               "W/m²"),
+            ("RGD",   "Rayonnement global descendant (capteurs CNR4 / BF5)",    "W/m²"),
+            ("RD",    "Rayonnement diffus (capteur BF5)",                        "W/m²"),
+            ("INSO",  "Durée d'insolation (capteur BF5)",                       "h"),
+        ]),
+        _vgroup("Profils verticaux (page dédiée)", [
+            ("Température",      "Profil vertical — observations AMDAR + modèles",  "°C"),
+            ("Humidité relative","Profil vertical",                                  "%"),
+            ("Vent",             "Profil vertical",                                  "m/s"),
+        ]),
+        _sep(),
+
+        # Légende
+        html.H2("Légende des courbes", style={"font-size": "17px", "font-weight": "bold", "margin": "1.5rem 0 0.75rem"}),
+        _note(
+            "La légende des courbe est affichée dans le menu de gauche, et valable pour les séries temporelles et les biais instantanés et moyens. "
+            "L'opacité des courbes diminue avec l'échéance. Le run du jour est affiché pleinement opaque ; "
+            "les runs des jours précédents sont progressivement transparents, permettant la superposition des données."
         ),
+        _sep(),
 
-        html.Div(
-            [
-                html.Span(
-                    '"Nom-du-modèle_date-de-run"',
-                    style={"font-weight": "bold"}
-                )
-            ],
-            className="twelve columns",
-            style={"text-align": "center", "justifyContent": "center"},
+        # Fichiers
+        html.H2("Format des fichiers d'entrée", style={"font-size": "17px", "font-weight": "bold", "margin": "1.5rem 0 0.75rem"}),
+        _p(["Les données sont attendues au format ", html.Strong("NetCDF"), " (", _code(".nc"), ")."]),
+        _file_block(
+            "Prévision / simulation avec réseau",
+            "modele_date_reseau.nc",
+            "ex : arpege_20260101_00.nc",
         ),
-
-        html.Br(),
-
-        html.Span(
-            'Par exemple, on se place le 15 avril : la courbe affichée ce jour-là '
-            'nommée "Aro_J-1_12h" est le run d’Arome qui a tourné le 14 avril '
-            '(J-1) à 12h.'
+        _file_block(
+            "Modélisation sans réseau",
+            "modele_date.nc",
+            "ex : offline_20260101.nc",
         ),
-
-        html.Span(
-            [
-                html.Span(
-                    ' Quant aux 2 dernières cases de sélection, leur nomenclature est pensée sous la forme '
-                ),
-                html.Span(
-                    '"Modèle_Forçages"',
-                    style={"font-weight": "bold"}
-                ),
-                html.Span(
-                    '. Ainsi, "MésoNH_Arp" désigne le tracé de MésoNH forcé par Arpège '
-                    '(voir les rubriques "Visualisation des runs automatiques de MesoNH" '
-                    'et "Visualisation des runs automatiques de SURFEX" pour plus de précisions).'
-                ),
-            ]
+        _note(
+            "Le nom du fichier est analysé automatiquement pour identifier le modèle, la date et le réseau."
         ),
+        _sep(),
+
+        # Config
+        html.H2(["Configuration (fichier ", _code("config.py"), ")"],
+                style={"font-size": "17px", "font-weight": "bold", "margin": "1.5rem 0 0.75rem"}),
+
+        _h("Période par défaut"),
+        _cfg("start", "Nombre de jours précédents affichés (défaut : 7)"),
+        _cfg("end",   "Nombre de jours après aujourd'hui (défaut : 1)"),
+
+        _h("Ajouter un modèle"),
+        _cfg("MODELS",       "Ajouter le nom du modèle à la liste"),
+        _cfg("MODELS_CONFIG","Créer une entrée avec les clés suivantes :"),
+        models_config_table,
+
+        _h("Ajouter un réseau"),
+        _p(["Ajouter le réseau souhaité dans la liste ", _code("RESEAUX"),
+            ", au format ", _code("J0:HH_%3600"), "."]),
+
+        _h("Opacité des courbes"),
+        _cfg("OPACITY_MIN", "Opacité minimale (défaut : 0.1)"),
+        _cfg("OPACITY_MAX", "Opacité maximale (défaut : 1.0)"),
 
         html.Br(),
-        html.Br(),
-        html.Br(),
-
-        html.H3(
-            'Pourquoi y a-t-il des tracés en pointillés et pas en trait plein '
-            'à la date d’aujourd’hui ?'
-        ),
-
-        html.Br(),
-
-        html.Span(
-            'Chaque run considéré donne des valeurs à au moins 48h d’échéance. '
-            'Ainsi, à une date donnée, les tracés à J0 sont les 24 premières heures '
-            'des runs du jour, et ceux à J-1 vont de la 25ème à la 48ème heure des '
-            'runs du jour d’avant.'
-        ),
-
-        html.Br(),
-        html.Br(),
-
-        html.Span(
-            'Pour la date actuelle (aujourd’hui), c’est légèrement différent : '
-            'le rapatriement des données vers AIDA ne se fait qu’à 6h du matin. '
-            'Les données les plus récentes disponibles sont donc celles des runs '
-            'de la veille, tracées en pointillés.'
-        ),
-
-        html.Br(),
-
-        html.Div(
-            [
-                html.Img(
-                    src=f'data:image/png;base64,{notice_image_base64}',
-                    style={'height': '50%', 'width': '50%'}
-                )
-            ],
-            className="twelve columns",
-            style={"text-align": "center"},
-        ),
-
-        html.Br(),
-        html.Br(),
-        html.Br(),
-
-        html.H3('Visualisation des données d’AROME'),
-
-        html.Span(
-            'Le modèle AROME tourne deux fois par jour, à midi et minuit, '
-            'pour un ensemble de 16 points autour de la Météopole.'
-        ),
-
-        html.Br(),
-
-        html.Span(
-            'Exemple : ',
-            style={"font-weight": "bold"}
-        ),
-
-        html.Span(
-            'Arome_J0_00H Point 50% urbain 50% champs',
-            style={"font-weight": "bold"}
-        ),
-
-        html.Br(),
-        html.Br(),
-
-        html.Span(
-            'Sont également représentés : la moyenne des 16 points, '
-            'les étendues min-max et l’écart-type.'
-        ),
-
-        html.Br(),
-        html.Br(),
-
-        html.H3('Visualisation des runs automatiques de MésoNH'),
-
-        html.Span(
-            'Chaque jour vers 10h, 3 runs de MésoNH sont lancés :'
-        ),
-
-        html.Div(
-            [
-                html.Span('MesoNH-Aro', style={"font-weight": "bold"}),
-                html.Span(' : forcé par Arome 0h du jour.')
-            ],
-            className="twelve columns",
-            style={"text-align": "center"},
-        ),
-
-        html.Div(
-            [
-                html.Span('MesoNH-Arp', style={"font-weight": "bold"}),
-                html.Span(' : forcé par Arpège 0h du jour.')
-            ],
-            className="twelve columns",
-            style={"text-align": "center"},
-        ),
-
-        html.Div(
-            [
-                html.Span('MesoNH-Obs', style={"font-weight": "bold"}),
-                html.Span(
-                    ' : forcé par Arome 0h de l’avant-veille en altitude '
-                    '+ observations au sol.'
-                )
-            ],
-            className="twelve columns",
-            style={"text-align": "center"},
-        ),
-
-        html.Br(),
-        html.Br(),
-
-        html.H3('Visualisation des runs automatiques de SURFEX'),
-
-        html.Span(
-            'Les runs SURFEX s’exécutent quotidiennement à 10h :'
-        ),
-
-        html.Div(
-            [
-                html.Span('SURFEX_Aro', style={"font-weight": "bold"}),
-                html.Span(' : forcé par Arome 00h du jour.')
-            ],
-            className="twelve columns",
-            style={"text-align": "center"},
-        ),
-
-        html.Div(
-            [
-                html.Span('SURFEX_Arp', style={"font-weight": "bold"}),
-                html.Span(' : forcé par Arpège 00h du jour.')
-            ],
-            className="twelve columns",
-            style={"text-align": "center"},
-        ),
-
-        html.Div(
-            [
-                html.Span('SURFEX_Obs', style={"font-weight": "bold"}),
-                html.Span(' : forcé par les observations de Météopole Flux.')
-            ],
-            className="twelve columns",
-            style={"text-align": "center"},
-        ),
-
-        html.Br(),
-        html.Br(),
-
-        html.H3('Rejeu de MésoNH'),
-
-        html.Span(
-            'Un utilisateur peut lancer un run de MésoNH personnalisé, '
-            'forcé par AROME.'
-        ),
-
-        html.Br(),
-        html.Br(),
-
-        html.Span(
-            'Un identifiant unique est fourni pour chaque simulation. '
-            'Il permet ensuite de visualiser le run sur la plateforme.'
-        ),
     ],
-    className="twelve columns",
-    style={"text-align": "left", "justifyContent": "center"},
+    style={"text-align": "left", "font-size": "14px", "line-height": "1.7"},
 )
 
 
 layout_notice = html.Div(
     [
         html.Br(),
-        html.H1('Précisions relatives aux abréviations et aux modèles utilisés'),
+        html.H1("MeteopoleX"),
         html.Br(),
+        html.P(
+            "Outil de visualisation et de comparaison de modèles météorologiques "
+            "avec les observations sur le site de la Météopole.",
+            style={"font-size": "15px", "color": "#5f5e5a"},
+        ),
         notice_content,
     ],
-    className="twelve columns",
-    style={"text-align": "center", "justifyContent": "center"},
+    style={
+        "margin-left": "50px",
+        "text-align": "left", 
+        "justifyContent": "center",
+        "padding": "20px"}
 )
+
+

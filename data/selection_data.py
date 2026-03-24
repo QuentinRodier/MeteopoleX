@@ -74,11 +74,19 @@ def selection_data(start_day, end_day):
             continue
 
         model_data_batch[model] = {}
-        for reseau in RESEAUX:
+
+        analysis_to_read = RESEAUX if cfg.get('has_analysis', True) else [RESEAUX[0]]
+
+        for reseau in analysis_to_read:
             model_data_batch[model][reseau] = read_operationnel.donnees_operationnel_batch(
                 start_day, end_day, ope_params,
                 model=model, reseau=reseau
             )
+
+        # Duplique le résultat sur tous les réseaux pour que la structure reste cohérente
+        if not cfg.get('has_analysis', True):
+            for reseau in RESEAUX[1:]:
+                model_data_batch[model][reseau] = model_data_batch[model][RESEAUX[0]]
 
     #----------------------------------------------------------------------------------
     # Structure données

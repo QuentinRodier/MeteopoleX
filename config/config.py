@@ -36,6 +36,7 @@ MODELS_CONFIG = {
     'Arpege': {
         'reader':         'operationnel',
         'param_key':      'index_model',
+        'has_analysis':    True,
         'callback_param': 'reseau_arpege',
         'dropdown_id':    'multi_select_line_chart_ARPEGE',
         'file_prefix':    'arpege',
@@ -47,6 +48,7 @@ MODELS_CONFIG = {
     'Arome': {
         'reader':         'operationnel',
         'param_key':      'index_model',
+        'has_analysis':    True,
         'callback_param': 'reseau_arome',
         'dropdown_id':    'multi_select_line_chart_AROME',
         'file_prefix':    'arome',
@@ -58,6 +60,7 @@ MODELS_CONFIG = {
     'Surfex_Mascot': {
         'reader':         'operationnel',
         'param_key':      'index_model',
+        'has_analysis':    True,
         'callback_param': 'reseau_mascot',
         'dropdown_id':    'multi_select_line_chart_SURFEX_Mascot',
         'file_prefix':    'mascot',
@@ -69,6 +72,7 @@ MODELS_CONFIG = {
     'Surfex_Offline': {
         'reader':         'operationnel',
         'param_key':      'index_model',
+        'has_analysis':    False,
         'callback_param': 'reseau_offline',
         'dropdown_id':    'multi_select_line_chart_SURFEX_Offline',
         'file_prefix':    'offline',

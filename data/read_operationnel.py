@@ -18,11 +18,16 @@ def _build_filepath(model, date, reseau):
     """
     Construit le chemin vers le fichier opérationnel selon le modèle et le réseau.
     """
-    
-    reseau_hr = reseau[-8:-6]   # '00' ou '12'
 
     prefix = MODELS_CONFIG[model]['file_prefix']
-    filename = f"{prefix}_{date.strftime('%Y%m%d')}_{reseau_hr}.nc"
+    has_analysis = MODELS_CONFIG[model]['has_analysis']
+
+    if has_analysis:
+        reseau_hr = reseau[-8:-6]   # '00' ou '12'
+        filename = f"{prefix}_{date.strftime('%Y%m%d')}_{reseau_hr}.nc"
+    else:
+        filename = f"{prefix}_{date.strftime('%Y%m%d')}.nc"
+
     return OPERATIONNEL_DIR / filename
 
 

@@ -7,7 +7,7 @@ from config.models import RESEAUX
 start = 7
 end = 1    
 
-today = datetime.date(2026, 3, 15) #.date.today()
+today = datetime.date.today()   #date(2026, 3, 15)
 yesterday = today - datetime.timedelta(days=1)
 
 end_day = today + timedelta(days=end)

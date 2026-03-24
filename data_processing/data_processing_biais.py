@@ -1,9 +1,5 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Module de traitement des données pour l'analyse des biais instantanés.
-Construit les figures pour la comparaison des biais modèles vs observations.
-"""
 
 import datetime
 from datetime import timedelta

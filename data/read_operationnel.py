@@ -23,7 +23,7 @@ def _build_filepath(model, date, reseau):
     has_analysis = MODELS_CONFIG[model]['has_analysis']
 
     if has_analysis:
-        reseau_hr = reseau[-8:-6]   # '00' ou '12'
+        reseau_hr = reseau[-8:-6]   # heure du réseau '00' 
         filename = f"{prefix}_{date.strftime('%Y%m%d')}_{reseau_hr}.nc"
     else:
         filename = f"{prefix}_{date.strftime('%Y%m%d')}.nc"

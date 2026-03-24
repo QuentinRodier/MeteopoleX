@@ -76,28 +76,28 @@ VARIABLES = {
         "title": "Température de surface",
         "unit": "°C"
     },
-    "TG0_5cm": {
+    "TG1cm": {
         "index_obs": "tpr_sol1cm_f2_tn1_valid_%900", 
         "index_model": "t-1",
-        "title": "Température du sol à -0.5 cm",
+        "title": "Température du sol à -1 cm",
         "unit": "°C"
     },
-    "TG2_5cm": {
+    "TG3cm": {
         "index_obs": "tpr_sol3cm_f2_tn1_valid_%900", 
         "index_model": "t_couche2",
-        "title": "Température du sol à -2.5 cm",
+        "title": "Température du sol à -3 cm",
         "unit": "°C"
     },
-    "TG7cm": {
+    "TG10cm": {
         "index_obs": "tpr_sol10cm_f2_tn1_valid_%900",
         "index_model": "TG7cm",
-        "title": "Température du sol à -7 cm",
+        "title": "Température du sol à -10 cm",
         "unit": "°C"
     },
-    "TG15cm": {
+    "TG20cm": {
         "index_obs": "tpr_sol20cm_f2_tn1_valid_%900",
         "index_model": "TG15cm",
-        "title": "Température du sol à -15 cm",
+        "title": "Température du sol à -20 cm",
         "unit": "°C"
     },
     "TG30cm": {
@@ -118,59 +118,59 @@ VARIABLES = {
         "title": "Température du sol à -70 cm",
         "unit": "°C"
     },
-    "TG90cm": {
-        "index_obs": "tpr_sol90cm_f2_tn1_valid_%900",
+    "TG100cm": {
+        "index_obs": "tpr_sol100cm_f2_tn1_valid_%900",
         "index_model": "TG90cm",
-        "title": "Température du sol à -90 cm",
+        "title": "Température du sol à -1 m",
         "unit": "°C"
     },
-    "WG0_5cm": {
+    "WG1cm": {
         "index_obs": "",
         "index_model": 'hu_couche1',
-        "title": "Humidité du sol à -0.5 cm",
-        "unit": "kg/kg"
+        "title": "Humidité du sol à -1 cm",
+        "unit": "m³/m³"
     },
-    "WG2_5cm": {
+    "WG5cm": {
         "index_obs": "hum_sol5cm_f2_tpw1_Chs_%900",
         "index_model": 'hu_couche2',
-        "title": "Humidité du sol à -2.5 cm",
-        "unit": "kg/kg"
+        "title": "Humidité du sol à -5 cm",
+        "unit": "m³/m³"
     },
-    "WG7cm": {
+    "WG10cm": {
         "index_obs": "hum_sol10cm_f2_tpw1_Chs_%900",
         "index_model": 'hu_couche3',
-        "title": "Humidité du sol à -7 cm",
-        "unit": "kg/kg"
+        "title": "Humidité du sol à -10 cm",
+        "unit": "m³/m³"
     },
-    "WG15cm": {
+    "WG20cm": {
         "index_obs": "hum_sol20cm_f2_tpw1_Chs_%900",  
         "index_model": 'WG15cm',
-        "title": "Humidité du sol à -15 cm",
-        "unit": "kg/kg"
+        "title": "Humidité du sol à -20 cm",
+        "unit": "m³/m³"
     },
     "WG30cm": {
         "index_obs": "hum_sol30cm_f2_tpw1_Chs_%900",
         "index_model": 'WG30cm',
         "title": "Humidité du sol à -30 cm",
-        "unit": "kg/kg"
+        "unit": "m³/m³"
     },
     "WG50cm": {
         "index_obs": "hum_sol50cm_f2_tpw1_Chs_%900",
         "index_model": 'WG50cm',
         "title": "Humidité du sol à -50 cm",
-        "unit": "kg/kg"
+        "unit": "m³/m³"
     },
     "WG70cm": {
         "index_obs": "hum_sol70cm_f2_tpw1_Chs_%900",
         "index_model": 'WG70cm',
         "title": "Humidité du sol à -70 cm",
-        "unit": "kg/kg"
+        "unit": "m³/m³"
     },
-    "WG90cm": {
+    "WG100cm": {
         "index_obs": "hum_sol100cm_f2_tpw1_Chs_%900",
         "index_model": 'WG90cm',
-        "title": "Humidité du sol à -90 cm",
-        "unit": "kg/kg"
+        "title": "Humidité du sol à -1 m",
+        "unit": "m³/m³"
     },
     "flx_mvt": {
         "index_obs": "flx_mvt_Chb_%1800",
@@ -257,22 +257,22 @@ VARIABLES_PLOT = [
     "flx_chaleur_lat",   
     "flx_chaleur_sol",
     "t_surface",
-    "TG0_5cm",
-    "TG2_5cm",
-    "TG7cm",
-    "TG15cm",
+    "TG1cm",
+    "WG1cm",
+    "TG3cm",
+    "WG5cm",
+    "TG10cm",
+    "WG10cm",
+    "TG20cm",
+    "WG20cm",
     "TG30cm",
-    "TG50cm",
-    "TG70cm",
-    "TG90cm",
-    "WG0_5cm",
-    "WG2_5cm",
-    "WG7cm",
-    "WG15cm",
     "WG30cm",
+    "TG50cm",
     "WG50cm",
+    "TG70cm",
     "WG70cm",
-    "WG90cm",
+    "TG100cm",
+    "WG100cm",
     "flx_mvt",
     "tke",
     "cumul_RR"]

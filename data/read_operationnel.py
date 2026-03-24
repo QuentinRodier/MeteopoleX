@@ -6,6 +6,8 @@ from functools import lru_cache
 import pickle
 from pathlib import Path
 from config.config import today, yesterday, MODELS_CONFIG
+from config.variables import VARIABLES
+
 
 OPERATIONNEL_DIR = Path("/cnrm/proc/projet_emi/sample_netcdf")
 CACHE_DIR = Path("/home/manip/MeteopoleX/cache")
@@ -91,6 +93,12 @@ def donnees_operationnel_batch(start_day, end_day, params_list, model, reseau):
                 print(f"[{model}] Erreur lecture '{param}' ({filepath.name}): {e}")
 
     # --- Conversions d'unités ---
+    TEMP_MODEL_PARAMS = {
+    cfg["index_model"]
+    for cfg in VARIABLES.values()
+    if cfg.get("unit") == "°C" and cfg.get("index_model")
+    }
+
     for param in params_list:
         if param is None or param not in results or not results[param]:
             continue
@@ -98,9 +106,7 @@ def donnees_operationnel_batch(start_day, end_day, params_list, model, reseau):
             if df.empty:
                 continue
             try:
-                if param in ('tmp_2m',
-                             'TG0_5cm', 'TG2_5cm', 'TG7cm', 'TG15cm', 'TG30cm',
-                             'TG50cm', 'TG70cm', 'TG90cm'):
+                if param in TEMP_MODEL_PARAMS:
                     if df[param].median() > 100:
                         results[param][date_str][param] -= 273.15
                 elif param in ('hum_rel',):

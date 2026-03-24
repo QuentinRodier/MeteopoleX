@@ -3,15 +3,29 @@ from datetime import timedelta, date
 
 from config.models import RESEAUX
 
+# Période par défaut
 start = 7
-end = 1     #today + 1
+end = 1    
 
 today = datetime.date(2026, 3, 15) #.date.today()
 yesterday = today - datetime.timedelta(days=1)
 
-# Période par défaut
 end_day = today + timedelta(days=end)
 start_day = today - timedelta(days=start)
+
+
+# Observations 
+
+CONFIG_OBS = {
+    'Obs' : {
+        'mapping': dict(color='#252525'),
+        'default_selection' : ["Obs"],
+    },
+    'Obs_corr' : {
+        'mapping': dict(color='grey'),
+        'opacity': 0.3,
+    }
+}
 
 
 # Modèles
@@ -19,17 +33,6 @@ start_day = today - timedelta(days=start)
 MODELS = ["Arome", 'Arpege', 'Surfex_Mascot', 'Surfex_Offline']
 
 RESEAUX = ["J0:00_%3600"] 
-
-# Configuration complète par modèle
-CONFIG_OBS = {
-    'Obs' : {
-        'mapping': dict(color='#252525')
-    },
-    'Obs_corr' : {
-        'mapping': dict(color='grey'),
-        'opacity': 0.3,
-    }
-}
 
 # Ajouter un nouveau modèle = ajouter une entrée ici
 MODELS_CONFIG = {
@@ -82,10 +85,6 @@ MODELS_CONFIG = {
         },
     },
 }
-
-
-#Sélection des modèles et réseaux affichés par défaut 
-selection_obs = ["Obs"]
 
 
 #Opacité des courbes

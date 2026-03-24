@@ -6,7 +6,7 @@ import dash_bootstrap_components as dbc
 
 import datetime
 from datetime import timedelta, date
-from config.config import start_day, end_day, today,MODELS_CONFIG,selection_obs 
+from config.config import start_day, end_day, today,MODELS_CONFIG, CONFIG_OBS 
 
 SIDEBAR_STYLE = {
     "position": "fixed",
@@ -59,7 +59,7 @@ def make_dropdown(model_name, config):
 dropdown_obs = dcc.Dropdown(
     id="multi_select_line_chart_obs",
     options=[{"value": "Obs", "label": "Obs"}],
-    value=selection_obs,
+    value=CONFIG_OBS['Obs']['default_selection'],
     multi=True,
     clearable=False
 )

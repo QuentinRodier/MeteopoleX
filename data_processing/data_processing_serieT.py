@@ -210,7 +210,7 @@ def build_series_figures(
                     end_dt = datetime.datetime.combine(end_day, datetime.time.max)
                     series = series[(series.index >= start_dt) & (series.index <= end_dt)]
 
-                    MAX_FORECAST_DAYS = 4
+                    MAX_FORECAST_DAYS = cfg.get('max_forecast_days', 4)
                     line_color = base_style.get("color", "blue")
 
                     from itertools import groupby

@@ -105,6 +105,7 @@ models_config_table = _vtable([
     ("file_prefix",      "Nom du modèle dans le nom de fichier", ""),
     ("default_selection","Modèles affichés par défaut au chargement", ""),
     ("mapping",          "Style graphique du modèle", ""),
+    ("max_forecast_days","Echeance de prévision en jours", ""),
 ])
 
 

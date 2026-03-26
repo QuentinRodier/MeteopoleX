@@ -47,6 +47,7 @@ MODELS_CONFIG = {
         'mapping': {
             "Arpege_00h":  (RESEAUX[0], dict(color="red")),
         },
+        'max_forecast_days': 4,
     },
     'Arome': {
         'reader':         'operationnel',
@@ -59,6 +60,7 @@ MODELS_CONFIG = {
         'mapping': {
             "Arome_00h":  (RESEAUX[0], dict(color="blue")),
         },
+        'max_forecast_days': 2,
     },
     'Surfex_Mascot': {
         'reader':         'operationnel',
@@ -71,6 +73,7 @@ MODELS_CONFIG = {
         'mapping': {
             "Surfex_Mascot_00h":  (RESEAUX[0], dict(color="darkorange", mode='markers', marker_size=4)),
         },
+        'max_forecast_days': 4,
     },
     'Surfex_Offline': {
         'reader':         'operationnel',
@@ -83,6 +86,7 @@ MODELS_CONFIG = {
         'mapping': {
             "Surfex_Offline":  (RESEAUX[0], dict(color="purple", dash='dash', constant_opacity=True)),
         },
+        'max_forecast_days': None,
     },
 }
 

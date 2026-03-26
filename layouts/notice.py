@@ -23,7 +23,7 @@ def _note(text):
     return html.Div(text, style={
         "border-left": "3px solid #b5d4f4",
         "padding": "0.5rem 0.9rem",
-        "font-size": "13px",
+        "font-size": "15px",
         "color": "#5f5e5a",
         "margin": "0.75rem 0",
     })
@@ -34,15 +34,15 @@ def _sep():
 def _cfg(key, desc):
     return html.Div([
         html.Span(_code(key), style={"min-width": "160px", "display": "inline-block"}),
-        html.Span(desc, style={"color": "#888780", "font-size": "13px"}),
+        html.Span(desc, style={"color": "#888780", "font-size": "14px"}),
     ], style={"margin": "0.3rem 0"})
 
 def _vtable(rows):
     return html.Table(
         [html.Tr([
-            html.Td(_code(r[0]), style={"padding": "4px 8px", "color": "#888780", "white-space": "nowrap", "font-size": "13px", "border-top": "0.5px solid #e5e5e0", "vertical-align": "top", "width": "140px"}),
-            html.Td(r[1], style={"padding": "4px 8px", "font-size": "13px", "border-top": "0.5px solid #e5e5e0"}),
-            html.Td(r[2], style={"padding": "4px 8px", "font-size": "13px", "color": "#888780", "text-align": "right", "border-top": "0.5px solid #e5e5e0", "width": "60px"}),
+            html.Td(_code(r[0]), style={"padding": "4px 8px", "color": "#888780", "white-space": "nowrap", "font-size": "14px", "border-top": "0.5px solid #e5e5e0", "vertical-align": "top", "width": "140px"}),
+            html.Td(r[1], style={"padding": "4px 8px", "font-size": "14px", "border-top": "0.5px solid #e5e5e0"}),
+            html.Td(r[2], style={"padding": "4px 8px", "font-size": "14px", "color": "#888780", "text-align": "right", "border-top": "0.5px solid #e5e5e0", "width": "60px"}),
         ]) for r in rows],
         style={"width": "100%", "border-collapse": "collapse"},
     )
@@ -100,7 +100,7 @@ pages_grid = html.Div([
 
 models_config_table = _vtable([
     ("reader",           "Fichier de lecture de données", ""),
-    ("param_key",        "Nom des variables dans les fichiers NetCDF - index à ajouter dans le fichier 'variables.py' si besoin", ""),
+    ("param_key",        "Nom des variables dans les fichiers NetCDF", ""),
     ("has_analysis",     "True si le modèle est associé à un réseau", ""),
     ("file_prefix",      "Nom du modèle dans le nom de fichier", ""),
     ("default_selection","Modèles affichés par défaut au chargement", ""),
@@ -199,6 +199,17 @@ notice_content = html.Div(
         _cfg("MODELS",       "Ajouter le nom du modèle à la liste"),
         _cfg("MODELS_CONFIG","Créer une entrée avec les clés suivantes :"),
         models_config_table,
+        _note([
+            "Selon la provenance des données du modèle ajouté : ",
+            html.Br(),
+            html.Strong("• Via Emigram : "),
+            "utiliser ", _code("reader='operationnel'"), " et ", _code("param_key='index_model'"), ".",
+            html.Br(),
+            html.Strong("• Source externe : "),
+            "ajouter un fichier de lecture des données et ajouter le reader dans ", _code("selection_data.py"),
+            ", puis déclarer les noms de variables dans ", _code("variables.py"),
+            " en créant un nouvel index, pour les faire correspondre à la nomenclature MeteopoleX.",
+        ]),
 
         _h("Ajouter un réseau"),
         _p(["Ajouter le réseau souhaité dans la liste ", _code("RESEAUX"),

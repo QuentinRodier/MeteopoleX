@@ -6,6 +6,7 @@ import dash_bootstrap_components as dbc
 
 import datetime
 from datetime import timedelta, date
+from config.config import start_day, end_day, today,MODELS_CONFIG, CONFIG_OBS 
 
 SIDEBAR_STYLE = {
     "position": "fixed",
@@ -18,15 +19,6 @@ SIDEBAR_STYLE = {
     "overflow": "scroll",
 }
 
-today = datetime.date.today()
-tomorrow = today + timedelta(days=1)
-yesterday = today - timedelta(days=1)
-
-# Période par défaut
-start_day = yesterday
-end_day = today
-
-
 # --- Calendrier ---------------------------------------------------------------
 
 date_picker = html.Div([
@@ -34,41 +26,55 @@ date_picker = html.Div([
         id='my-date-picker-range',
         first_day_of_week=1,
         min_date_allowed=date(2015, 1, 1),
-        max_date_allowed=date(tomorrow.year, tomorrow.month, tomorrow.day),
+        max_date_allowed=date(end_day.year, end_day.month, end_day.day),
         display_format="DD/MM/YYYY",
         initial_visible_month=date(today.year, today.month, today.day),
-        start_date=yesterday,
-        end_date=today,
+        start_date=start_day,
+        end_date=end_day,
         minimum_nights=0
     ),
     html.Div(id='output-container-date-picker-range')
 ])
 
-
 # --- Dropdowns ----------------------------------------------------------------
+
+# Les sélections par défaut sont extraites dynamiquement depuis MODELS_CONFIG
+def get_default_selection(model_name):
+    """Retourne la liste de sélection des modèles affichés par défaut."""
+    return list(MODELS_CONFIG[model_name]['default_selection'].keys())
+
+
+def make_dropdown(model_name, config):
+    """Crée un dropdown Dash à partir d'une entrée de MODELS_CONFIG."""
+    labels = list(config['mapping'].keys())
+    default = config.get('default_selection', labels)
+    return dcc.Dropdown(
+        id=config['dropdown_id'],
+        options=[{"value": l, "label": l} for l in labels],
+        value=default,          
+        multi=True,
+        clearable=False
+    )
 
 dropdown_obs = dcc.Dropdown(
     id="multi_select_line_chart_obs",
     options=[{"value": "Obs", "label": "Obs"}],
-    value=["Obs"],
+    value=CONFIG_OBS['Obs']['default_selection'],
     multi=True,
     clearable=False
 )
 
-dropdown_arp = dcc.Dropdown(
-    id="multi_select_line_chart_ARP",
-    options=[{"value": label, "label": label} for label in
-             ["Arp_J-1_00h", "Arp_J-1_12h", "Arp_J0_00h", "Arp_J0_12h"]],
-    value=["Arp_J0_00h", "Arp_J-1_12h"],
-    multi=True,
-    clearable=False
-)
+dropdowns_models = [
+    make_dropdown(name, cfg)
+    for name, cfg in MODELS_CONFIG.items()
+]
 
-dropdown_aro = dcc.Dropdown(
-    id="multi_select_line_chart_ARO",
+
+'''dropdown_arpege = dcc.Dropdown(
+    id="multi_select_line_chart_ARPEGE",
     options=[{"value": label, "label": label} for label in
-             ["Aro_J-1_00h", "Aro_J-1_12h", "Aro_J0_00h", "Aro_J0_12h"]],
-    value=["Aro_J0_00h", "Aro_J-1_12h"],
+             ["Arpege_00h"]],
+    value=selection_arpege,
     multi=True,
     clearable=False
 )
@@ -76,43 +82,45 @@ dropdown_aro = dcc.Dropdown(
 dropdown_arome = dcc.Dropdown(
     id="multi_select_line_chart_AROME",
     options=[{"value": label, "label": label} for label in
-             ["Arome_J-1_00h", "Arome_J-1_12h", "Arome_J0_00h", "Arome_J0_12h"]],
-    value=["Arome_J0_00h", "Arome_J-1_12h"],
+             ["Arome_00h"]],
+    value=selection_arome, 
     multi=True,
     clearable=False
-)
+)'''
 
-dropdown_mnh = dcc.Dropdown(
+'''dropdown_mnh = dcc.Dropdown(
     id="multi_select_line_chart_MNH",
     options=[{"value": label, "label": label} for label in
              ["MésoNH_Arp", "MésoNH_Aro", "MésoNH_Obs"]],
-    value=["MésoNH_Arp", "MésoNH_Aro"],
+    value=selection_mnh,
     multi=True,
     clearable=False
-)
+)'''
 
-dropdown_surfex = dcc.Dropdown(
-    id="multi_select_line_chart_SURFEX",
+'''dropdown_surfex_mascot = dcc.Dropdown(
+    id="multi_select_line_chart_SURFEX_Mascot",
     options=[{"value": label, "label": label} for label in
-             ["SURFEX_Arp", "SURFEX_Aro", "SURFEX_Obs"]],
-    value=["SURFEX_Arp"],
+             ["Surfex_Mascot_00h"]],
+    value=selection_surfex_mascot,
     multi=True,
     clearable=False
-)
+)'''
 
-
-# --- Inputs utilisateur (rejeu) -----------------------------------------------
-
-user_id_inputs = html.Div([
-    dcc.Input(id=f'id_user{i}', type='text', placeholder='Rejeu ID',
-              style={'width': '50%'})
-    for i in range(1, 6)
-])
+'''dropdown_surfex_offline = dcc.Dropdown(
+    id="multi_select_line_chart_SURFEX_Offline",
+    options=[{"value": label, "label": label} for label in
+             ["SURFEX_Offline"]],
+    value=selection_surfex_offline,
+    multi=True,
+    clearable=False
+)'''
 
 
 # -----------------------------------------------------------------------------
 #   1.3 LAYOUT
 # -----------------------------------------------------------------------------
+
+common_legend = html.Div(id='common-legend', style={'marginTop': '1rem'})
 
 layout_sidebar = html.Div(
     [
@@ -122,19 +130,16 @@ layout_sidebar = html.Div(
         html.H2("Menu", className="display-10"),
         html.Hr(),
 
-        dbc.Nav(
+        html.Div(
             [
-                dbc.NavLink("Séries temporelles", href="/MeteopoleX/"),
-                dbc.NavLink("Biais", href="/MeteopoleX/biais"),
-                dbc.NavLink("Biais moyens", href="/MeteopoleX/biaisM"),
-                dbc.NavLink("Profils verticaux", href="/MeteopoleX/rs"),
-                dbc.NavLink("Rejeu MésoNH", href="/MeteopoleX/mesoNH"),
-                dbc.NavLink("Rejeu SURFEX", href="/MeteopoleX/surfex"),
-                dbc.NavLink("Panneaux Photovoltaïques", href="/MeteopoleX/PV"),
-                dbc.NavLink("Notice", href="/MeteopoleX/notice"),
+                html.Div(dbc.NavLink("Séries temporelles", href="/MeteopoleX/")),
+                html.Div(dbc.NavLink("Biais", href="/MeteopoleX/biais")),
+                html.Div(dbc.NavLink("Biais moyens", href="/MeteopoleX/biaisM")),
+                html.Div(dbc.NavLink("Panneaux Photovoltaïques", href="/MeteopoleX/PV")),
+                html.Div(dbc.NavLink("Profils verticaux", href="/MeteopoleX/rs")),
+                html.Div(dbc.NavLink("Notice", href="/MeteopoleX/notice")),
             ],
-            vertical=True,
-            pills=True,
+            style={"display": "flex", "flexDirection": "column", "gap": "0.5rem"}
         ),
 
         html.Hr(),
@@ -144,19 +149,16 @@ layout_sidebar = html.Div(
         date_picker,
 
         html.Div(
-            [
-                dropdown_obs,
-                dropdown_arp,
-                dropdown_aro,
-                dropdown_arome,
-                dropdown_mnh,
-                dropdown_surfex,
-            ],
+            [dropdown_obs] + dropdowns_models,  
             className="six columns",
             style={"text-align": "center", "justifyContent": "center"},
         ),
 
-        user_id_inputs,
+        html.Hr(),
+        html.H2("Légende", className="display-10"),
+        html.Hr(),
+
+        common_legend,
     ],
     style=SIDEBAR_STYLE,
 )

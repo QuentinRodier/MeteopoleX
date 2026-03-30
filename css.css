@@ -413,3 +413,68 @@ there.
 
 /* Larger than Desktop HD */
 @media (min-width: 1200px) {}
+
+/* Responsive Graph Layout
+–––––––––––––––––––––––––––––––––––––––––––––––––– */
+
+#series-graphs-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 20px;
+    padding: 20px;
+}
+
+#biais-graphs-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 20px;
+    padding: 20px;
+}
+
+#biais-moyen-graphs-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 20px;
+    padding: 20px;
+}
+
+.graph-container {
+    flex: 1 1 auto;
+    min-width: 300px;  /* Largeur minimale pour qu'un graphe soit lisible */
+    max-width: 100%;
+}
+
+/* Écran très large : 3 colonnes */
+@media (min-width: 2000px) {
+    .graph-container {
+        flex-basis: calc(33.333% - 20px);
+        max-width: calc(33.333% - 20px);
+    }
+}
+
+/* Écran large : 2 colonnes */
+@media (min-width: 1200px) and (max-width: 1999px) {
+    .graph-container {
+        flex-basis: calc(50% - 20px);
+        max-width: calc(50% - 20px);
+    }
+}
+
+/* Écran moyen : 2 colonnes */
+@media (min-width: 800px) and (max-width: 1199px) {
+    .graph-container {
+        flex-basis: calc(50% - 20px);
+        max-width: calc(50% - 20px);
+    }
+}
+
+/* Petit écran : 1 colonne */
+@media (max-width: 799px) {
+    .graph-container {
+        flex-basis: 100%;
+        max-width: 100%;
+    }
+}

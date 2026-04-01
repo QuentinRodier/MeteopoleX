@@ -184,11 +184,16 @@ notice_content = html.Div(
             "modele.nc",
             "ex : offlinexp1.nc",
         ),
-        _note(
-            "Le nom du fichier est analysé automatiquement pour identifier le modèle, la date et le réseau. "
-            "Si le modèle est en mode climat, le fichier est toujours lu. Les courbes sont tracées en fonction de la correspondance des "
-            "dates de validité du fichier avec les dates d'affichage sélectionnées."
-        ),
+        _note([
+            "Le nom du fichier est analysé automatiquement pour identifier le modèle, la date et le réseau.",
+            html.Br(),
+            html.Strong("• Mode climat ("),
+            _code("is_climatology=True"),
+            html.Strong(") : "),
+            "le fichier est toujours lu. Les courbes sont tracées en fonction de la correspondance des "
+            "dates de validité du fichier avec les dates d'affichage sélectionnées. "
+            "Aussi, les biais moyens ne sont pas calculés - le modèle étant indépendant de l'échéance, ils seraient identiques aux biais instantanés."
+        ]),
         _sep(),
 
         # Config

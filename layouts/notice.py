@@ -84,7 +84,7 @@ pages_grid = html.Div([
     }) for title, desc in [
         ("Séries temporelles",   "Évolution des paramètres sur la période sélectionnée"),
         ("Biais instantanés",    "Écart modèles / observations à chaque instant"),
-        ("Biais moyens",         "Biais journaliers moyens par échéance"),
+        ("Biais moyens",         "Biais moyens horaires selon l'échéance"),
         ("Panneaux PV",          "Séries temporelles spécifiques au solaire"),
         ("Profils verticaux",    "Observations AMDAR et sorties opérationnelles en altitude"),
     ]
@@ -101,7 +101,8 @@ pages_grid = html.Div([
 models_config_table = _vtable([
     ("reader",           "Fichier de lecture de données", ""),
     ("param_key",        "Nom des variables dans les fichiers NetCDF", ""),
-    ("has_analysis",     "True si le modèle est associé à un réseau", ""),
+    ("is_climatology",   "True si le modèle est une modélisation en mode climat", ""),
+    ("category",         "Type de modèle, pour la classification dans les dropdown de la sidebar", ""),
     ("file_prefix",      "Nom du modèle dans le nom de fichier", ""),
     ("default_selection","Modèles affichés par défaut au chargement", ""),
     ("mapping",          "Style graphique du modèle", ""),
@@ -174,17 +175,19 @@ notice_content = html.Div(
         html.H2("Format des fichiers d'entrée", style={"font-size": "17px", "font-weight": "bold", "margin": "1.5rem 0 0.75rem"}),
         _p(["Les données sont attendues au format ", html.Strong("NetCDF"), " (", _code(".nc"), ")."]),
         _file_block(
-            "Prévision / simulation avec réseau",
+            "Modèle de prévision",
             "modele_date_reseau.nc",
             "ex : arpege_20260101_00.nc",
         ),
         _file_block(
-            "Modélisation sans réseau",
-            "modele_date.nc",
-            "ex : offline_20260101.nc",
+            "Modèle en mode climat",
+            "modele.nc",
+            "ex : offlinexp1.nc",
         ),
         _note(
-            "Le nom du fichier est analysé automatiquement pour identifier le modèle, la date et le réseau."
+            "Le nom du fichier est analysé automatiquement pour identifier le modèle, la date et le réseau. "
+            "Si le modèle est en mode climat, le fichier est toujours lu. Les courbes sont tracées en fonction de la correspondance des "
+            "dates de validité du fichier avec les dates d'affichage sélectionnées."
         ),
         _sep(),
 

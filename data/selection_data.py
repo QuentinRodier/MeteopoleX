@@ -75,18 +75,19 @@ def selection_data(start_day, end_day):
 
         model_data_batch[model] = {}
 
-        analysis_to_read = RESEAUX if cfg.get('has_analysis', True) else [RESEAUX[0]]
-
-        for reseau in analysis_to_read:
-            model_data_batch[model][reseau] = read_operationnel.donnees_operationnel_batch(
-                start_day, end_day, ope_params,
-                model=model, reseau=reseau
+        if cfg.get('is_climatology', False):
+            result = read_operationnel.donnees_climato_batch(
+                ope_params, model=model
             )
+            for reseau in RESEAUX:
+                model_data_batch[model][reseau] = result
 
-        # Duplique le résultat sur tous les réseaux pour que la structure reste cohérente
-        if not cfg.get('has_analysis', True):
-            for reseau in RESEAUX[1:]:
-                model_data_batch[model][reseau] = model_data_batch[model][RESEAUX[0]]
+        else:
+            for reseau in RESEAUX:
+                model_data_batch[model][reseau] = read_operationnel.donnees_operationnel_batch(
+                    start_day, end_day, ope_params,
+                    model=model, reseau=reseau
+                )
 
     #----------------------------------------------------------------------------------
     # Structure données

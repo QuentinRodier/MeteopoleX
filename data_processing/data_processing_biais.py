@@ -98,6 +98,7 @@ def build_biais_figures(start_day, end_day, **kwargs):
 
                 sorted_dates = sorted(runs.keys())
                 line_color = base_style.get("color", "blue")
+                CUSTOM_KEY = {'color', "mode", "marker_size"}
                 legend_shown = False
 
                 for date_str in sorted_dates:
@@ -105,10 +106,13 @@ def build_biais_figures(start_day, end_day, **kwargs):
                     if not isinstance(series, pd.Series) or series.empty:
                         continue
 
-                    run_date = datetime.datetime.strptime(date_str, "%Y%m%d").date()
-
-                    cutoff = pd.Timestamp(run_date) + pd.Timedelta(days=MAX_FORECAST_DAYS)
-                    series = series[series.index <= cutoff]
+                    if MODELS_CONFIG[model].get('is_climatology', False):
+                        cutoff = series.index.max()
+                        run_date = series.index.min().date()
+                    else:
+                        run_date = datetime.datetime.strptime(date_str, "%Y%m%d").date()
+                        cutoff = pd.Timestamp(run_date) + pd.Timedelta(days=MAX_FORECAST_DAYS)
+                        series = series[series.index <= cutoff]
 
                     if series.empty:
                         continue
@@ -128,8 +132,11 @@ def build_biais_figures(start_day, end_day, **kwargs):
                         if prev_last_point:
                             segment = [prev_last_point] + segment 
 
-                        opacity = OPACITY_MAX - (OPACITY_MAX - OPACITY_MIN) * min(age_days / MAX_FORECAST_DAYS, 1.0)
-                        color_str = _apply_opacity(line_color, opacity)
+                        if MODELS_CONFIG[model].get('is_climatology', False):
+                            color_str = _apply_opacity(line_color, OPACITY_MAX)
+                        else:
+                            opacity = OPACITY_MAX - (OPACITY_MAX - OPACITY_MIN) * min(age_days / MAX_FORECAST_DAYS, 1.0)
+                            color_str = _apply_opacity(line_color, opacity)
 
                         seg_x = [p[0] for p in segment]
                         seg_y = [p[1] for p in segment]
@@ -137,8 +144,6 @@ def build_biais_figures(start_day, end_day, **kwargs):
 
                         if len(seg_x) < 2:
                             continue
-
-                        CUSTOM_KEY = {'color', "mode", "marker_size"}
                         
                         trace_mode = base_style.get("mode", "lines") 
                         marker_size = base_style.get("marker_size", 6)

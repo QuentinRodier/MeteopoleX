@@ -23,6 +23,10 @@ def biais_moyen(start_day, end_day):
         biais_moy.setdefault(param, {})
 
         for model in MODELS_CONFIG.keys():
+
+            if MODELS_CONFIG[model].get('is_climatology', False):
+                continue
+
             biais_moy[param].setdefault(model, {})
 
             for reseau in RESEAUX:

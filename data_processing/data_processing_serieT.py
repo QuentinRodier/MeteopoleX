@@ -4,6 +4,7 @@ import pandas as pd
 import plotly.graph_objects as go
 import re
 import matplotlib.colors as mcolors
+from itertools import groupby
 
 from config.variables import VARIABLES_PLOT, VARIABLES
 from config.config import RESEAUX, MODELS_CONFIG, CONFIG_OBS, today, end, OPACITY_MAX, OPACITY_MIN
@@ -33,6 +34,36 @@ def _apply_opacity(color: str, opacity: float) -> str:
     except ValueError:
         return color  # fallback : couleur inconnue, retournée telle quelle
 
+def _filter_series_on_timerange(series, start_day, end_day):
+    start_dt = datetime.datetime.combine(start_day, datetime.time.min)
+    end_dt   = datetime.datetime.combine(end_day, datetime.time.max)
+    return series[(series.index >= start_dt) & (series.index <= end_dt)]
+
+def _get_line_style(base_style):
+    CUSTOM_KEY = {'color', "mode", "marker_size"}
+    return {k: v for k, v in base_style.items() if k not in CUSTOM_KEY}
+
+def _add_trace(fig, x, y, name, base_style, opacity, legendgroup, showlegend):
+    trace_mode = base_style.get("mode", "lines")
+    marker_size = base_style.get("marker_size", 6)
+    line_color = base_style.get("color", "blue")
+
+    color_str = _apply_opacity(line_color, opacity)
+    line_style = _get_line_style(base_style)
+
+    fig.add_trace(
+        go.Scatter(
+            x=x,
+            y=y,
+            name=name,
+            mode=trace_mode,
+            line={"color": color_str, **line_style},
+            marker=dict(color=color_str, size=marker_size),
+            legendgroup=legendgroup,
+            showlegend=showlegend,
+            connectgaps=True,
+        )
+    )
 
 
 # Fonction principale appelée par le callback
@@ -196,24 +227,42 @@ def build_series_figures(
                 if not runs:
                     continue
 
-                sorted_dates = sorted(runs.keys())
                 legend_shown = False
 
-                for date_str in sorted_dates:
-                    series = runs[date_str]
+                for date_str, series in runs.items():
                     if not isinstance(series, pd.Series) or series.empty:
                         continue
 
-                    run_date = datetime.datetime.strptime(date_str, "%Y%m%d").date()
+                    # FILTRAGE TEMPOREL 
+                    series = _filter_series_on_timerange(series, start_day, end_day)
 
-                    start_dt = datetime.datetime.combine(start_day, datetime.time.min)
-                    end_dt = datetime.datetime.combine(end_day, datetime.time.max)
-                    series = series[(series.index >= start_dt) & (series.index <= end_dt)]
+                    if series.empty:
+                        continue
+
+                    # CAS CLIMATO
+                    if cfg.get("is_climatology", False):
+
+                        _add_trace(
+                            figures[param],
+                            x=series.index,
+                            y=series.values,
+                            name=selection,
+                            base_style=base_style,
+                            opacity=OPACITY_MAX,
+                            legendgroup=f"{model}_{selection}",
+                            showlegend=not legend_shown,
+                        )
+
+                        legend_shown = True
+                        continue
+
+                    # CAS OPÉRATIONNEL
+                    try:
+                        run_date = datetime.datetime.strptime(date_str, "%Y%m%d").date()
+                    except ValueError:
+                        continue  
 
                     MAX_FORECAST_DAYS = cfg.get('max_forecast_days', 4)
-                    line_color = base_style.get("color", "blue")
-
-                    from itertools import groupby
 
                     def get_age(t):
                         forecast_date = t.date() if hasattr(t, 'date') else t
@@ -227,6 +276,7 @@ def build_series_figures(
 
                     for age_days, group in grouped:
                         segment = list(group)
+
                         if prev_last_point:
                             segment = [prev_last_point] + segment
 
@@ -234,36 +284,25 @@ def build_series_figures(
                         seg_y = [p[1] for p in segment]
                         prev_last_point = segment[-1]
 
-                        CUSTOM_KEY = {'color', "mode", "marker_size", 'constant_opacity'}
-                        
-                        trace_mode = base_style.get("mode", "lines") 
-                        marker_size = base_style.get("marker_size", 6)
-                        constant_opacity = base_style.get('constant_opacity', False)
-                        line_style = {k: v for k, v in base_style.items() if k not in CUSTOM_KEY} 
-
-                        if constant_opacity:
-                            opacity = OPACITY_MAX
-                        else:
-                            opacity = OPACITY_MAX - (OPACITY_MAX - OPACITY_MIN) * min(age_days / MAX_FORECAST_DAYS, 1.0)
-                        color_str = _apply_opacity(line_color, opacity) 
-
-                        figures[param].add_trace(
-                            go.Scatter(
-                                x=seg_x,
-                                y=seg_y,
-                                name=f"{selection}",
-                                mode=trace_mode,
-                                line={"color": color_str, **line_style},
-                                marker=dict(color=color_str, size=marker_size),
-                                legendgroup=f"{model}_{selection}",
-                                showlegend=(not legend_shown and first_segment),
-                                connectgaps=True,
-                            )
+                        opacity = OPACITY_MAX - (
+                            (OPACITY_MAX - OPACITY_MIN)
+                            * min(age_days / MAX_FORECAST_DAYS, 1.0)
                         )
+
+                        _add_trace(
+                            figures[param],
+                            x=seg_x,
+                            y=seg_y,
+                            name=selection,
+                            base_style=base_style,
+                            opacity=opacity,
+                            legendgroup=f"{model}_{selection}",
+                            showlegend=(not legend_shown and first_segment),
+                        )
+
                         first_segment = False
 
                     legend_shown = True
-
 
     # Max commun pour flx_chaleur_sens et flx_chaleur_lat
     flux_params = ("flx_chaleur_sens", "flx_chaleur_lat")

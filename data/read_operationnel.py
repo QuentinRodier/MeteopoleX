@@ -18,16 +18,19 @@ def _build_filepath(model, date, reseau):
     """
     Construit le chemin vers le fichier opérationnel selon le modèle et le réseau.
     """
-
     prefix = MODELS_CONFIG[model]['file_prefix']
-    has_analysis = MODELS_CONFIG[model]['has_analysis']
 
-    if has_analysis:
-        reseau_hr = reseau[-8:-6]   # heure du réseau '00' 
-        filename = f"{prefix}_{date.strftime('%Y%m%d')}_{reseau_hr}.nc"
-    else:
-        filename = f"{prefix}_{date.strftime('%Y%m%d')}.nc"
+    reseau_hr = reseau[-8:-6]   # heure du réseau '00' 
+    filename = f"{prefix}_{date.strftime('%Y%m%d')}_{reseau_hr}.nc"
 
+    return OPERATIONNEL_DIR / filename
+
+def _build_filepath_climato(model):
+    """
+    Construit le chemin vers le fichier selon le modèle (pour les modèles climatologiques).
+    """
+    prefix = MODELS_CONFIG[model]['file_prefix']
+    filename = f"{prefix}.nc"
     return OPERATIONNEL_DIR / filename
 
 
@@ -41,7 +44,6 @@ def donnees_operationnel_batch(start_day, end_day, params_list, model, reseau):
     Lecture des données opérationnelles pour tous les paramètres demandés.
     Un fichier est ouvert par jour entre start_day et end_day.
     Toutes les données de chaque fichier sont conservées (pas de sélection temporelle).
-
 
     Returns:
         dict {param: {date_str: DataFrame}}
@@ -156,3 +158,84 @@ def compute_statistics_operationnel(data_dict, param):
     return {'runs': runs, 'time': times}
 
 
+def donnees_climato_batch(params_list, model):
+    """
+    Lecture d'un fichier offline unique (climatologie).
+    Pas de boucle sur les dates : le fichier couvre plusieurs mois.
+    Toutes les données sont retournées sous la même structure que
+    donnees_operationnel_batch : {param: {'all': DataFrame}}
+    La clé 'all' remplace la clé date_str puisqu'il n'y a pas de run.
+
+    Returns:
+        dict {param: {'all': DataFrame}}
+    """
+    # --- Cache disque ---
+    cache_key = f"offline_{model}"
+    cache_path = CACHE_DIR / f"{cache_key}.pkl"
+
+    if cache_path.exists():
+        try:
+            with open(cache_path, 'rb') as f:
+                cached = pickle.load(f)
+                if all(p in cached for p in params_list if p is not None):
+                    return cached
+        except Exception:
+            pass
+
+    results = {p: {} for p in params_list if p is not None}
+
+    filepath = _build_filepath_climato(model)
+
+    if not filepath.exists():
+        print(f"[{model}] Fichier non trouvé : {filepath}")
+        return results
+
+    try:
+        nc = _open_operationnel_cached(str(filepath))
+    except Exception as e:
+        print(f"[{model}] Erreur ouverture {filepath}: {e}")
+        return results
+
+    datevar = nc['time'].values
+
+    for param in params_list:
+        if param is None or param not in nc:
+            continue
+        try:
+            values  = nc[param].squeeze().values
+            temp_df = pd.DataFrame({param: values}, index=datevar)
+            results[param]['all'] = temp_df   # clé fixe 'all' = pas de notion de run
+        except Exception as e:
+            print(f"[{model}] Erreur lecture '{param}' ({filepath.name}): {e}")
+
+    # --- Conversions d'unités (reprises à l'identique) ---
+    TEMP_MODEL_PARAMS = {
+        cfg["index_model"]
+        for cfg in VARIABLES.values()
+        if cfg.get("unit") == "°C" and cfg.get("index_model")
+    }
+
+    for param in params_list:
+        if param is None or param not in results or not results[param]:
+            continue
+        for key, df in results[param].items():
+            if df.empty:
+                continue
+            try:
+                if param in TEMP_MODEL_PARAMS:
+                    if df[param].median() > 100:
+                        results[param][key][param] -= 273.15
+                elif param in ('hum_rel',):
+                    if df[param].median() <= 1.0:
+                        results[param][key][param] *= 100
+            except Exception as e:
+                print(f"[{model}] Erreur conversion '{param}' ({key}): {e}")
+
+    # --- Sauvegarde cache ---
+    try:
+        with open(cache_path, 'wb') as f:
+            pickle.dump(results, f, protocol=pickle.HIGHEST_PROTOCOL)
+    except Exception as e:
+        print(f"[{model}] Erreur sauvegarde cache offline: {e}")
+
+    return results

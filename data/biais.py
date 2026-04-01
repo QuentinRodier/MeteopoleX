@@ -79,8 +79,7 @@ def calcul_biais(start_day, end_day):
                     if not runs: 
                         biais[param][model][reseau]["values"] = np.nan 
                         continue 
-                        
-            
+          
                     # Biais global (concaténé) — conservé si besoin ailleurs
                     s_all = pd.concat(list(runs.values()))
                     s_all = s_all[~s_all.index.duplicated(keep='last')].sort_index()

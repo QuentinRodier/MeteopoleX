@@ -228,6 +228,10 @@ notice_content = html.Div(
         _cfg("OPACITY_MIN", "Opacité minimale (défaut : 0.1)"),
         _cfg("OPACITY_MAX", "Opacité maximale (défaut : 1.0)"),
 
+        _h(["Ajouter une variable (fichier ", _code("variables.py"), ")"]),
+        _p(["Ajouter/Modifier la variable souhaitée dans le dictionnaire ", _code("VARIABLES"),
+            ", et dans la liste ", _code("VARIABLES_PLOT"), "."]),
+
         html.Br(),
     ],
     style={"text-align": "left", "font-size": "14px", "line-height": "1.7"},

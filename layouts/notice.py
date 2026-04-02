@@ -34,15 +34,15 @@ def _sep():
 def _cfg(key, desc):
     return html.Div([
         html.Span(_code(key), style={"min-width": "160px", "display": "inline-block"}),
-        html.Span(desc, style={"color": "#888780", "font-size": "14px"}),
+        html.Span(desc, style={"color": "#737373", "font-size": "14px"}),
     ], style={"margin": "0.3rem 0"})
 
 def _vtable(rows):
     return html.Table(
         [html.Tr([
-            html.Td(_code(r[0]), style={"padding": "4px 8px", "color": "#888780", "white-space": "nowrap", "font-size": "14px", "border-top": "0.5px solid #e5e5e0", "vertical-align": "top", "width": "140px"}),
+            html.Td(_code(r[0]), style={"padding": "4px 8px", "color": "#737373", "white-space": "nowrap", "font-size": "14px", "border-top": "0.5px solid #e5e5e0", "vertical-align": "top", "width": "140px"}),
             html.Td(r[1], style={"padding": "4px 8px", "font-size": "14px", "border-top": "0.5px solid #e5e5e0"}),
-            html.Td(r[2], style={"padding": "4px 8px", "font-size": "14px", "color": "#888780", "text-align": "right", "border-top": "0.5px solid #e5e5e0", "width": "60px"}),
+            html.Td(r[2], style={"padding": "4px 8px", "font-size": "14px", "color": "#737373", "text-align": "right", "border-top": "0.5px solid #e5e5e0", "width": "60px"}),
         ]) for r in rows],
         style={"width": "100%", "border-collapse": "collapse"},
     )
@@ -50,7 +50,7 @@ def _vtable(rows):
 def _vgroup(title, rows):
     return html.Div([
         html.Div(title, style={
-            "font-size": "13px", "font-weight": "bold", "color": "#888780",
+            "font-size": "13px", "font-weight": "bold", "color": "#737373",
             "text-transform": "uppercase", "letter-spacing": "0.05em",
             "margin-bottom": "6px", "padding-bottom": "4px",
             "border-bottom": "0.5px solid #d3d1c7",
@@ -62,7 +62,7 @@ def _file_block(type_label, pattern, example):
     return html.Div([
         html.Div(type_label, style={"font-weight": "bold", "margin-bottom": "4px", "font-size": "13px"}),
         html.Div(_code(pattern)),
-        html.Div(example, style={"font-size": "13px", "color": "#888780", "margin-top": "2px"}),
+        html.Div(example, style={"font-size": "13px", "color": "#737373", "margin-top": "2px"}),
     ], style={
         "background": "#f0f0f0",
         "border-radius": "6px",
@@ -75,8 +75,8 @@ def _file_block(type_label, pattern, example):
 
 pages_grid = html.Div([
     html.Div([
-        html.Div(title, style={"font-size": "13px", "font-weight": "bold", "margin-bottom": "3px"}),
-        html.Div(desc, style={"font-size": "13px", "color": "#888780"}),
+        html.Div(title, style={"font-size": "14px", "font-weight": "bold", "margin-bottom": "3px"}),
+        html.Div(desc, style={"font-size": "14px", "color": "#737373"}),
     ], style={
         "background": "#f5f5f3",
         "border-radius": "6px",
@@ -127,7 +127,7 @@ notice_content = html.Div(
             ("tmp_10m",      "Température à 10 m",                                                       "°C"),
             ("hum_rel",      "Humidité relative",                                                        "%"),
             ("vent_ff10m",   "Vent moyen à 10 m",                                                        "m/s"),
-            ("cumul_RR",     "Cumuls de pluie (Obs : 30 min — Aro/Arp : 1 h — MNH : 15 min)",           "mm"),
+            ("cumul_RR",     "Cumuls de pluie",                                                          "mm"),
         ]),
         _vgroup("Rayonnement", [
             ("SWD",  "Rayonnement global descendant (SW down)",  "W/m²"),

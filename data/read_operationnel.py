@@ -9,7 +9,7 @@ from config.config import today, yesterday, MODELS_CONFIG
 from config.variables import VARIABLES
 
 
-OPERATIONNEL_DIR = Path("/cnrm/proc/projet_emi/sample_netcdf")
+OPERATIONNEL_DIR = Path("/cnrm/proc/napoly/meteopolflux")
 CACHE_DIR = Path("/home/manip/MeteopoleX/cache")
 CACHE_DIR.mkdir(parents=True, exist_ok=True)
 

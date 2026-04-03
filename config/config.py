@@ -106,7 +106,7 @@ MODELS_CONFIG = {
         'file_prefix':    'offlinepgd',
         'default_selection': [],
         'mapping': {
-            "Surfex Offline physiographie observée":  (RESEAUX[0], dict(color="violet", dash='dash')),
+            "Surfex Offline physiographie observée":  (RESEAUX[0], dict(color="mediumorchid", dash='dash')),
         },
         'max_forecast_days': None,
     },
@@ -120,7 +120,7 @@ MODELS_CONFIG = {
         'file_prefix':    'offlineprep',
         'default_selection': [],
         'mapping': {
-            "Surfex Offline CI observées":  (RESEAUX[0], dict(color="blueviolet", dash='dash')),
+            "Surfex Offline CI observées":  (RESEAUX[0], dict(color="violet", dash='dash')),
         },
         'max_forecast_days': None,
     },

@@ -187,7 +187,7 @@ VARIABLES = {
     "cumul_RR": {
         "index_obs": "prp_rr_min_c2_%60_Som_%1800",
         "index_model": "cumul_RR",
-        "title": "Cumuls de pluie (Obs: 30mn, ARO-ARP: 1h, MNH: 15mn)",
+        "title": "Cumuls de pluie",
         "unit": "mm"
     },
     "altitude_CL": {

@@ -52,6 +52,10 @@ def build_biais_moyen_figures(start_day, end_day, **kwargs):
         }
 
         for model, selections in active_selections.items():
+
+            if MODELS_CONFIG[model].get('is_climatology', False):
+                continue
+
             ui_mapping = MODELS_CONFIG[model]['mapping'] 
 
             for selection in selections:

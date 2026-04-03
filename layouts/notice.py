@@ -34,15 +34,15 @@ def _sep():
 def _cfg(key, desc):
     return html.Div([
         html.Span(_code(key), style={"min-width": "160px", "display": "inline-block"}),
-        html.Span(desc, style={"color": "#888780", "font-size": "14px"}),
+        html.Span(desc, style={"color": "#737373", "font-size": "14px"}),
     ], style={"margin": "0.3rem 0"})
 
 def _vtable(rows):
     return html.Table(
         [html.Tr([
-            html.Td(_code(r[0]), style={"padding": "4px 8px", "color": "#888780", "white-space": "nowrap", "font-size": "14px", "border-top": "0.5px solid #e5e5e0", "vertical-align": "top", "width": "140px"}),
+            html.Td(_code(r[0]), style={"padding": "4px 8px", "color": "#737373", "white-space": "nowrap", "font-size": "14px", "border-top": "0.5px solid #e5e5e0", "vertical-align": "top", "width": "140px"}),
             html.Td(r[1], style={"padding": "4px 8px", "font-size": "14px", "border-top": "0.5px solid #e5e5e0"}),
-            html.Td(r[2], style={"padding": "4px 8px", "font-size": "14px", "color": "#888780", "text-align": "right", "border-top": "0.5px solid #e5e5e0", "width": "60px"}),
+            html.Td(r[2], style={"padding": "4px 8px", "font-size": "14px", "color": "#737373", "text-align": "right", "border-top": "0.5px solid #e5e5e0", "width": "60px"}),
         ]) for r in rows],
         style={"width": "100%", "border-collapse": "collapse"},
     )
@@ -50,7 +50,7 @@ def _vtable(rows):
 def _vgroup(title, rows):
     return html.Div([
         html.Div(title, style={
-            "font-size": "13px", "font-weight": "bold", "color": "#888780",
+            "font-size": "13px", "font-weight": "bold", "color": "#737373",
             "text-transform": "uppercase", "letter-spacing": "0.05em",
             "margin-bottom": "6px", "padding-bottom": "4px",
             "border-bottom": "0.5px solid #d3d1c7",
@@ -62,7 +62,7 @@ def _file_block(type_label, pattern, example):
     return html.Div([
         html.Div(type_label, style={"font-weight": "bold", "margin-bottom": "4px", "font-size": "13px"}),
         html.Div(_code(pattern)),
-        html.Div(example, style={"font-size": "13px", "color": "#888780", "margin-top": "2px"}),
+        html.Div(example, style={"font-size": "13px", "color": "#737373", "margin-top": "2px"}),
     ], style={
         "background": "#f0f0f0",
         "border-radius": "6px",
@@ -75,8 +75,8 @@ def _file_block(type_label, pattern, example):
 
 pages_grid = html.Div([
     html.Div([
-        html.Div(title, style={"font-size": "13px", "font-weight": "bold", "margin-bottom": "3px"}),
-        html.Div(desc, style={"font-size": "13px", "color": "#888780"}),
+        html.Div(title, style={"font-size": "14px", "font-weight": "bold", "margin-bottom": "3px"}),
+        html.Div(desc, style={"font-size": "14px", "color": "#737373"}),
     ], style={
         "background": "#f5f5f3",
         "border-radius": "6px",
@@ -84,7 +84,7 @@ pages_grid = html.Div([
     }) for title, desc in [
         ("Séries temporelles",   "Évolution des paramètres sur la période sélectionnée"),
         ("Biais instantanés",    "Écart modèles / observations à chaque instant"),
-        ("Biais moyens",         "Biais journaliers moyens par échéance"),
+        ("Biais moyens",         "Biais moyens horaires selon l'échéance"),
         ("Panneaux PV",          "Séries temporelles spécifiques au solaire"),
         ("Profils verticaux",    "Observations AMDAR et sorties opérationnelles en altitude"),
     ]
@@ -101,7 +101,8 @@ pages_grid = html.Div([
 models_config_table = _vtable([
     ("reader",           "Fichier de lecture de données", ""),
     ("param_key",        "Nom des variables dans les fichiers NetCDF", ""),
-    ("has_analysis",     "True si le modèle est associé à un réseau", ""),
+    ("is_climatology",   "True si le modèle est une modélisation en mode climat", ""),
+    ("category",         "Type de modèle, pour la classification dans les dropdown de la sidebar", ""),
     ("file_prefix",      "Nom du modèle dans le nom de fichier", ""),
     ("default_selection","Modèles affichés par défaut au chargement", ""),
     ("mapping",          "Style graphique du modèle", ""),
@@ -126,7 +127,7 @@ notice_content = html.Div(
             ("tmp_10m",      "Température à 10 m",                                                       "°C"),
             ("hum_rel",      "Humidité relative",                                                        "%"),
             ("vent_ff10m",   "Vent moyen à 10 m",                                                        "m/s"),
-            ("cumul_RR",     "Cumuls de pluie (Obs : 30 min — Aro/Arp : 1 h — MNH : 15 min)",           "mm"),
+            ("cumul_RR",     "Cumuls de pluie",                                                          "mm"),
         ]),
         _vgroup("Rayonnement", [
             ("SWD",  "Rayonnement global descendant (SW down)",  "W/m²"),
@@ -174,18 +175,25 @@ notice_content = html.Div(
         html.H2("Format des fichiers d'entrée", style={"font-size": "17px", "font-weight": "bold", "margin": "1.5rem 0 0.75rem"}),
         _p(["Les données sont attendues au format ", html.Strong("NetCDF"), " (", _code(".nc"), ")."]),
         _file_block(
-            "Prévision / simulation avec réseau",
+            "Modèle de prévision",
             "modele_date_reseau.nc",
             "ex : arpege_20260101_00.nc",
         ),
         _file_block(
-            "Modélisation sans réseau",
-            "modele_date.nc",
-            "ex : offline_20260101.nc",
+            "Modèle en mode climat",
+            "modele.nc",
+            "ex : offlinexp1.nc",
         ),
-        _note(
-            "Le nom du fichier est analysé automatiquement pour identifier le modèle, la date et le réseau."
-        ),
+        _note([
+            "Le nom du fichier est analysé automatiquement pour identifier le modèle, la date et le réseau.",
+            html.Br(),
+            html.Strong("• Mode climat ("),
+            _code("is_climatology=True"),
+            html.Strong(") : "),
+            "le fichier est toujours lu. Les courbes sont tracées en fonction de la correspondance des "
+            "dates de validité du fichier avec les dates d'affichage sélectionnées. "
+            "Aussi, les biais moyens ne sont pas calculés - le modèle étant indépendant de l'échéance, ils seraient identiques aux biais instantanés."
+        ]),
         _sep(),
 
         # Config
@@ -219,6 +227,10 @@ notice_content = html.Div(
         _h("Opacité des courbes"),
         _cfg("OPACITY_MIN", "Opacité minimale (défaut : 0.1)"),
         _cfg("OPACITY_MAX", "Opacité maximale (défaut : 1.0)"),
+
+        _h(["Ajouter une variable (fichier ", _code("variables.py"), ")"]),
+        _p(["Ajouter/Modifier la variable souhaitée dans le dictionnaire ", _code("VARIABLES"),
+            ", et dans la liste ", _code("VARIABLES_PLOT"), "."]),
 
         html.Br(),
     ],

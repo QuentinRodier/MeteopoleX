@@ -3,6 +3,7 @@
 from dash import html
 from dash import dcc
 import dash_bootstrap_components as dbc
+from collections import defaultdict
 
 import datetime
 from datetime import timedelta, date
@@ -43,77 +44,38 @@ def get_default_selection(model_name):
     """Retourne la liste de sélection des modèles affichés par défaut."""
     return list(MODELS_CONFIG[model_name]['default_selection'].keys())
 
-
-def make_dropdown(model_name, config):
-    """Crée un dropdown Dash à partir d'une entrée de MODELS_CONFIG."""
-    labels = list(config['mapping'].keys())
-    default = config.get('default_selection', labels)
-    return dcc.Dropdown(
-        id=config['dropdown_id'],
-        options=[{"value": l, "label": l} for l in labels],
-        value=default,          
-        multi=True,
-        clearable=False
-    )
-
-dropdown_obs = dcc.Dropdown(
-    id="multi_select_line_chart_obs",
-    options=[{"value": "Obs", "label": "Obs"}],
-    value=CONFIG_OBS['Obs']['default_selection'],
-    multi=True,
-    clearable=False
-)
-
-dropdowns_models = [
-    make_dropdown(name, cfg)
-    for name, cfg in MODELS_CONFIG.items()
-]
-
-
-'''dropdown_arpege = dcc.Dropdown(
-    id="multi_select_line_chart_ARPEGE",
-    options=[{"value": label, "label": label} for label in
-             ["Arpege_00h"]],
-    value=selection_arpege,
-    multi=True,
-    clearable=False
-)
-
-dropdown_arome = dcc.Dropdown(
-    id="multi_select_line_chart_AROME",
-    options=[{"value": label, "label": label} for label in
-             ["Arome_00h"]],
-    value=selection_arome, 
-    multi=True,
-    clearable=False
-)'''
-
-'''dropdown_mnh = dcc.Dropdown(
-    id="multi_select_line_chart_MNH",
-    options=[{"value": label, "label": label} for label in
-             ["MésoNH_Arp", "MésoNH_Aro", "MésoNH_Obs"]],
-    value=selection_mnh,
-    multi=True,
-    clearable=False
-)'''
-
-'''dropdown_surfex_mascot = dcc.Dropdown(
-    id="multi_select_line_chart_SURFEX_Mascot",
-    options=[{"value": label, "label": label} for label in
-             ["Surfex_Mascot_00h"]],
-    value=selection_surfex_mascot,
-    multi=True,
-    clearable=False
-)'''
-
-'''dropdown_surfex_offline = dcc.Dropdown(
-    id="multi_select_line_chart_SURFEX_Offline",
-    options=[{"value": label, "label": label} for label in
-             ["SURFEX_Offline"]],
-    value=selection_surfex_offline,
-    multi=True,
-    clearable=False
-)'''
+def make_dropdown(models_config, config_obs):
+    categories = defaultdict(lambda: {'options': [], 'defaults': []})
+    
+    for name, cfg in config_obs.items():
+        if not isinstance(cfg, dict): 
+            continue
+        if not cfg.get('in_dropdown', True):
+            continue
+        cat = cfg.get('category', 'Observations')
+        categories[cat]['options'].append({"value": name, "label": name})
+        defaults = cfg.get('default_selection', [])
+        if isinstance(defaults, list):
+            categories[cat]['defaults'].extend(defaults)
+    
+    for model_name, cfg in models_config.items():
+        cat = cfg.get('category', 'Autres')
+        for label in cfg['mapping'].keys():
+            categories[cat]['options'].append({"value": label, "label": label})
+        categories[cat]['defaults'].extend(cfg.get('default_selection', []))
+    
+    dropdowns = []
+    for cat_name, data in categories.items():
+        dropdowns.append(html.P(cat_name, style={"marginBottom": "2px"}))
+        dropdowns.append(dcc.Dropdown(
+            id=f"dropdown_cat_{cat_name.lower().replace('é','e').replace(' ','_')}",
+            options=data['options'],
+            value=data['defaults'],
+            multi=True,
+            clearable=False,
+        ))
+    
+    return dropdowns
 
 
 # -----------------------------------------------------------------------------
@@ -149,9 +111,9 @@ layout_sidebar = html.Div(
         date_picker,
 
         html.Div(
-            [dropdown_obs] + dropdowns_models,  
-            className="six columns",
-            style={"text-align": "center", "justifyContent": "center"},
+            make_dropdown(MODELS_CONFIG, CONFIG_OBS),
+            className='six columns',
+            style={"text-align": "center", "justifyContent": "center"}
         ),
 
         html.Hr(),

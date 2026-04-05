@@ -24,10 +24,11 @@ category_inputs = [
     [
         Input("my-date-picker-range", "start_date"),
         Input("my-date-picker-range", "end_date"),
+        Input('multi_select_line_chart_biais_MNHSFX16pts', 'value'),        
     ] + category_inputs,
 )
-def update_biais(start_day, end_day, *category_values):
-
+def update_biais(start_day, end_day,biais_mnhsfx16pts, *category_values): 
+    
     start_day = date.fromisoformat(start_day)
     end_day = date.fromisoformat(end_day)
 
@@ -46,8 +47,8 @@ def update_biais(start_day, end_day, *category_values):
         for model_name, cfg in MODELS_CONFIG.items()
     }
 
-    chartB, graphB = build_biais_figures(start_day, end_day, **kwargs)
-
+    chartB, graphB = build_biais_figures(start_day, end_day,biais_mnhsfx16pts, **kwargs)
+    
     graphs = []
 
     for param in VARIABLES_PLOT:

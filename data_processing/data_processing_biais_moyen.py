@@ -5,7 +5,7 @@
 Module de traitement des données pour l'analyse des biais moyens horaires.
 Construit les figures pour la comparaison du cycle diurne des biais.
 """
-
+from plotly.subplots import make_subplots
 import plotly.graph_objects as go
 from dash import dcc
 import numpy as np
@@ -16,7 +16,7 @@ from config.config import MODELS, RESEAUX, MODELS_CONFIG
 
 
 # Fonction principale appelée par le callback
-def build_biais_moyen_figures(start_day, end_day, **kwargs):
+def build_biais_moyen_figures(start_day, end_day,biais_mnhsfx16pts, **kwargs):
     """
     Construit les figures du cycle diurne des biais moyens.
     
@@ -40,6 +40,50 @@ def build_biais_moyen_figures(start_day, end_day, **kwargs):
     # ------------------------------------------------------------------
     chartM = {}
     graphM = {}
+
+    param = 'HISTO'
+    var = VARIABLES_PLOT[0]
+    selection="01"
+    modele = 'MNH-SFX-16pts'
+    Ndays = biais_moy[var][modele]["hourly_histo"]['ndays']
+    Nhours = len(biais_moy[var][modele]["hourly_histo"]['time'])
+    visible_settings = True
+    s =  f"% des jours servant au calcul des moyennes horaires <br> "
+    s += f"     ----> uniquement pour le modèle {modele}"
+    fig = go.Figure()
+    fig.add_trace(
+        go.Bar(
+            x=biais_moy[var][modele]["hourly_histo"]['time'],
+            y=biais_moy[var][modele]["hourly_histo"]['values'],
+            visible=visible_settings,
+            name="point_"+f"{selection}"))
+    fig.update_layout(
+            title=s,
+            xaxis_title="Heures",
+            yaxis_title="%",
+            hovermode="x unified",
+            template="plotly_white",
+            height=500,
+            width=872,
+            showlegend=False,
+        )
+    fig.update_xaxes(
+            tickmode='array',
+            tickvals=np.arange(1, Nhours+1).astype('int'),
+            ticktext=np.arange(1, Nhours+1).astype('int'),
+            range=[0, Nhours],
+            showgrid = False
+        )
+    fig.update_yaxes(
+            tickmode='array',
+            tickvals=np.linspace(0, 100, 11).astype('int'),
+            ticktext=np.linspace(0, 100, 11).astype('int'),
+            range=[0, 100],
+            showgrid = True
+        )
+
+    chartM[param] = fig
+    graphM[param] = dcc.Graph(id=f'graphM_{param}', figure=fig)
 
     for param in VARIABLES_PLOT:
         # Créer la figure Plotly
@@ -121,5 +165,28 @@ def build_biais_moyen_figures(start_day, end_day, **kwargs):
         
         chartM[param] = fig
         graphM[param] = dcc.Graph(id=f'graphM_{param}', figure=fig)
+
+    #---------------------------------------
+    # Pour les points MESONH3D et miniAROME:
+    #---------------------------------------
+    count = -1
+    for selection in biais_mnhsfx16pts:
+       count += 1 
+       modele = 'MNH-SFX-16pts'
+       point = str(selection)
+       col = 'red'
+       line_param = dict(color=col, dash='dot')
+       visible_settings = True
+
+       for param in VARIABLES_PLOT:
+         if VARIABLES[param]['index_model_mnhsfx16pts'] is not None:
+            if isinstance(biais_moy[param][modele][point]['values'], (np.ndarray)):
+               chartM[param].add_trace(
+                    go.Scatter(
+                        x=biais_moy[param][modele][point]['time'],
+                        y=biais_moy[param][modele][point]['values'],
+                        line=line_param, visible=visible_settings,
+                        name="point_"+f"{selection}"))
+    #-----------------------------------------------------------------------
     
     return chartM , graphM

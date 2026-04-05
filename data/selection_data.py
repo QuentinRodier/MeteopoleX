@@ -9,9 +9,12 @@ import plotly.graph_objects as go
 from . import read_aida 
 from . import read_operationnel
 
+from . import read_mnhsfx16pts_miniAROME
+
 from config.variables import VARIABLES_PLOT, VARIABLES
 from config.config import MODELS, RESEAUX, MODELS_CONFIG
 
+from config.models import RESEAUX_mnhsfx16pts
 
 EMPTY_BLOCK = {'runs': {}, 'time': {}}
 
@@ -21,7 +24,7 @@ def selection_data(start_day, end_day):
     Récupération des données pour tous les modèles et paramètres.
     Aucune condition sur le nom du modèle : tout est piloté par MODELS_CONFIG.
     """
-    
+
     # Conversion des dates en jour de l'année
     start_doy = datetime.datetime(
         start_day.year, start_day.month, start_day.day
@@ -106,6 +109,72 @@ def selection_data(start_day, end_day):
         else:
             data[param][obs_model]['values'] = None
             data[param][obs_model]['time'] = None
+
+        # -------------------------------------------------------------
+        # MNH-SFX extraction des 16 points miniAROME (enveloppes)
+        # -------------------------------------------------------------
+        model = "MNH-SFX-16pts"
+        data[param].setdefault(model, {})
+        for reseau in RESEAUX_mnhsfx16pts:
+                    data[param][model].setdefault(reseau, {})
+
+                    model_data = data[param][model][reseau]
+
+                    model_data.update({
+                        'values_mean': {},
+                        'values_mean_plus_std': {},
+                        'values_mean_moins_std': {},
+                        'values_max': {},
+                        'values_min': {},
+                        'values_P1': {},
+                        'values_P2': {},
+                        'values_P3': {},
+                        'values_P4': {},
+                        'time': {}
+                    })
+
+                    param_mnhsfx16pts = VARIABLES[param]['index_model_mnhsfx16pts']
+                    if param_mnhsfx16pts is not None:
+
+                        mnhsfx16pts_data = read_mnhsfx16pts_miniAROME.donnees(
+                            start_day, end_day, reseau, param_mnhsfx16pts
+                        )
+
+                        if not mnhsfx16pts_data.empty:
+
+                            time_index = mnhsfx16pts_data.index
+
+                            model_data['values_mean'] = (
+                                mnhsfx16pts_data.groupby(time_index).mean()[param_mnhsfx16pts]
+                            )
+                            std = mnhsfx16pts_data.groupby(time_index).std()[param_mnhsfx16pts]
+                            model_data['values_mean_plus_std'] = (
+                                model_data['values_mean'] + std
+                            )
+                            model_data['values_mean_moins_std'] = (
+                                model_data['values_mean'] - std
+                            )
+                            model_data['values_max'] = (
+                                mnhsfx16pts_data.groupby(time_index).max()[param_mnhsfx16pts]
+                            )
+                            model_data['values_min'] = (
+                                mnhsfx16pts_data.groupby(time_index).min()[param_mnhsfx16pts]
+                            )
+                            model_data['values_P1'] = mnhsfx16pts_data.loc[
+                                mnhsfx16pts_data['Point'] == 11, param_mnhsfx16pts
+                            ]
+                            model_data['values_P2'] = mnhsfx16pts_data.loc[
+                                mnhsfx16pts_data['Point'] == 15, param_mnhsfx16pts
+                            ]
+                            model_data['values_P3'] = mnhsfx16pts_data.loc[
+                                mnhsfx16pts_data['Point'] == 6, param_mnhsfx16pts
+                            ]
+                            model_data['values_P4'] = mnhsfx16pts_data.loc[
+                                mnhsfx16pts_data['Point'] == 1, param_mnhsfx16pts
+                            ]
+                            model_data['time'] = model_data['values_P4'].index
+        # -------------------------------------------------------------
+
 
         # --- Modèles ---
         for model, cfg in MODELS_CONFIG.items():

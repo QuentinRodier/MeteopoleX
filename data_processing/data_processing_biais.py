@@ -15,7 +15,6 @@ from data.biais import calcul_biais
 from config.variables import VARIABLES, VARIABLES_PLOT
 from config.config import RESEAUX, MODELS_CONFIG, today, end, OPACITY_MAX, OPACITY_MIN
 
-
 def _apply_opacity(color: str, opacity: float) -> str:
     opacity = round(max(0.0, min(1.0, opacity)), 3)
     color = color.strip()
@@ -39,7 +38,7 @@ def _apply_opacity(color: str, opacity: float) -> str:
 
 
 
-def build_biais_figures(start_day, end_day, **kwargs): 
+def build_biais_figures(start_day, end_day,biais_mnhsfx16pts, **kwargs): 
     """
     Construit les figures des biais instantanés.
     
@@ -184,6 +183,27 @@ def build_biais_figures(start_day, end_day, **kwargs):
         chartB[param] = fig
         graphB[param] = dcc.Graph(id=f'graphB_{param}', figure=fig)
     
+    #---------------------------------------
+    # Pour les points MESONH3D et miniAROME:
+    #---------------------------------------
+    for selection in biais_mnhsfx16pts:
+       modele = 'MNH-SFX-16pts'
+       point = str(selection)
+       col = 'red'
+       line_param = dict(color=col, dash='dot')
+       visible_settings = True
+
+       for param in VARIABLES_PLOT:
+         if VARIABLES[param]['index_model_mnhsfx16pts'] is not None:
+            if isinstance(biais[param][modele][point]['values'], (np.ndarray)):
+               chartB[param].add_trace(
+                    go.Scatter(
+                        x=biais[param][modele][point]['time'],
+                        y=biais[param][modele][point]['values'],
+                        line=line_param, visible=visible_settings,
+                        name="point_"+f"{selection}"))
+    #-----------------------------------------------------------------------
+
     return chartB, graphB
 
 

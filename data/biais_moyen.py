@@ -12,6 +12,7 @@ from config.variables import VARIABLES_PLOT
 from config.config import RESEAUX, MODELS_CONFIG
 
 from data.biais import calcul_biais
+from data.cal_biaismoyen_mnhsfx16pts import cal_bm
 
 
 def biais_moyen(start_day, end_day):
@@ -21,6 +22,12 @@ def biais_moyen(start_day, end_day):
 
     for param in VARIABLES_PLOT:
         biais_moy.setdefault(param, {})
+
+        # ---- MNH-SFX-16pts ---
+        biais_moy[param].setdefault('MNH-SFX-16pts',{})
+        if bool(biais[param]["MNH-SFX-16pts"]):
+          biais_moy[param]['MNH-SFX-16pts'] = cal_bm(biais[param]["MNH-SFX-16pts"])
+        #-----------------------
 
         for model in MODELS_CONFIG.keys():
 

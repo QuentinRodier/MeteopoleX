@@ -27,9 +27,10 @@ category_inputs = [
     [
         Input("my-date-picker-range", "start_date"),
         Input("my-date-picker-range", "end_date"),
+        Input('multi_select_line_chart_MNHSFX16pts', 'value'),
     ] + category_inputs,
 )
-def update_line(start_day, end_day, selected_obs, *category_values):
+def update_line(start_day, end_day, selected_obs,reseau_mnhsfx16pts, *category_values):
 
     if start_day:
         start_day = date.fromisoformat(start_day)
@@ -53,7 +54,7 @@ def update_line(start_day, end_day, selected_obs, *category_values):
         for model_name, cfg in MODELS_CONFIG.items()
     }
 
-    figures = build_series_figures(start_day, end_day, reseau_obs, **kwargs)
+    figures = build_series_figures(start_day, end_day, reseau_obs,reseau_mnhsfx16pts, **kwargs)
 
     graphs = []
 

@@ -8,6 +8,7 @@ from collections import defaultdict
 import datetime
 from datetime import timedelta, date
 from config.config import start_day, end_day, today,MODELS_CONFIG, CONFIG_OBS 
+from config.models import POINTS_mnhsfx16pts, init_POINTS
 
 SIDEBAR_STYLE = {
     "position": "fixed",
@@ -77,6 +78,25 @@ def make_dropdown(models_config, config_obs):
     
     return dropdowns
 
+#TODO: instanciate MesoNH in config/config.py to factorize the dropdowns in the above make_dropdown
+dropdown_mnhsfx16pts = dcc.Dropdown(
+    id="multi_select_line_chart_MNHSFX16pts",
+    options=[{"value": label, "label": label} for label in
+             ["MNHSFX16pts_00h" , "MNHSFX16pts_12h"]],
+    value=["MNHSFX16pts_00h"],
+    multi=True,
+    clearable=False
+)
+dropdown_biais_mnhsfx16pts = dcc.Dropdown(
+    id="multi_select_line_chart_biais_MNHSFX16pts",
+    options=[{"value": label, "label": label} for label in POINTS_mnhsfx16pts],
+    value=init_POINTS,
+    multi=True,
+    clearable=False
+)
+
+dropdowns.append(dropdown_mnhsfx16pts)
+dropdowns.append(dropdown_biais_mnhsfx16pts)
 
 # -----------------------------------------------------------------------------
 #   1.3 LAYOUT

@@ -8,6 +8,7 @@ from itertools import groupby
 
 from config.variables import VARIABLES_PLOT, VARIABLES
 from config.config import RESEAUX, MODELS_CONFIG, CONFIG_OBS, today, end, OPACITY_MAX, OPACITY_MIN
+from config.models import RESEAUX_mnhsfx16pts
 #import lecture_mesoNH
 #import lecture_surfex
 from data.data_loader import data_loader
@@ -71,6 +72,7 @@ def build_series_figures(
     start_day,
     end_day,
     reseau_obs,
+    reseau_mnhsfx16pts,
     **kwargs,
 ):
 
@@ -95,6 +97,113 @@ def build_series_figures(
                     )
                 )
     
+    # -------------------------------------------------------------------------
+    # MNH-SFX-16pts
+    # -------------------------------------------------------------------------
+    for selection in reseau_mnhsfx16pts:
+      rad = "MNHSFX16pts"
+      col1 = 'blue'
+      col2 = 'black'
+      couleurs = [col1 , col2]
+      count = -1
+      for r in RESEAUX_mnhsfx16pts:
+        count += 1
+        if selection == rad+'_'+r:
+            reseau = r
+            line_param = dict(color=couleurs[count], dash='dot')
+            color_etendue   = 'rgba(0,15,226,0.2)'
+            color_etendue_2 = 'rgba(0,15,226,0.5)'
+            visible_settings = True
+
+      for param in VARIABLES_PLOT:
+            modele = "MNH-SFX-16pts"
+            # Courbe moyenne
+            if isinstance(data[param][modele][reseau]['values_mean'], (pd.Series)):
+               figures[param].add_trace(
+                    go.Scatter(
+                        x=data[param][modele][reseau]['time'],
+                        y=data[param][modele][reseau]['values_mean'],
+                        line=line_param, visible=visible_settings,
+                        name=f"{selection}"+" moyenne"))
+
+            # Courbe point plus proche
+            if isinstance(data[param][modele][reseau]['values_P1'], (pd.Series)):
+               figures[param].add_trace(
+                    go.Scatter(
+                        x=data[param][modele][reseau]['time'],
+                        y=data[param][modele][reseau]['values_P1'],
+                        line=dict(color='pink'), visible = visible_settings,
+                        name=f"{selection}"+" Point le plus proche"))
+               print('traçage times', data[param][modele][reseau]['time'])
+               print('traçage P1 values', data[param][modele][reseau]['values_P1'])
+
+            # Courbe point 100% urbain
+            if isinstance(data[param][modele][reseau]['values_P2'], (pd.Series)):
+                figures[param].add_trace(
+                    go.Scatter(
+                        x=data[param][modele][reseau]['time'],
+                        y=data[param][modele][reseau]['values_P2'],
+                        line=dict(color='Grey'), visible = visible_settings,
+                        name=f"{selection}"+" Point 100% urbain"))
+
+            # Courbe point 100% champs
+            if isinstance(data[param][modele][reseau]['values_P3'], (pd.Series)):
+                figures[param].add_trace(
+                    go.Scatter(
+                        x=data[param][modele][reseau]['time'],
+                        y=data[param][modele][reseau]['values_P3'],
+                        line=dict(color='gold'), visible = visible_settings,
+                        name=f"{selection}"+" Point 100% champs"))
+
+            # Courbe point 50% urbain 50% champs
+            if isinstance(data[param][modele][reseau]['values_P4'], (pd.Series)):
+                figures[param].add_trace(
+                    go.Scatter(
+                        x=data[param][modele][reseau]['time'],
+                        y=data[param][modele][reseau]['values_P4'],
+                        line=dict(color='Brown'), visible = visible_settings,
+                        name=f"{selection}"+" Point 50% urbain 50% champs"))
+
+            # Étendue moyenne + écart-type
+            if isinstance(data[param][modele][reseau]['values_mean_plus_std'], (pd.Series)):
+                figures[param].add_trace(
+                    go.Scatter(
+                        x=data[param][modele][reseau]['time'],
+                        y=data[param][modele][reseau]['values_mean_plus_std'],
+                        line=dict(color='rgba(0,0,0,0)'),
+                        showlegend=False,
+                        visible = visible_settings,
+                        name=f"{selection}"+" +écart-type"))
+                figures[param].add_trace(
+                    go.Scatter(
+                        x=data[param][modele][reseau]['time'],
+                        y=data[param][modele][reseau]['values_mean_moins_std'],
+                        line = dict(color='rgba(0,0,0,0)'),
+                        fill='tonexty',
+                        fillcolor=color_etendue_2, visible = visible_settings,
+                        name=f"{selection}"+" enveloppe ecart-type "))
+
+            # Étendue min/max
+            if isinstance(data[param][modele][reseau]['values_max'], (pd.Series)):
+                figures[param].add_trace(
+                    go.Scatter(
+                        x=data[param][modele][reseau]['time'],
+                        y=data[param][modele][reseau]['values_max'],
+                        line=dict(color='rgba(0,0,0,0)'),
+                        showlegend=False,
+                        visible = visible_settings,
+                        name=f"{selection}"+" max"))
+                figures[param].add_trace(
+                    go.Scatter(
+                        x=data[param][modele][reseau]['time'],
+                        y=data[param][modele][reseau]['values_min'],
+                        line = dict(color='rgba(0,0,0,0)'),
+                        fill='tonexty',
+                        fillcolor=color_etendue, visible = visible_settings,
+                        name=f"{selection}"+" min et max"))
+    # -------------------------------------------------------------------------
+
+
     # --- CORRECTION BILAN D'ÉNERGIE (méthode ratio de Bowen) ---
     # Rn = SWD - SWU + LWD - LWU
     # Bo = H / LE  (ratio de Bowen obs)

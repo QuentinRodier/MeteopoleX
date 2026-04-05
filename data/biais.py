@@ -11,6 +11,8 @@ from config.variables import VARIABLES_PLOT, VARIABLES
 from config.config import MODELS_CONFIG, RESEAUX
 from data.data_loader import data_loader
 
+from . import cal_biais_mnhsfx16pts
+
 import numpy as np
 import pandas as pd
 
@@ -54,6 +56,14 @@ def calcul_biais(start_day, end_day):
             obs_pack = base.get(param, {}).get("Tf", {})
             values_obs = obs_pack.get("values", None)
             time_obs = obs_pack.get("time", None)
+
+            # --- MNH-SFX-16pts ---
+            biais[param].setdefault('MNH-SFX-16pts',{})
+            param_mnhsfx16pts = VARIABLES[param]['index_model_mnhsfx16pts']
+            if param_mnhsfx16pts is not None:
+               biais[param]['MNH-SFX-16pts'] = cal_biais_mnhsfx16pts.biais(start_day, end_day, 
+                                                      param_mnhsfx16pts, values_obs, time_obs)
+            #-----------------------   
 
             if values_obs is None or time_obs is None:
                 # pas d'obs => NaN partout

@@ -15,6 +15,8 @@ import os.path
 
 from config.models import Npts, POINTS_mnhsfx16pts, init_POINTS
 
+from functools import lru_cache
+
 #--------------------------------------------------------------
 def cal_VAR(nc,param):
 
@@ -71,6 +73,13 @@ def create_datevar(date , srep):
   return np.array(liste_amj+liste_amj1)
 #--------------------------------------------------------------
 
+
+@lru_cache(maxsize=15)
+def _open_mnhsfx16pts_cached(filepath):
+    """Ouvre un fichier extract-16 et le garde en mémoire"""
+    return xr.open_dataset(filepath, decode_times=True)
+
+
 #--------------------------------------------------------------
 def donnees(start_day, end_day, reseau, param_mnhsfx16pts):
 
@@ -100,7 +109,8 @@ def donnees(start_day, end_day, reseau, param_mnhsfx16pts):
         filename = foldername + anneemoisjour + srep + extract_filename
 
         if os.path.isfile(filename):
-          nc = xr.open_dataset(filename,decode_times=True)
+          #nc = xr.open_dataset(filename,decode_times=True)
+          nc = _open_mnhsfx16pts_cached(filename)
           datevar = create_datevar(date, srep)
 
           VAR = cal_VAR(nc, param)

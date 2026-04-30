@@ -189,7 +189,7 @@ def build_biais_figures(start_day, end_day,biais_mnhsfx16pts, **kwargs):
     for selection in biais_mnhsfx16pts:
        modele = 'MNH-SFX-16pts'
        point = str(selection)
-       col = 'red'
+       col = 'green'
        line_param = dict(color=col, dash='dot')
        visible_settings = True
 
@@ -201,7 +201,7 @@ def build_biais_figures(start_day, end_day,biais_mnhsfx16pts, **kwargs):
                         x=biais[param][modele][point]['time'],
                         y=biais[param][modele][point]['values'],
                         line=line_param, visible=visible_settings,
-                        name="point_"+f"{selection}"))
+                        name="mesonh_"+f"{selection}"))
     #-----------------------------------------------------------------------
 
     return chartB, graphB

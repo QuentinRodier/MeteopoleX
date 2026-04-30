@@ -102,21 +102,15 @@ def build_series_figures(
     # -------------------------------------------------------------------------
     for selection in reseau_mnhsfx16pts:
       rad = "MNHSFX16pts"
-      col1 = 'blue'
-      col2 = 'black'
-      couleurs = [col1 , col2]
-      count = -1
-      for r in RESEAUX_mnhsfx16pts:
-        count += 1
-        if selection == rad+'_'+r:
-            reseau = r
-            line_param = dict(color=couleurs[count], dash='dot')
-            color_etendue   = 'rgba(0,15,226,0.2)'
-            color_etendue_2 = 'rgba(0,15,226,0.5)'
-            visible_settings = True
+      reseau = "00h"
+      line_param = dict(color='green', dash='dot')
+      color_etendue   = 'rgba(0,15,226,0.2)'
+      color_etendue_2 = 'rgba(0,15,226,0.5)'
+      visible_settings = True
 
       for param in VARIABLES_PLOT:
             modele = "MNH-SFX-16pts"
+            reseau="00h"
             # Courbe moyenne
             if isinstance(data[param][modele][reseau]['values_mean'], (pd.Series)):
                figures[param].add_trace(

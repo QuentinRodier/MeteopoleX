@@ -95,6 +95,7 @@ dropdown_biais_mnhsfx16pts = dcc.Dropdown(
     clearable=False
 )
 
+dropdowns = make_dropdown(MODELS_CONFIG, CONFIG_OBS)
 dropdowns.append(dropdown_mnhsfx16pts)
 dropdowns.append(dropdown_biais_mnhsfx16pts)
 
@@ -131,7 +132,7 @@ layout_sidebar = html.Div(
         date_picker,
 
         html.Div(
-            make_dropdown(MODELS_CONFIG, CONFIG_OBS),
+            dropdowns,
             className='six columns',
             style={"text-align": "center", "justifyContent": "center"}
         ),

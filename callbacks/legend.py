@@ -48,6 +48,8 @@ def update_legend(obs_selection, *category_values):
                 color = style.get("color", "gray")
                 dash = style.get("dash", "solid")
                 items.append(_legend_item(label, color, dash))
+        
+    items.append(_legend_item("Méso-NH", "green", "solid"))
 
     return items
 

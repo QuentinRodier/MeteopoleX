@@ -18,7 +18,7 @@ selection_arome = ["Arome_J0_00h"]
 
 
 # Liste des réseaux pour Mesonh36-miniAROME
-RESEAUX_mnhsfx16pts = ["00h" , "12h"]
+RESEAUX_mnhsfx16pts = ["00h"]
 # les points MNH-SFX pour être passés dans 'layout/sidebar' /data/cal_biais** et 'callback/biais'
 Npts = 16
 POINTS_mnhsfx16pts = ['{:02d}'.format(n) for n in range(1,Npts+1)]

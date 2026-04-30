@@ -174,7 +174,7 @@ def build_biais_moyen_figures(start_day, end_day,biais_mnhsfx16pts, **kwargs):
        count += 1 
        modele = 'MNH-SFX-16pts'
        point = str(selection)
-       col = 'red'
+       col = 'green'
        line_param = dict(color=col, dash='dot')
        visible_settings = True
 

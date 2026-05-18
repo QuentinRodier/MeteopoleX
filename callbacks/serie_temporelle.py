@@ -14,12 +14,7 @@ def category_dropdown_id(cat_name):
     return f"dropdown_cat_{cat_name.lower().replace('é','e').replace(' ','_')}"
 
 
-category_inputs = [
-    Input("dropdown_cat_observations", "value"), 
-] + [
-    Input(category_dropdown_id(cat), "value")
-    for cat in CATEGORIES
-]
+category_inputs = [ Input("dropdown_cat_observations", "value"), Input('multi_select_line_chart_MNHSFX16pts', 'value'),] + [ Input(category_dropdown_id(cat), "value") for cat in CATEGORIES ]
 
 
 @app.callback(
@@ -27,7 +22,6 @@ category_inputs = [
     [
         Input("my-date-picker-range", "start_date"),
         Input("my-date-picker-range", "end_date"),
-        Input('multi_select_line_chart_MNHSFX16pts', 'value'),
     ] + category_inputs,
 )
 def update_line(start_day, end_day, selected_obs,reseau_mnhsfx16pts, *category_values):

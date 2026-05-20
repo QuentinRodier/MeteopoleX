@@ -66,6 +66,39 @@ def _add_trace(fig, x, y, name, base_style, opacity, legendgroup, showlegend):
         )
     )
 
+#------------------------------------------------------------
+# pour MNH-SFX-16pts :
+# fonctions pour le color filling avec des données manquantes
+# get_dfs prend pour input : data[param][model][reseau]
+#------------------------------------------------------------
+def _get_dfs(df , names):
+    name_min = names[0]
+    name_max = names[1]
+    x    = df['time']
+    Ymin = df[name_min]
+    Ymax = df[name_max]
+    n = 0
+    for xn in x:
+      if 'T24' in xn:
+        Ymin.iloc[n] = np.nan
+        Ymax.iloc[n] = np.nan
+      n+=1
+    dfill = pd.DataFrame(np.stack([Ymin,Ymax]).T , columns=['Ymin','Ymax'])
+    dfill.index = x
+    dfill['label'] = np.where(np.isnan(dfill['Ymin']) | np.isnan(dfill['Ymax']) ,0,1)
+    dfill['group'] = dfill['label'].ne(dfill['label'].shift()).cumsum()
+    dfill = dfill.groupby('group')
+    dfs = []
+    for name, data_to_fill in dfill:
+        dfs.append(data_to_fill)
+    return dfs
+    
+def _fillcolorgaps(label , color_etendue):
+    if label >= 1:
+      return color_etendue
+    else:
+      return 'rgba(255,255,255,0)'
+#------------------------------------------------------------
 
 # Fonction principale appelée par le callback
 def build_series_figures(
@@ -160,41 +193,45 @@ def build_series_figures(
 
             # Étendue moyenne + écart-type
             if isinstance(data[param][modele][reseau]['values_mean_plus_std'], (pd.Series)):
-                figures[param].add_trace(
+                for df in _get_dfs(data[param][modele][reseau],['values_mean_moins_std','values_mean_plus_std']):
+                  figures[param].add_trace(
                     go.Scatter(
-                        x=data[param][modele][reseau]['time'],
-                        y=data[param][modele][reseau]['values_mean_plus_std'],
-                        line=dict(color='rgba(0,0,0,0)'),
-                        showlegend=False,
-                        visible = visible_settings,
-                        name=f"{selection}"+" +écart-type"))
-                figures[param].add_trace(
-                    go.Scatter(
-                        x=data[param][modele][reseau]['time'],
-                        y=data[param][modele][reseau]['values_mean_moins_std'],
+                        x = df.index,
+                        y = df.Ymax,
                         line = dict(color='rgba(0,0,0,0)'),
-                        fill='tonexty',
-                        fillcolor=color_etendue_2, visible = visible_settings,
-                        name=f"{selection}"+" enveloppe ecart-type "))
+                        showlegend = False,
+                        visible = visible_settings,
+                        name = f"{selection}"+" +écart-type"))
+                  figures[param].add_trace(
+                    go.Scatter(
+                        x = df.index,
+                        y = df.Ymin,
+                        line = dict(color='rgba(0,0,0,0)'),
+                        fill = 'tonexty',
+                        fillcolor = _fillcolorgaps(df['label'].iloc[0] , color_etendue_2), 
+                        visible = visible_settings,
+                        name = f"{selection}"+" enveloppe ecart-type "))
 
             # Étendue min/max
             if isinstance(data[param][modele][reseau]['values_max'], (pd.Series)):
-                figures[param].add_trace(
+                for df in _get_dfs(data[param][modele][reseau],['values_min','values_max']):
+                  figures[param].add_trace(
                     go.Scatter(
-                        x=data[param][modele][reseau]['time'],
-                        y=data[param][modele][reseau]['values_max'],
-                        line=dict(color='rgba(0,0,0,0)'),
-                        showlegend=False,
-                        visible = visible_settings,
-                        name=f"{selection}"+" max"))
-                figures[param].add_trace(
-                    go.Scatter(
-                        x=data[param][modele][reseau]['time'],
-                        y=data[param][modele][reseau]['values_min'],
+                        x = df.index,
+                        y = df.Ymax,
                         line = dict(color='rgba(0,0,0,0)'),
-                        fill='tonexty',
-                        fillcolor=color_etendue, visible = visible_settings,
-                        name=f"{selection}"+" min et max"))
+                        showlegend = False,
+                        visible = visible_settings,
+                        name = f"{selection}"+" max"))
+                  figures[param].add_trace(
+                    go.Scatter(
+                        x = df.index,
+                        y = df.Ymin,
+                        line = dict(color='rgba(0,0,0,0)'),
+                        fill = 'tonexty',
+                        fillcolor = _fillcolorgaps(df['label'].iloc[0] , color_etendue), 
+                        visible = visible_settings,
+                        name = f"{selection}"+" min et max"))
     # -------------------------------------------------------------------------
 
 
@@ -296,8 +333,8 @@ def build_series_figures(
                     go.Scatter(
                         x=x_fill,
                         y=y_fill,
-                        fill="toself",
-                        fillcolor=_apply_opacity(color, opacity_corr),
+                        #fill="toself",
+                        #fillcolor=_apply_opacity(color, opacity_corr),
                         line=dict(color="rgba(0,0,0,0)"),
                         name=label_corr,
                         showlegend=(seg_idx==0),

@@ -74,19 +74,19 @@ VARIABLES = {
         "title": "Flux de chaleur latente",
         "unit": "W/m²"
     },    
-    "flx_chaleur_sol": {
-        "index_obs": "flx_phi0_moy_c2_%60",
-        "index_model": "flx_chaleur_sol",
-        "index_model_mnhsfx16pts" : "GFLUX",
-        "title": "Flux de conduction dans le sol",
-        "unit": "W/m²"
-    },
     "t_surface": {
         "index_obs": "tpr_solIR_c1_%60",
         "index_model": "t_surface",
         "index_model_mnhsfx16pts" : "TSRAD",
         "title": "Température de surface",
         "unit": "°C"
+    },
+    "flx_chaleur_sol": {
+        "index_obs": "flx_phi0_moy_c2_%60",
+        "index_model": "flx_chaleur_sol",
+        "index_model_mnhsfx16pts" : "GFLUX",
+        "title": "Flux de conduction dans le sol",
+        "unit": "W/m²"
     },
     "TG1cm": {
         "index_obs": "tpr_sol1cm_f2_tn1_valid_%900", 
@@ -292,10 +292,11 @@ VARIABLES_PLOT = [
     "LWU", 
     "flx_chaleur_sens",
     "flx_chaleur_lat",   
-    "flx_chaleur_sol",
     "t_surface",
-    "TG1cm",
-    "WG1cm",
+    #"flx_chaleur_sol",
+    "cumul_RR",
+    #"TG1cm",
+    #"WG1cm",
     "TG3cm",
     "WG5cm",
     "TG10cm",
@@ -309,10 +310,9 @@ VARIABLES_PLOT = [
     "TG70cm",
     "WG70cm",
     "TG100cm",
-    "WG100cm",
-    "flx_mvt",
-    "tke",
-    "cumul_RR"]
+    "WG100cm"]
+    #"flx_mvt",
+    #"tke",
 #    "altitude_CL"]
 
 # Liste des variables tracées pour la vue Panneaux Photovoltaiques

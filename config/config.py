@@ -34,7 +34,8 @@ CONFIG_OBS = {
 
 # Modèles
 
-MODELS = ["Arome", 'Arpege', 'Surfex_Mascot', 'Surfex_Offline_ref', 'Surfex_Offline_physiographie_observée', 'Surfex_Offline_CI_observées']
+#MODELS = ["Arome", 'Arpege', 'Arpege_test', 'Surfex_Offline_ref', 'Surfex_Offline_physiographie_observée', 'Surfex_Offline_CI_observées']
+MODELS = ["Arome", 'Arpege', 'Arpege_test']
 
 RESEAUX = ["J0:00_%3600"] 
 
@@ -68,7 +69,7 @@ MODELS_CONFIG = {
         },
         'max_forecast_days': 2,
     },
-    'Surfex_Mascot': {
+    'Arpege_test': {
         'reader':         'operationnel',
         'param_key':      'index_model',
         'category':       'Modélisation',
@@ -78,52 +79,52 @@ MODELS_CONFIG = {
         'file_prefix':    'mascot',
         'default_selection': [],
         'mapping': {
-            "Surfex Mascot 00h":  (RESEAUX[0], dict(color="darkorange")),
+            "Arpege test":  (RESEAUX[0], dict(color="darkorange")),
         },
         'max_forecast_days': 4,
     },
-    'Surfex_Offline_ref': {
-        'reader':         'operationnel',
-        'param_key':      'index_model',
-        'category':       'Modélisation',
-        'is_climatology': True,
-        'callback_param': 'reseau_offline_ref',
-        'dropdown_id':    'multi_select_line_chart_SURFEX_Offline_ref',
-        'file_prefix':    'offlineref',
-        'default_selection': [],
-        'mapping': {
-            "Surfex Offline référence":  (RESEAUX[0], dict(color="purple", dash='dash')),
-        },
-        'max_forecast_days': None,
-    },
-    'Surfex_Offline_physiographie_observée': {
-        'reader':         'operationnel',
-        'param_key':      'index_model',
-        'category':       'Modélisation',
-        'is_climatology': True,
-        'callback_param': 'reseau_offline_pgd',
-        'dropdown_id':    'multi_select_line_chart_SURFEX_Offline_pgd',
-        'file_prefix':    'offlinepgd',
-        'default_selection': [],
-        'mapping': {
-            "Surfex Offline physiographie observée":  (RESEAUX[0], dict(color="mediumorchid", dash='dash')),
-        },
-        'max_forecast_days': None,
-    },
-    'Surfex_Offline_CI_observées': {
-        'reader':         'operationnel',
-        'param_key':      'index_model',
-        'category':       'Modélisation',
-        'is_climatology': True,
-        'callback_param': 'reseau_offline_prep',
-        'dropdown_id':    'multi_select_line_chart_SURFEX_Offline_prep',
-        'file_prefix':    'offlineprep',
-        'default_selection': [],
-        'mapping': {
-            "Surfex Offline CI observées":  (RESEAUX[0], dict(color="violet", dash='dash')),
-        },
-        'max_forecast_days': None,
-    },
+    #'Surfex_Offline_ref': {
+    #    'reader':         'operationnel',
+    #    'param_key':      'index_model',
+    #    'category':       'Modélisation',
+    #    'is_climatology': True,
+    #    'callback_param': 'reseau_offline_ref',
+    #    'dropdown_id':    'multi_select_line_chart_SURFEX_Offline_ref',
+    #    'file_prefix':    'offlineref',
+    #    'default_selection': [],
+    #    'mapping': {
+    #        "Surfex Offline référence":  (RESEAUX[0], dict(color="purple", dash='dash')),
+    #    },
+    #    'max_forecast_days': None,
+    #},
+    #'Surfex_Offline_physiographie_observée': {
+    #    'reader':         'operationnel',
+    #    'param_key':      'index_model',
+    #    'category':       'Modélisation',
+    #    'is_climatology': True,
+    #    'callback_param': 'reseau_offline_pgd',
+    #    'dropdown_id':    'multi_select_line_chart_SURFEX_Offline_pgd',
+    #    'file_prefix':    'offlinepgd',
+    #    'default_selection': [],
+    #    'mapping': {
+    #        "Surfex Offline physiographie observée":  (RESEAUX[0], dict(color="mediumorchid", dash='dash')),
+    #    },
+    #    'max_forecast_days': None,
+    #},
+    #'Surfex_Offline_CI_observées': {
+    #    'reader':         'operationnel',
+    #    'param_key':      'index_model',
+    #    'category':       'Modélisation',
+    #    'is_climatology': True,
+    #    'callback_param': 'reseau_offline_prep',
+    #    'dropdown_id':    'multi_select_line_chart_SURFEX_Offline_prep',
+    #    'file_prefix':    'offlineprep',
+    #    'default_selection': [],
+    #    'mapping': {
+    #        "Surfex Offline CI observées":  (RESEAUX[0], dict(color="violet", dash='dash')),
+    #    },
+    #    'max_forecast_days': None,
+    #},
 }
 
 

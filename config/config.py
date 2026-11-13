@@ -5,7 +5,7 @@ from config.models import RESEAUX
 
 # Période par défaut
 start = 7
-end = 1    
+end = 2 
 
 today = datetime.date.today()   
 yesterday = today - datetime.timedelta(days=1)
